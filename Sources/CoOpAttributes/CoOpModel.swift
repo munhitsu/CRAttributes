@@ -42,7 +42,7 @@ let modelDescription = CoreDataModelDescription(
         ),
         .entity(
             name: "CoOpCache", // or use KV on LMDB
-            managedObjectClass: CoOpAttribute.self,
+            managedObjectClass: CoOpCache.self,
             attributes: [
                 .attribute(name: "version", type: .integer16AttributeType),
                 .attribute(name: "int", type: .integer64AttributeType),

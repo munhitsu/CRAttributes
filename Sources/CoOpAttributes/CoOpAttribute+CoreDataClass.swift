@@ -10,7 +10,7 @@
 import Foundation
 import CoreData
 
-@objc(OpAttribute)
+@objc(CoOpAttribute)
 public class CoOpAttribute: NSManagedObject {
 
 }

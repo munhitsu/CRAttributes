@@ -10,7 +10,7 @@
 import Foundation
 import CoreData
 
-@objc(OpLog)
+@objc(CoOpLog)
 public class CoOpLog: NSManagedObject {
 
 }

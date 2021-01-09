@@ -10,7 +10,7 @@
 import Foundation
 import CoreData
 
-@objc(OpCache)
+@objc(CoOpCache)
 public class CoOpCache: NSManagedObject {
 
 }
