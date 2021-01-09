@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "CoreDataModelDescription",
+        "repositoryURL": "https://github.com/dmytro-anokhin/core-data-model-description",
+        "state": {
+          "branch": null,
+          "revision": "9669c28cf58deb4a8d0454abd656ac7557f98ab6",
+          "version": "0.0.9"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

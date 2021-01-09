@@ -9,7 +9,21 @@ final class CoOpAttributesTests: XCTestCase {
         XCTAssertEqual(CoOpAttributes().text, "Hello, World!")
     }
 
-    static var allTests = [
-        ("testExample", testExample),
-    ]
+    func testStorage() {
+        let context = CoOpPersistenceController.shared.container.viewContext
+        let attr = CoOpAttribute.init(context: context)
+        attr.type = 0
+        attr.version = 0
+        do {
+            try context.save()
+        } catch {
+            let nsError = error as NSError
+            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+        }
+        print(attr.objectID.uriRepresentation())
+    }
+
+//    static var allTests = [
+//        ("testExample", testExample),
+//    ]
 }
