@@ -177,3 +177,8 @@ b) only open document gets update - I need more code for the document
 
 
 
+## HowTo add a local package to your application
+https://forums.swift.org/t/how-to-add-local-swift-package-as-dependency/26457/7
+
+- Drag the package folder which contains the Package.swift into your Xcode project
+- Click the Plus button in the "Link Binary with Libraries" section, locate the package in the modal dialog, select the gray library icon inside the package, and add this one.
