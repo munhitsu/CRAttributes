@@ -6,7 +6,9 @@ import PackageDescription
 let package = Package(
     name: "CoOpAttributes",
     platforms: [
-        .macOS(.v10_14), .iOS(.v13), .tvOS(.v13)
+        .macOS(.v10_14),
+        .iOS(.v14),
+        .tvOS(.v14)
     ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
@@ -16,14 +18,17 @@ let package = Package(
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
-        .package(name: "CoreDataModelDescription", url: "https://github.com/dmytro-anokhin/core-data-model-description", from: "0.0.9"),
+        .package(name: "CoreDataModelDescription", path: "../core-data-model-description"),
+        .package(name: "SwiftProtobuf", url: "https://github.com/apple/swift-protobuf.git", from: "1.6.0"),
+
+//        .package(name: "CoreDataModelDescription", url: "../core-data-model-description", from: "0.0.9"),
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "CoOpAttributes",
-            dependencies: ["CoreDataModelDescription"]),
+            dependencies: ["CoreDataModelDescription","SwiftProtobuf"]),
         .testTarget(
             name: "CoOpAttributesTests",
             dependencies: ["CoOpAttributes"]),

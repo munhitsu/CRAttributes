@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+
+message OperationID {
+    int64 lamport = 1;
+    int64 peerId = 2;
+}
+
+message Operation {
+    OperationID id = 1;
+    oneof value {
+        string string = 3;
+        int64 int = 4;
+        bool boolean = 5;
+    }
+}

@@ -9,74 +9,67 @@ import Foundation
 import CoreData
 import CoreDataModelDescription
 
-public enum CoOpAttributeType : UInt {
-
-    case register = 0
-
-    case text = 100
-
-}
-
-//let foo = CoreDataAttributeDescription.attribute(name: "version", type: .integer64AttributeType)
-//
-//let foo2:[CoreDataAttributeDescription] = [.attribute(name: "dd", type: .integer16AttributeType)]
-//
-
-
-
 
 let modelDescription = CoreDataModelDescription(
     entities: [
         .entity(
-            name: "CoOpAttribute",
-            managedObjectClass: CoOpAttribute.self,
+            name: "IntLwwCoOpAttribute",
+            managedObjectClass: IntLwwCoOpAttribute.self,
             attributes: [
-                .attribute(name: "type", type: .integer16AttributeType),
-                .attribute(name: "version", type: .integer16AttributeType),
+                .attribute(name: "version", type: .integer16AttributeType, defaultValue: Int16(0)),
             ],
             relationships: [
-                .relationship(name: "cache", destination: "CoOpCache", toMany: false, inverse: "attribute"),
-                .relationship(name: "operations", destination: "CoOpLog", toMany: true, inverse: "attribute"),
-            ],
-            indexes: []
+                .relationship(name: "operations", destination: "CoOpLog", toMany: true),
+            ]
         ),
         .entity(
-            name: "CoOpCache", // or use KV on LMDB
-            managedObjectClass: CoOpCache.self,
+            name: "StringLwwCoOpAttribute",
+            managedObjectClass: StringLwwCoOpAttribute.self,
             attributes: [
-                .attribute(name: "version", type: .integer16AttributeType),
-                .attribute(name: "int", type: .integer64AttributeType),
-                .attribute(name: "string", type: .stringAttributeType),
+                .attribute(name: "version", type: .integer16AttributeType, defaultValue: Int16(0)),
             ],
             relationships: [
-                .relationship(name: "attribute", destination: "CoOpAttribute", toMany: false, inverse: "cache")
+                .relationship(name: "operations", destination: "CoOpLog", toMany: true),
+            ]
+        ),
+        .entity(
+            name: "BooleanLwwCoOpAttribute",
+            managedObjectClass: BooleanLwwCoOpAttribute.self,
+            attributes: [
+                .attribute(name: "version", type: .integer16AttributeType, defaultValue: Int16(0)),
+            ],
+            relationships: [
+                .relationship(name: "operations", destination: "CoOpLog", toMany: true),
             ]
         ),
         .entity(
             name: "CoOpLog",
             managedObjectClass: CoOpLog.self,
             attributes: [
-                .attribute(name: "version", type: .integer16AttributeType),
                 .attribute(name: "lamport", type: .integer64AttributeType),
-                .attribute(name: "peerId", type: .UUIDAttributeType),
-                .attribute(name: "operation", type: .stringAttributeType),
+                .attribute(name: "peerID", type: .integer64AttributeType),
+                .attribute(name: "version", type: .integer16AttributeType, defaultValue: Int16(0)),
+                .attribute(name: "rawOperation", type: .binaryDataAttributeType),
             ],
-            relationships: [
-                .relationship(name: "attribute", destination: "CoOpAttribute", toMany: false, inverse: "operations")
-            ]
-        ),
+            indexes: [
+                .index(name: "lamport", elements: [.property(name: "lamport")])
+            ],
+            constraints: ["lamport", "peerID"]
+        )
     ]
 )
 
+// global variables are lazy
+public let coOpModel = modelDescription.makeModel()
+
 
 struct CoOpPersistenceController {
-    let model = modelDescription.makeModel()
 
     static let shared = CoOpPersistenceController()
 
     static var preview: CoOpPersistenceController = {
         let result = CoOpPersistenceController(inMemory: true)
-        let viewContext = result.container.viewContext
+//        let viewContext = result.container.viewContext
 //        for _ in 0..<10 {
 //            let newItem = Note(context: viewContext)
 //        }
@@ -93,7 +86,7 @@ struct CoOpPersistenceController {
 
     init(inMemory: Bool = false) {
 
-        container = NSPersistentContainer(name: "CoOpModel", managedObjectModel: model)
+        container = NSPersistentContainer(name: "CoOpModel", managedObjectModel: coOpModel)
         if inMemory {
             container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
         }
