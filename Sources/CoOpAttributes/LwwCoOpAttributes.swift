@@ -32,10 +32,10 @@ extension IntLwwCoOpAttribute {
 extension IntLwwCoOpAttribute {
 
     @objc(addOperationsObject:)
-    @NSManaged public func addToOperations(_ value: CoOpLog)
+    @NSManaged public func addToOperations(_ value: CoOpOperation)
 
     @objc(removeOperationsObject:)
-    @NSManaged public func removeFromOperations(_ value: CoOpLog)
+    @NSManaged public func removeFromOperations(_ value: CoOpOperation)
 
     @objc(addOperations:)
     @NSManaged public func addToOperations(_ values: NSSet)
@@ -68,10 +68,10 @@ extension StringLwwCoOpAttribute {
 extension StringLwwCoOpAttribute {
 
     @objc(addOperationsObject:)
-    @NSManaged public func addToOperations(_ value: CoOpLog)
+    @NSManaged public func addToOperations(_ value: CoOpOperation)
 
     @objc(removeOperationsObject:)
-    @NSManaged public func removeFromOperations(_ value: CoOpLog)
+    @NSManaged public func removeFromOperations(_ value: CoOpOperation)
 
     @objc(addOperations:)
     @NSManaged public func addToOperations(_ values: NSSet)
@@ -85,20 +85,20 @@ extension StringLwwCoOpAttribute {
 
     public var value: String {
         get {
-            if let lastOp:CoOpLog = ((self.operations?.allObjects as? [CoOpLog])?.max()) {
+            if let lastOp:CoOpOperation = ((self.operations?.allObjects as? [CoOpOperation])?.max()) {
                 print("String.get lamport=\(lastOp.lamport)")
-                return lastOp.operation?.string ?? ""
+                return lastOp.operation.string
             } else {
                 return ""
             }
         }
         set(newValue) {
             let newOperation = Operation.with {
-                $0.id = OperationID.generate()
+                $0.oid = OperationID.generate()
                 $0.string = newValue
             }
-            let opLogEntry = CoOpLog(in: self.managedObjectContext!, operation: newOperation)
-            for oldOp in (self.operations?.allObjects as! [CoOpLog]) {
+            let opLogEntry = CoOpOperation(in: self.managedObjectContext!, from: newOperation)
+            for oldOp in (self.operations?.allObjects as! [CoOpOperation]) {
                 self.removeFromOperations(oldOp)
                 self.managedObjectContext?.delete(oldOp)
             }
@@ -129,10 +129,10 @@ extension BooleanLwwCoOpAttribute {
 extension BooleanLwwCoOpAttribute {
 
     @objc(addOperationsObject:)
-    @NSManaged public func addToOperations(_ value: CoOpLog)
+    @NSManaged public func addToOperations(_ value: CoOpOperation)
 
     @objc(removeOperationsObject:)
-    @NSManaged public func removeFromOperations(_ value: CoOpLog)
+    @NSManaged public func removeFromOperations(_ value: CoOpOperation)
 
     @objc(addOperations:)
     @NSManaged public func addToOperations(_ values: NSSet)

@@ -160,6 +160,9 @@ b) only open document gets update - I need more code for the document
 
 
 ## TODO
+- make all operations as children of Container
+
+
 
 - (low) bug when running form commandline swift test "'NSInternalInconsistencyException', reason: 'Can't modify an immutable model.'"
 

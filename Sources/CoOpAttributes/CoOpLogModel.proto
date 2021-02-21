@@ -7,7 +7,7 @@ message OperationID {
 }
 
 message Operation {
-    OperationID id = 1;
+    OperationID oid = 1;
     oneof value {
         string string = 3;
         int64 int = 4;

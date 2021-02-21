@@ -159,7 +159,7 @@ final class ModelTests: XCTestCase {
                 var remoteLamport:Int64 = OperationID.lastLamport+1
                 for attr in attrs {
                     print("extending \(attr)")
-                    let logEntry = CoOpLog.init(in: context, operation: Operation.with {
+                    let logEntry = CoOpOperation.init(in: context, operation: Operation.with {
                         $0.id = OperationID.with{
                             $0.lamport = remoteLamport
                             $0.peerID = 1

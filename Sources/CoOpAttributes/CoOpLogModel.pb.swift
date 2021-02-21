@@ -39,14 +39,14 @@ public struct Operation {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  public var id: OperationID {
-    get {return _id ?? OperationID()}
-    set {_id = newValue}
+  public var oid: OperationID {
+    get {return _oid ?? OperationID()}
+    set {_oid = newValue}
   }
-  /// Returns true if `id` has been explicitly set.
-  public var hasID: Bool {return self._id != nil}
-  /// Clears the value of `id`. Subsequent reads from it will return its default value.
-  public mutating func clearID() {self._id = nil}
+  /// Returns true if `oid` has been explicitly set.
+  public var hasOid: Bool {return self._oid != nil}
+  /// Clears the value of `oid`. Subsequent reads from it will return its default value.
+  public mutating func clearOid() {self._oid = nil}
 
   public var value: Operation.OneOf_Value? = nil
 
@@ -107,7 +107,7 @@ public struct Operation {
 
   public init() {}
 
-  fileprivate var _id: OperationID? = nil
+  fileprivate var _oid: OperationID? = nil
 }
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
@@ -153,7 +153,7 @@ extension OperationID: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
 extension Operation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = "Operation"
   public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "id"),
+    1: .same(proto: "oid"),
     3: .same(proto: "string"),
     4: .same(proto: "int"),
     5: .same(proto: "boolean"),
@@ -165,7 +165,7 @@ extension Operation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularMessageField(value: &self._id) }()
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._oid) }()
       case 3: try {
         if self.value != nil {try decoder.handleConflictingOneOf()}
         var v: String?
@@ -190,7 +190,7 @@ extension Operation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
   }
 
   public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if let v = self._id {
+    if let v = self._oid {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
     }
     // The use of inline closures is to circumvent an issue where the compiler
@@ -215,7 +215,7 @@ extension Operation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementation
   }
 
   public static func ==(lhs: Operation, rhs: Operation) -> Bool {
-    if lhs._id != rhs._id {return false}
+    if lhs._oid != rhs._oid {return false}
     if lhs.value != rhs.value {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

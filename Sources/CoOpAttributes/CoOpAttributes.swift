@@ -23,7 +23,7 @@ extension OperationID {
      call this on the app start
      */
     public static func updateLastLamportFromCoOpLog(in context: NSManagedObjectContext) {
-        let fetchRequest = CoOpLog.fetchRequest() as! NSFetchRequest<CoOpLog>
+        let fetchRequest = CoOpOperation.fetchRequest() as! NSFetchRequest<CoOpOperation>
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "lamport", ascending: false)]
         fetchRequest.fetchLimit = 1
         

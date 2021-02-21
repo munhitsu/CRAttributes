@@ -19,7 +19,7 @@ let modelDescription = CoreDataModelDescription(
                 .attribute(name: "version", type: .integer16AttributeType, defaultValue: Int16(0)),
             ],
             relationships: [
-                .relationship(name: "operations", destination: "CoOpLog", toMany: true),
+                .relationship(name: "operations", destination: "CoOpOperation", toMany: true),
             ]
         ),
         .entity(
@@ -29,7 +29,7 @@ let modelDescription = CoreDataModelDescription(
                 .attribute(name: "version", type: .integer16AttributeType, defaultValue: Int16(0)),
             ],
             relationships: [
-                .relationship(name: "operations", destination: "CoOpLog", toMany: true),
+                .relationship(name: "operations", destination: "CoOpOperation", toMany: true),
             ]
         ),
         .entity(
@@ -39,13 +39,22 @@ let modelDescription = CoreDataModelDescription(
                 .attribute(name: "version", type: .integer16AttributeType, defaultValue: Int16(0)),
             ],
             relationships: [
-                .relationship(name: "operations", destination: "CoOpLog", toMany: true),
+                .relationship(name: "operations", destination: "CoOpOperation", toMany: true),
             ]
         ),
         .entity(
-            name: "CoOpLog",
-            managedObjectClass: CoOpLog.self,
+            name: "CoOpContainer",
+            managedObjectClass: CoOpContainer.self,
             attributes: [
+                .attribute(name: "ckID", type: .stringAttributeType),
+                .attribute(name: "version", type: .integer16AttributeType, defaultValue: Int16(0))
+            ]
+        ),
+        .entity(
+            name: "CoOpOperation",
+            managedObjectClass: CoOpOperation.self,
+            attributes: [
+                .attribute(name: "ckID", type: .stringAttributeType),
                 .attribute(name: "lamport", type: .integer64AttributeType),
                 .attribute(name: "peerID", type: .integer64AttributeType),
                 .attribute(name: "version", type: .integer16AttributeType, defaultValue: Int16(0)),
