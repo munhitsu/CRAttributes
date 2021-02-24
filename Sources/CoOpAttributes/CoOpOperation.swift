@@ -58,6 +58,14 @@ extension CoOpOperation: Comparable {
         version = record["version"] as? Int16 ?? 0
     }
     
+    public func ckRecord() {
+        let recordOp = CKRecord(recordType: "Operation", recordID: <#T##CKRecord.ID#>)
+        recordOp.setValuesForKeys([
+            "lamport": 1,
+            "rawOperation": "abc"
+        ])
+    }
+    
     public static func < (lhs: CoOpOperation, rhs: CoOpOperation) -> Bool {
         if lhs.lamport == rhs.lamport {
             return lhs.peerID < rhs.peerID

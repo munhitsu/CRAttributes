@@ -191,7 +191,7 @@ public class CoOpSyncController {
     }
     
     // where do we group? DO we at all group?
-    public func asyncUploadOperation() {
+    public func asyncUploadOperation(operation: CoOpOperation) {
         CKContainer.default().accountStatus { accountStatus, error in
             guard accountStatus == .available else {
                 return
@@ -199,25 +199,22 @@ public class CoOpSyncController {
 
             let database = CKContainer.default().privateCloudDatabase
 
-            let recordCo = CKRecord(recordType: "Container")
             let recordOp = CKRecord(recordType: "Operation")
             recordOp.setValuesForKeys([
                 "lamport": 1,
                 "rawOperation": "abc"
             ])
-            recordOp.parent = CKRecord.Reference(record: recordCo, action: CKRecord.Reference.Action.none)
             
             
-            let ckOp = CKModifyRecordsOperation(recordsToSave: [recordOp, recordCo])
+            let ckOp = CKModifyRecordsOperation(recordsToSave: [recordOp])
             
             ckOp.modifyRecordsCompletionBlock = { _, _, error in
                 guard error == nil else {
-                    print("Error saving")
-//                    print(error)
                     guard let ckerror = error as? CKError else {
+                        print("Error saving Operation: \(error!)")
                         return
                     }
-                    print(ckerror)
+                    print("Error saving Operation: \(ckerror.userInfo)")
                     if ckerror.code == .partialFailure {
                         print("Partial error")
                     }
