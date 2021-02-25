@@ -22,55 +22,38 @@ we just provide attributes
 let's ensure that we have the future path of sharing over synced core-data
 
 
-## CK plan
-
-1st run sync
-
-on app launch - ash for changes you don't have
-
-register for notificaiton (notifications can be coalesced) 
-on each notification... pull changes
-
-enable push notifications
-enable abckground changes
- 
-set parent for each operation to be attribute
-
-fetch references - what are the errors?
-
-register to network changes to sync the offline operations
-
-register to CKAccountChange - as user may eb logged off 
-
-batch operations to save bandwidth
-
-qos user initiated - maybe
-
-
-
-
-KVO with Combine
-https://gist.github.com/hermanbanken/cf635644147abd0e330fb6deae758ce4
-Performing Key-Value Observing with Combine https://developer.apple.com/documentation/combine/performing-key-value-observing-with-combine
-
-
-How to make a singleton
-https://developer.apple.com/documentation/swift/cocoa_design_patterns/managing_a_shared_resource_using_a_singleton
-
-
-
-CoudKit allows for atomic commits (follows relations) in special zones
-
-delta downlaod and recording change tokens
-
-
-There is no cross zone linking
+## Milestones
+- mutable string model field (https://developer.apple.com/documentation/uikit/nstextstorage)
+- SwiftUI demo app
+- mutable attributed string model field
+- cached rendered string (hash applied operation ids) (store op local id and true false)
 
 
 
 
 ## ADL
 
+13. we keep lamport and peerid for consistent ordering for all replicas
+
+12. use core data references
+but monitor fo updated objects as it's uknown what sync will do
+
+11. drop transformation from core data to operation
+
+10. I'm considering dropping protobuf as we only have one operation type to focus on
+and coredata is your in memory database
+
+9. pivot
+make implementation compatible with the native coredata+cloudkit sync
+focus on mutable string
+lww is about the same as a native cloudkit merge resolution
+cloudkit is for near real time, delay with native cloud kit can be 10s (see: https://developer.apple.com/forums/thread/131696) and that's ok
+
+reintroduce container way later
+
+this approach means we are ready to introduce our own sync if needed but for now we have a solid foundation and Apple may introduce Sharing
+
+--------------
 
 0.
 there is a way to track changes introduced by cloudkit core data
@@ -139,9 +122,6 @@ b) only open document gets update - I need more code for the document
 
 
 
-9.
-
-
 
 ## Missign cloudkit core data functionality
 
@@ -151,12 +131,50 @@ b) only open document gets update - I need more code for the document
 
 
 
-## milestones
-- LWW string and int registers saveable
-- sync over cloudkit
-- SwiftUI demo app
-- colaborative text edit field
-- collaborative sharing
+## CK plan
+
+1st run sync
+
+on app launch - ash for changes you don't have
+
+register for notificaiton (notifications can be coalesced) 
+on each notification... pull changes
+
+enable push notifications
+enable abckground changes
+ 
+set parent for each operation to be attribute
+
+fetch references - what are the errors?
+
+register to network changes to sync the offline operations
+
+register to CKAccountChange - as user may eb logged off 
+
+batch operations to save bandwidth
+
+qos user initiated - maybe
+
+
+
+
+KVO with Combine
+https://gist.github.com/hermanbanken/cf635644147abd0e330fb6deae758ce4
+Performing Key-Value Observing with Combine https://developer.apple.com/documentation/combine/performing-key-value-observing-with-combine
+
+
+How to make a singleton
+https://developer.apple.com/documentation/swift/cocoa_design_patterns/managing_a_shared_resource_using_a_singleton
+
+
+
+CoudKit allows for atomic commits (follows relations) in special zones
+
+delta downlaod and recording change tokens
+
+
+There is no cross zone linking
+
 
 
 ## TODO
@@ -185,3 +203,9 @@ https://forums.swift.org/t/how-to-add-local-swift-package-as-dependency/26457/7
 
 - Drag the package folder which contains the Package.swift into your Xcode project
 - Click the Plus button in the "Link Binary with Libraries" section, locate the package in the modal dialog, select the gray library icon inside the package, and add this one.
+
+
+
+## Readings
+Advanced CloudKit
+https://www.youtube.com/watch?v=8iHfrqvF5po
