@@ -19,4 +19,13 @@ extension CoOpMutableStringAttribute {
     }
     @NSManaged public var version: Int16
 
+    @NSManaged public var head: CoOpMutableStringOperationInsert // this should be always a zero element
+
+    @NSManaged public var deletes: NSSet
+    @NSManaged public var inserts: NSSet
+
+    
+    override public func awakeFromInsert() {
+        setPrimitiveValue(CoOpMutableStringOperationInsert(isZero: true, context: self.managedObjectContext!), forKey: "head")
+    }
 }

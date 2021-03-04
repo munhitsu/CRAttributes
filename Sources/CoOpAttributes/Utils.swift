@@ -12,24 +12,35 @@ public func fatalNotImplemented() {
     fatalError("Not Implemented")
 }
 
-
-
 public func flushAllCoreData(container: NSPersistentContainer) {
     let context = container.viewContext
     // get all entities and loop over them
-
-    // now the batch flush
     let entityNames = container.managedObjectModel.entities.map({ $0.name!})
     entityNames.forEach { entityName in
-    print("Flushing \(entityName)")
-    let deleteFetch = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
-    let deleteRequest = NSBatchDeleteRequest(fetchRequest: deleteFetch)
+        // now the batch flush
+        print("Flushing \(entityName)")
+        let deleteFetch = NSFetchRequest<NSFetchRequestResult>(entityName: entityName)
+        let deleteRequest = NSBatchDeleteRequest(fetchRequest: deleteFetch)
 
-    do {
+        do {
             try context.execute(deleteRequest)
             try context.save()
         } catch let error as NSError {
             fatalError("Unresolved error \(error), \(error.userInfo)")
         }
     }
+}
+
+public func printTimeElapsedWhenRunningCode(title: String = "", operation:() -> Void) {
+    let startTime = CFAbsoluteTimeGetCurrent()
+    operation()
+    let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
+    print("Time elapsed for \(title): \(timeElapsed) s.")
+}
+
+public func timeElapsedInSecondsWhenRunningCode(operation: () -> Void) -> Double {
+    let startTime = CFAbsoluteTimeGetCurrent()
+    operation()
+    let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
+    return Double(timeElapsed)
 }

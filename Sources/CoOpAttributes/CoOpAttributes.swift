@@ -43,18 +43,25 @@ public func newLamportSeen(_ seenLamport: Int64) {
  scans alll operation logs for the maximum known lamport
  */
 public func updateLastLamportFromCoOpLog(in context: NSManagedObjectContext) {
-    let fetchRequest:NSFetchRequest<CoOpMutableStringOperation> = CoOpMutableStringOperation.fetchRequest()
-    fetchRequest.sortDescriptors = [NSSortDescriptor(key: "lamport", ascending: false)]
-    fetchRequest.fetchLimit = 1
+    //TODO: deduplicate code through inheritance and maybe even model inheritance to have one query
+    let fetchRequestInsert:NSFetchRequest<CoOpMutableStringOperationInsert> = CoOpMutableStringOperationInsert.fetchRequest()
+    fetchRequestInsert.sortDescriptors = [NSSortDescriptor(key: "lamport", ascending: false)]
+    fetchRequestInsert.fetchLimit = 1
     
-    do {
-        let ops = try context.fetch(fetchRequest)
-        for op in ops {
-            print("Max lamport observed: \(op.lamport)")
-            lastLamport = op.lamport
-        }
-    } catch let error as NSError {
-        print("Could not fetch. \(error), \(error.userInfo)")
+    let opsInsert = try? context.fetch(fetchRequestInsert)
+    for op in opsInsert ?? [] {
+        print("Max insert lamport observed: \(op.lamport)")
+        newLamportSeen(op.lamport)
+    }
+
+    let fetchRequestDelete:NSFetchRequest<CoOpMutableStringOperationDelete> = CoOpMutableStringOperationDelete.fetchRequest()
+    fetchRequestDelete.sortDescriptors = [NSSortDescriptor(key: "lamport", ascending: false)]
+    fetchRequestDelete.fetchLimit = 1
+    
+    let opsDelete = try? context.fetch(fetchRequestDelete)
+    for op in opsDelete ?? [] {
+        print("Max delete lamport observed: \(op.lamport)")
+        newLamportSeen(op.lamport)
     }
 }
 

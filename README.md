@@ -1,6 +1,12 @@
 # CoOpAttributes
 
-A description of this package.
+
+
+
+## Challenge
+is it possible to to describe text as an operation graph where adding operation does not modify exiting nodes (no reference updates)
+
+
 
 
 ## how to regenerate protobuf
@@ -38,7 +44,7 @@ let's ensure that we have the future path of sharing over synced core-data
 12. use core data references
 but monitor fo updated objects as it's uknown what sync will do
 
-11. drop transformation from core data to operation
+11. drop transformation from core data to operation to node
 
 10. I'm considering dropping protobuf as we only have one operation type to focus on
 and coredata is your in memory database

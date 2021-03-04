@@ -18,8 +18,8 @@ let package = Package(
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
-        .package(name: "CoreDataModelDescription", path: "../core-data-model-description"),
-        .package(name: "SwiftProtobuf", url: "https://github.com/apple/swift-protobuf.git", from: "1.6.0"),
+        .package(name: "CoreDataModelDescription", url: "https://github.com/dmytro-anokhin/core-data-model-description", from: "0.0.10"),
+//        .package(name: "SwiftProtobuf", url: "https://github.com/apple/swift-protobuf.git", from: "1.6.0"),
 
 //        .package(name: "CoreDataModelDescription", url: "../core-data-model-description", from: "0.0.9"),
     ],
@@ -28,7 +28,7 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "CoOpAttributes",
-            dependencies: ["CoreDataModelDescription","SwiftProtobuf"]),
+            dependencies: ["CoreDataModelDescription"]),
         .testTarget(
             name: "CoOpAttributesTests",
             dependencies: ["CoOpAttributes"]),

@@ -12,12 +12,8 @@ final class CoOpAttributesTests: XCTestCase {
 
     func testStorage() {
         let context = CoOpPersistenceController.shared.container.viewContext
-        let stringAttribute = StringLwwCoOpAttribute.init(context: context)
+        let stringAttribute = CoOpMutableStringAttribute.init(context: context)
         stringAttribute.version = 0
-        let booleanAttribute = BooleanLwwCoOpAttribute.init(context: context)
-        booleanAttribute.version = 0
-        let intAttribute = IntLwwCoOpAttribute.init(context: context)
-        intAttribute.version = 0
         
         do {
             try context.save()

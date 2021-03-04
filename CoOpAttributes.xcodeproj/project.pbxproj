@@ -1,0 +1,941 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXAggregateTarget section */
+		"CoOpAttributes::CoOpAttributesPackageTests::ProductTarget" /* CoOpAttributesPackageTests */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = OBJ_61 /* Build configuration list for PBXAggregateTarget "CoOpAttributesPackageTests" */;
+			buildPhases = (
+			);
+			dependencies = (
+				OBJ_64 /* PBXTargetDependency */,
+			);
+			name = CoOpAttributesPackageTests;
+			productName = CoOpAttributesPackageTests;
+		};
+/* End PBXAggregateTarget section */
+
+/* Begin PBXBuildFile section */
+		OBJ_43 /* CoOpAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* CoOpAttributes.swift */; };
+		OBJ_44 /* CoOpID.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_10 /* CoOpID.swift */; };
+		OBJ_45 /* CoOpModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* CoOpModel.swift */; };
+		OBJ_46 /* CoOpMutableStringAttribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* CoOpMutableStringAttribute.swift */; };
+		OBJ_47 /* CoOpMutableStringOperationDelete.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_13 /* CoOpMutableStringOperationDelete.swift */; };
+		OBJ_48 /* CoOpMutableStringOperationInsert.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_14 /* CoOpMutableStringOperationInsert.swift */; };
+		OBJ_49 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_15 /* Utils.swift */; };
+		OBJ_51 /* CoreDataModelDescription.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "CoreDataModelDescription::CoreDataModelDescription::Product" /* CoreDataModelDescription.framework */; };
+		OBJ_59 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_6 /* Package.swift */; };
+		OBJ_70 /* CoOpAttributesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_18 /* CoOpAttributesTests.swift */; };
+		OBJ_71 /* ModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_19 /* ModelTests.swift */; };
+		OBJ_72 /* PropagationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_20 /* PropagationTests.swift */; };
+		OBJ_73 /* XCTestManifests.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_21 /* XCTestManifests.swift */; };
+		OBJ_75 /* CoOpAttributes.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "CoOpAttributes::CoOpAttributes::Product" /* CoOpAttributes.framework */; };
+		OBJ_76 /* CoreDataModelDescription.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "CoreDataModelDescription::CoreDataModelDescription::Product" /* CoreDataModelDescription.framework */; };
+		OBJ_83 /* CoreDataAttributeDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_25 /* CoreDataAttributeDescription.swift */; };
+		OBJ_84 /* CoreDataEntityDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_26 /* CoreDataEntityDescription.swift */; };
+		OBJ_85 /* CoreDataFetchIndexDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_27 /* CoreDataFetchIndexDescription.swift */; };
+		OBJ_86 /* CoreDataFetchedPropertyDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_28 /* CoreDataFetchedPropertyDescription.swift */; };
+		OBJ_87 /* CoreDataModelDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_29 /* CoreDataModelDescription.swift */; };
+		OBJ_88 /* CoreDataRelationshipDescription.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_30 /* CoreDataRelationshipDescription.swift */; };
+		OBJ_89 /* KeyPath+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_31 /* KeyPath+Extensions.swift */; };
+		OBJ_96 /* Package.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_32 /* Package.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		BBE061FA25F19BAF00142C33 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = OBJ_1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = "CoreDataModelDescription::CoreDataModelDescription";
+			remoteInfo = CoreDataModelDescription;
+		};
+		BBE061FB25F19BAF00142C33 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = OBJ_1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = "CoOpAttributes::CoOpAttributes";
+			remoteInfo = CoOpAttributes;
+		};
+		BBE061FC25F19BAF00142C33 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = OBJ_1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = "CoreDataModelDescription::CoreDataModelDescription";
+			remoteInfo = CoreDataModelDescription;
+		};
+		BBE061FF25F19BB000142C33 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = OBJ_1 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = "CoOpAttributes::CoOpAttributesTests";
+			remoteInfo = CoOpAttributesTests;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		BBE0620825F19E2900142C33 /* CoOpAttributestTest.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CoOpAttributestTest.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		"CoOpAttributes::CoOpAttributes::Product" /* CoOpAttributes.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CoOpAttributes.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		"CoOpAttributes::CoOpAttributesTests::Product" /* CoOpAttributesTests.xctest */ = {isa = PBXFileReference; lastKnownFileType = file; path = CoOpAttributesTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		"CoreDataModelDescription::CoreDataModelDescription::Product" /* CoreDataModelDescription.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = CoreDataModelDescription.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		OBJ_10 /* CoOpID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpID.swift; sourceTree = "<group>"; };
+		OBJ_11 /* CoOpModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpModel.swift; sourceTree = "<group>"; };
+		OBJ_12 /* CoOpMutableStringAttribute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpMutableStringAttribute.swift; sourceTree = "<group>"; };
+		OBJ_13 /* CoOpMutableStringOperationDelete.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpMutableStringOperationDelete.swift; sourceTree = "<group>"; };
+		OBJ_14 /* CoOpMutableStringOperationInsert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpMutableStringOperationInsert.swift; sourceTree = "<group>"; };
+		OBJ_15 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
+		OBJ_18 /* CoOpAttributesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpAttributesTests.swift; sourceTree = "<group>"; };
+		OBJ_19 /* ModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelTests.swift; sourceTree = "<group>"; };
+		OBJ_20 /* PropagationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropagationTests.swift; sourceTree = "<group>"; };
+		OBJ_21 /* XCTestManifests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XCTestManifests.swift; sourceTree = "<group>"; };
+		OBJ_25 /* CoreDataAttributeDescription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataAttributeDescription.swift; sourceTree = "<group>"; };
+		OBJ_26 /* CoreDataEntityDescription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataEntityDescription.swift; sourceTree = "<group>"; };
+		OBJ_27 /* CoreDataFetchIndexDescription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataFetchIndexDescription.swift; sourceTree = "<group>"; };
+		OBJ_28 /* CoreDataFetchedPropertyDescription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataFetchedPropertyDescription.swift; sourceTree = "<group>"; };
+		OBJ_29 /* CoreDataModelDescription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataModelDescription.swift; sourceTree = "<group>"; };
+		OBJ_30 /* CoreDataRelationshipDescription.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataRelationshipDescription.swift; sourceTree = "<group>"; };
+		OBJ_31 /* KeyPath+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "KeyPath+Extensions.swift"; sourceTree = "<group>"; };
+		OBJ_32 /* Package.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; name = Package.swift; path = "/Users/munhitsu/hack-memory/CoOpAttributes/.build/checkouts/core-data-model-description/Package.swift"; sourceTree = "<group>"; };
+		OBJ_37 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		OBJ_6 /* Package.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
+		OBJ_9 /* CoOpAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpAttributes.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BBE0620525F19E2900142C33 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		OBJ_50 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 0;
+			files = (
+				OBJ_51 /* CoreDataModelDescription.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		OBJ_74 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 0;
+			files = (
+				OBJ_75 /* CoOpAttributes.framework in Frameworks */,
+				OBJ_76 /* CoreDataModelDescription.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		OBJ_90 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		OBJ_16 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				OBJ_17 /* CoOpAttributesTests */,
+			);
+			name = Tests;
+			sourceTree = SOURCE_ROOT;
+		};
+		OBJ_17 /* CoOpAttributesTests */ = {
+			isa = PBXGroup;
+			children = (
+				OBJ_18 /* CoOpAttributesTests.swift */,
+				OBJ_19 /* ModelTests.swift */,
+				OBJ_20 /* PropagationTests.swift */,
+				OBJ_21 /* XCTestManifests.swift */,
+			);
+			name = CoOpAttributesTests;
+			path = Tests/CoOpAttributesTests;
+			sourceTree = SOURCE_ROOT;
+		};
+		OBJ_22 /* Dependencies */ = {
+			isa = PBXGroup;
+			children = (
+				OBJ_23 /* CoreDataModelDescription 0.0.10 */,
+			);
+			name = Dependencies;
+			sourceTree = "<group>";
+		};
+		OBJ_23 /* CoreDataModelDescription 0.0.10 */ = {
+			isa = PBXGroup;
+			children = (
+				OBJ_24 /* CoreDataModelDescription */,
+				OBJ_32 /* Package.swift */,
+			);
+			name = "CoreDataModelDescription 0.0.10";
+			sourceTree = SOURCE_ROOT;
+		};
+		OBJ_24 /* CoreDataModelDescription */ = {
+			isa = PBXGroup;
+			children = (
+				OBJ_25 /* CoreDataAttributeDescription.swift */,
+				OBJ_26 /* CoreDataEntityDescription.swift */,
+				OBJ_27 /* CoreDataFetchIndexDescription.swift */,
+				OBJ_28 /* CoreDataFetchedPropertyDescription.swift */,
+				OBJ_29 /* CoreDataModelDescription.swift */,
+				OBJ_30 /* CoreDataRelationshipDescription.swift */,
+				OBJ_31 /* KeyPath+Extensions.swift */,
+			);
+			name = CoreDataModelDescription;
+			path = ".build/checkouts/core-data-model-description/Sources/CoreDataModelDescription";
+			sourceTree = SOURCE_ROOT;
+		};
+		OBJ_33 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				"CoOpAttributes::CoOpAttributesTests::Product" /* CoOpAttributesTests.xctest */,
+				"CoOpAttributes::CoOpAttributes::Product" /* CoOpAttributes.framework */,
+				"CoreDataModelDescription::CoreDataModelDescription::Product" /* CoreDataModelDescription.framework */,
+				BBE0620825F19E2900142C33 /* CoOpAttributestTest.xctest */,
+			);
+			name = Products;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		OBJ_5 /*  */ = {
+			isa = PBXGroup;
+			children = (
+				OBJ_6 /* Package.swift */,
+				OBJ_7 /* Sources */,
+				OBJ_16 /* Tests */,
+				OBJ_22 /* Dependencies */,
+				OBJ_33 /* Products */,
+				OBJ_37 /* README.md */,
+			);
+			name = "";
+			sourceTree = "<group>";
+		};
+		OBJ_7 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				OBJ_8 /* CoOpAttributes */,
+			);
+			name = Sources;
+			sourceTree = SOURCE_ROOT;
+		};
+		OBJ_8 /* CoOpAttributes */ = {
+			isa = PBXGroup;
+			children = (
+				OBJ_9 /* CoOpAttributes.swift */,
+				OBJ_10 /* CoOpID.swift */,
+				OBJ_11 /* CoOpModel.swift */,
+				OBJ_12 /* CoOpMutableStringAttribute.swift */,
+				OBJ_13 /* CoOpMutableStringOperationDelete.swift */,
+				OBJ_14 /* CoOpMutableStringOperationInsert.swift */,
+				OBJ_15 /* Utils.swift */,
+			);
+			name = CoOpAttributes;
+			path = Sources/CoOpAttributes;
+			sourceTree = SOURCE_ROOT;
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		BBE0620725F19E2900142C33 /* CoOpAttributestTest */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BBE0620F25F19E2900142C33 /* Build configuration list for PBXNativeTarget "CoOpAttributestTest" */;
+			buildPhases = (
+				BBE0620425F19E2900142C33 /* Sources */,
+				BBE0620525F19E2900142C33 /* Frameworks */,
+				BBE0620625F19E2900142C33 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CoOpAttributestTest;
+			productName = CoOpAttributestTest;
+			productReference = BBE0620825F19E2900142C33 /* CoOpAttributestTest.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		"CoOpAttributes::CoOpAttributes" /* CoOpAttributes */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = OBJ_39 /* Build configuration list for PBXNativeTarget "CoOpAttributes" */;
+			buildPhases = (
+				OBJ_42 /* Sources */,
+				OBJ_50 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				OBJ_52 /* PBXTargetDependency */,
+			);
+			name = CoOpAttributes;
+			productName = CoOpAttributes;
+			productReference = "CoOpAttributes::CoOpAttributes::Product" /* CoOpAttributes.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		"CoOpAttributes::CoOpAttributesTests" /* CoOpAttributesTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = OBJ_66 /* Build configuration list for PBXNativeTarget "CoOpAttributesTests" */;
+			buildPhases = (
+				OBJ_69 /* Sources */,
+				OBJ_74 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				OBJ_77 /* PBXTargetDependency */,
+				OBJ_78 /* PBXTargetDependency */,
+			);
+			name = CoOpAttributesTests;
+			productName = CoOpAttributesTests;
+			productReference = "CoOpAttributes::CoOpAttributesTests::Product" /* CoOpAttributesTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		"CoOpAttributes::SwiftPMPackageDescription" /* CoOpAttributesPackageDescription */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = OBJ_55 /* Build configuration list for PBXNativeTarget "CoOpAttributesPackageDescription" */;
+			buildPhases = (
+				OBJ_58 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CoOpAttributesPackageDescription;
+			productName = CoOpAttributesPackageDescription;
+			productType = "com.apple.product-type.framework";
+		};
+		"CoreDataModelDescription::CoreDataModelDescription" /* CoreDataModelDescription */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = OBJ_79 /* Build configuration list for PBXNativeTarget "CoreDataModelDescription" */;
+			buildPhases = (
+				OBJ_82 /* Sources */,
+				OBJ_90 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CoreDataModelDescription;
+			productName = CoreDataModelDescription;
+			productReference = "CoreDataModelDescription::CoreDataModelDescription::Product" /* CoreDataModelDescription.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		"CoreDataModelDescription::SwiftPMPackageDescription" /* CoreDataModelDescriptionPackageDescription */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = OBJ_92 /* Build configuration list for PBXNativeTarget "CoreDataModelDescriptionPackageDescription" */;
+			buildPhases = (
+				OBJ_95 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CoreDataModelDescriptionPackageDescription;
+			productName = CoreDataModelDescriptionPackageDescription;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		OBJ_1 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftMigration = 9999;
+				LastSwiftUpdateCheck = 1240;
+				LastUpgradeCheck = 9999;
+				TargetAttributes = {
+					BBE0620725F19E2900142C33 = {
+						CreatedOnToolsVersion = 12.4;
+						DevelopmentTeam = 48ARUEM5RP;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = OBJ_2 /* Build configuration list for PBXProject "CoOpAttributes" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = OBJ_5 /*  */;
+			productRefGroup = OBJ_33 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				"CoOpAttributes::CoOpAttributes" /* CoOpAttributes */,
+				"CoOpAttributes::SwiftPMPackageDescription" /* CoOpAttributesPackageDescription */,
+				"CoOpAttributes::CoOpAttributesPackageTests::ProductTarget" /* CoOpAttributesPackageTests */,
+				"CoOpAttributes::CoOpAttributesTests" /* CoOpAttributesTests */,
+				"CoreDataModelDescription::CoreDataModelDescription" /* CoreDataModelDescription */,
+				"CoreDataModelDescription::SwiftPMPackageDescription" /* CoreDataModelDescriptionPackageDescription */,
+				BBE0620725F19E2900142C33 /* CoOpAttributestTest */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BBE0620625F19E2900142C33 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BBE0620425F19E2900142C33 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		OBJ_42 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 0;
+			files = (
+				OBJ_43 /* CoOpAttributes.swift in Sources */,
+				OBJ_44 /* CoOpID.swift in Sources */,
+				OBJ_45 /* CoOpModel.swift in Sources */,
+				OBJ_46 /* CoOpMutableStringAttribute.swift in Sources */,
+				OBJ_47 /* CoOpMutableStringOperationDelete.swift in Sources */,
+				OBJ_48 /* CoOpMutableStringOperationInsert.swift in Sources */,
+				OBJ_49 /* Utils.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		OBJ_58 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 0;
+			files = (
+				OBJ_59 /* Package.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		OBJ_69 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 0;
+			files = (
+				OBJ_70 /* CoOpAttributesTests.swift in Sources */,
+				OBJ_71 /* ModelTests.swift in Sources */,
+				OBJ_72 /* PropagationTests.swift in Sources */,
+				OBJ_73 /* XCTestManifests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		OBJ_82 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 0;
+			files = (
+				OBJ_83 /* CoreDataAttributeDescription.swift in Sources */,
+				OBJ_84 /* CoreDataEntityDescription.swift in Sources */,
+				OBJ_85 /* CoreDataFetchIndexDescription.swift in Sources */,
+				OBJ_86 /* CoreDataFetchedPropertyDescription.swift in Sources */,
+				OBJ_87 /* CoreDataModelDescription.swift in Sources */,
+				OBJ_88 /* CoreDataRelationshipDescription.swift in Sources */,
+				OBJ_89 /* KeyPath+Extensions.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		OBJ_95 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 0;
+			files = (
+				OBJ_96 /* Package.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		OBJ_52 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = "CoreDataModelDescription::CoreDataModelDescription" /* CoreDataModelDescription */;
+			targetProxy = BBE061FA25F19BAF00142C33 /* PBXContainerItemProxy */;
+		};
+		OBJ_64 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = "CoOpAttributes::CoOpAttributesTests" /* CoOpAttributesTests */;
+			targetProxy = BBE061FF25F19BB000142C33 /* PBXContainerItemProxy */;
+		};
+		OBJ_77 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = "CoOpAttributes::CoOpAttributes" /* CoOpAttributes */;
+			targetProxy = BBE061FB25F19BAF00142C33 /* PBXContainerItemProxy */;
+		};
+		OBJ_78 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = "CoreDataModelDescription::CoreDataModelDescription" /* CoreDataModelDescription */;
+			targetProxy = BBE061FC25F19BAF00142C33 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		BBE0620D25F19E2900142C33 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 48ARUEM5RP;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = CoOpAttributestTest/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = io.cr3.CoOpAttributestTest;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		BBE0620E25F19E2900142C33 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEVELOPMENT_TEAM = 48ARUEM5RP;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = CoOpAttributestTest/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.4;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = io.cr3.CoOpAttributestTest;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		OBJ_3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_NS_ASSERTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"SWIFT_PACKAGE=1",
+					"DEBUG=1",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_SWIFT_FLAGS = "$(inherited) -DXcode";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = "macosx iphoneos iphonesimulator appletvos appletvsimulator watchos watchsimulator";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) SWIFT_PACKAGE DEBUG";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				USE_HEADERMAP = NO;
+			};
+			name = Debug;
+		};
+		OBJ_4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"SWIFT_PACKAGE=1",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				OTHER_SWIFT_FLAGS = "$(inherited) -DXcode";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = "macosx iphoneos iphonesimulator appletvos appletvsimulator watchos watchsimulator";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) SWIFT_PACKAGE";
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				USE_HEADERMAP = NO;
+			};
+			name = Release;
+		};
+		OBJ_40 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ENABLE_TESTABILITY = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = CoOpAttributes.xcodeproj/CoOpAttributes_Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) $(TOOLCHAIN_DIR)/usr/lib/swift/macosx";
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "$(inherited)";
+				OTHER_SWIFT_FLAGS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = CoOpAttributes;
+				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
+				SWIFT_VERSION = 5.0;
+				TARGET_NAME = CoOpAttributes;
+				TVOS_DEPLOYMENT_TARGET = 14.0;
+				WATCHOS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Debug;
+		};
+		OBJ_41 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ENABLE_TESTABILITY = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = CoOpAttributes.xcodeproj/CoOpAttributes_Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) $(TOOLCHAIN_DIR)/usr/lib/swift/macosx";
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "$(inherited)";
+				OTHER_SWIFT_FLAGS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = CoOpAttributes;
+				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
+				SWIFT_VERSION = 5.0;
+				TARGET_NAME = CoOpAttributes;
+				TVOS_DEPLOYMENT_TARGET = 14.0;
+				WATCHOS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Release;
+		};
+		OBJ_56 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LD = /usr/bin/true;
+				OTHER_SWIFT_FLAGS = "-swift-version 5 -I $(TOOLCHAIN_DIR)/usr/lib/swift/pm/4_2 -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk -package-description-version 5.3.0";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		OBJ_57 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LD = /usr/bin/true;
+				OTHER_SWIFT_FLAGS = "-swift-version 5 -I $(TOOLCHAIN_DIR)/usr/lib/swift/pm/4_2 -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk -package-description-version 5.3.0";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		OBJ_62 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Debug;
+		};
+		OBJ_63 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+		OBJ_67 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = CoOpAttributes.xcodeproj/CoOpAttributesTests_Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "$(inherited)";
+				OTHER_SWIFT_FLAGS = "$(inherited)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
+				SWIFT_VERSION = 5.0;
+				TARGET_NAME = CoOpAttributesTests;
+				TVOS_DEPLOYMENT_TARGET = 14.0;
+				WATCHOS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Debug;
+		};
+		OBJ_68 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
+				EMBEDDED_CONTENT_CONTAINS_SWIFT = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = CoOpAttributes.xcodeproj/CoOpAttributesTests_Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks @loader_path/Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "$(inherited)";
+				OTHER_SWIFT_FLAGS = "$(inherited)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
+				SWIFT_VERSION = 5.0;
+				TARGET_NAME = CoOpAttributesTests;
+				TVOS_DEPLOYMENT_TARGET = 14.0;
+				WATCHOS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Release;
+		};
+		OBJ_80 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ENABLE_TESTABILITY = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = CoOpAttributes.xcodeproj/CoreDataModelDescription_Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) $(TOOLCHAIN_DIR)/usr/lib/swift/macosx";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "$(inherited)";
+				OTHER_SWIFT_FLAGS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = CoreDataModelDescription;
+				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
+				SWIFT_VERSION = 5.0;
+				TARGET_NAME = CoreDataModelDescription;
+				TVOS_DEPLOYMENT_TARGET = 9.0;
+				WATCHOS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Debug;
+		};
+		OBJ_81 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ENABLE_TESTABILITY = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PLATFORM_DIR)/Developer/Library/Frameworks",
+				);
+				HEADER_SEARCH_PATHS = "$(inherited)";
+				INFOPLIST_FILE = CoOpAttributes.xcodeproj/CoreDataModelDescription_Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) $(TOOLCHAIN_DIR)/usr/lib/swift/macosx";
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				OTHER_CFLAGS = "$(inherited)";
+				OTHER_LDFLAGS = "$(inherited)";
+				OTHER_SWIFT_FLAGS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = CoreDataModelDescription;
+				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
+				SWIFT_VERSION = 5.0;
+				TARGET_NAME = CoreDataModelDescription;
+				TVOS_DEPLOYMENT_TARGET = 9.0;
+				WATCHOS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Release;
+		};
+		OBJ_93 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LD = /usr/bin/true;
+				OTHER_SWIFT_FLAGS = "-swift-version 5 -I $(TOOLCHAIN_DIR)/usr/lib/swift/pm/4_2 -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk -package-description-version 5.1.0";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		OBJ_94 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				LD = /usr/bin/true;
+				OTHER_SWIFT_FLAGS = "-swift-version 5 -I $(TOOLCHAIN_DIR)/usr/lib/swift/pm/4_2 -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk -package-description-version 5.1.0";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		BBE0620F25F19E2900142C33 /* Build configuration list for PBXNativeTarget "CoOpAttributestTest" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BBE0620D25F19E2900142C33 /* Debug */,
+				BBE0620E25F19E2900142C33 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		OBJ_2 /* Build configuration list for PBXProject "CoOpAttributes" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				OBJ_3 /* Debug */,
+				OBJ_4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		OBJ_39 /* Build configuration list for PBXNativeTarget "CoOpAttributes" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				OBJ_40 /* Debug */,
+				OBJ_41 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		OBJ_55 /* Build configuration list for PBXNativeTarget "CoOpAttributesPackageDescription" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				OBJ_56 /* Debug */,
+				OBJ_57 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		OBJ_61 /* Build configuration list for PBXAggregateTarget "CoOpAttributesPackageTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				OBJ_62 /* Debug */,
+				OBJ_63 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		OBJ_66 /* Build configuration list for PBXNativeTarget "CoOpAttributesTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				OBJ_67 /* Debug */,
+				OBJ_68 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		OBJ_79 /* Build configuration list for PBXNativeTarget "CoreDataModelDescription" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				OBJ_80 /* Debug */,
+				OBJ_81 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		OBJ_92 /* Build configuration list for PBXNativeTarget "CoreDataModelDescriptionPackageDescription" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				OBJ_93 /* Debug */,
+				OBJ_94 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = OBJ_1 /* Project object */;
+}
