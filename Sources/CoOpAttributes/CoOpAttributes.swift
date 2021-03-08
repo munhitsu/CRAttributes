@@ -12,9 +12,9 @@ private let lastLamportQueue = DispatchQueue(label: "io.cr3.lastLamport")
 
 
 #if !os(macOS)
-public let localPeerID: Int = UIDevice.current.identifierForVendor!.hashValue
+public let localPeerID: Int64 = UIDevice.current.identifierForVendor!.hashValue
 #else
-public let localPeerID: Int = 0
+public let localPeerID: Int64 = 0
 // IOPlatformUUID
 //FIX me - we need macOS implementation (apparently GUID https://developer.apple.com/library/archive/releasenotes/General/ValidateAppStoreReceipt/Chapters/ValidateLocally.html#//apple_ref/doc/uid/TP40010573-CH1-SW14)
 #endif

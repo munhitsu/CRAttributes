@@ -26,6 +26,146 @@ extension CoOpMutableStringAttribute {
 
     
     override public func awakeFromInsert() {
-        setPrimitiveValue(CoOpMutableStringOperationInsert(isZero: true, context: self.managedObjectContext!), forKey: "head")
+        setPrimitiveValue(CoOpMutableStringOperationInsert(isZero: true, attribute: self, context: self.managedObjectContext!), forKey: "head")
+    }
+}
+
+
+
+
+protocol MinimalNSMutableAttributedString {
+    var string: String { get }
+    func attributes(at location: Int, effectiveRange range: NSRangePointer?) -> [NSAttributedString.Key : Any]
+
+    func replaceCharacters(in range: NSRange, with str: String)
+    func setAttributes(_ attrs: [NSAttributedString.Key : Any]?, range: NSRange)
+    
+    // These primitives should perform the change, then call edited(_:range:changeInLength:) to let the parent class know what changes were made.
+}
+
+extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
+    
+    var string: String {
+        return walk().map({ $0.contribution }).joined()
+    }
+
+    func attributes(at location: Int, effectiveRange range: NSRangePointer?) -> [NSAttributedString.Key : Any] {
+        fatalNotImplemented()
+        return [:]
+    }
+
+    func replaceCharacters(in range: NSRange, with str: String) {
+        let opearationsRange = getOperationsFor(range:range)
+
+        for operation in opearationsRange.operations {
+            delete(operation)
+        }
+        
+        var locationOperation = opearationsRange.location
+        for c in str {
+            let cOperation = CoOpMutableStringOperationInsert(contribution: String(c), parent: locationOperation, attribute: self, context: self.managedObjectContext!)
+            locationOperation = cOperation
+        }
+        
+        //TODO implement delete
+    }
+    func setAttributes(_ attrs: [NSAttributedString.Key : Any]?, range: NSRange) {
+        fatalNotImplemented()
+    }
+    
+    // returns operation you can insert after (op + len=1 i  split node language)
+    // if out of bounds then it will return the last operation
+    func getOperationFor(_ location: Int) -> CoOpMutableStringOperationInsert {
+        if location == 0 {
+            return head
+        }
+        var position = 0
+        var locationOperation: CoOpMutableStringOperationInsert? = nil
+        let ops = walk() { operation, escape in
+            position += operation.contribution.count
+            if position >= location {
+                escape = true
+                locationOperation = operation
+            }
+        }
+        if locationOperation == nil {
+            locationOperation = ops.last
+        }
+        if locationOperation == nil {
+            locationOperation = head
+        }
+        return locationOperation!
+    }
+
+    func getOperationsFor(range: NSRange) -> (location: CoOpMutableStringOperationInsert, operations: [CoOpMutableStringOperationInsert]) {
+        var locationOperation: CoOpMutableStringOperationInsert? = nil
+        var operations = [CoOpMutableStringOperationInsert]()
+        var position = 0
+
+        if range.location == 0 {
+            locationOperation = head
+        }
+        let ops = walk() { operation, escape in
+            position += operation.contribution.count
+            if position == range.location {
+                locationOperation = operation
+            } else if position > range.location && position <= range.location + range.length {
+                operations.append(operation)
+            }
+        }
+        if locationOperation == nil {
+            if ops.last != nil {
+                locationOperation = ops.last
+            } else {
+                locationOperation = head
+            }
+        }
+        return (location: locationOperation!, operations: operations)
+    }
+    
+    
+    public func walk(skipDeleted: Bool = true,
+                     action: (_ operation: CoOpMutableStringOperationInsert, _ escape: inout Bool) -> Void = {_,_ in }) -> [CoOpMutableStringOperationInsert] {
+        var escape = false
+        return walk(from: head, escape: &escape, action: action)
+    }
+    
+    func walk(from operation: CoOpMutableStringOperationInsert,
+              skipDeleted: Bool = true,
+              escape: inout Bool,
+              action: (_ operation: CoOpMutableStringOperationInsert, _ escape: inout Bool) -> Void = {_,_ in }) -> [CoOpMutableStringOperationInsert] {
+        var ops = [CoOpMutableStringOperationInsert]()
+
+        for operation in operation.orderedInserts() {
+            if (skipDeleted == false) || (skipDeleted && !operation.hasDeleteOperation()) {
+                ops.append(operation)
+                action(operation, &escape)
+                if escape {
+                    break
+                }
+            }
+
+            ops.append(contentsOf: walk(from: operation, escape: &escape, action: action))
+            if escape {
+                break
+            }
+        }
+        return ops
+    }
+    
+    func delete(_ operation: CoOpMutableStringOperationInsert) {
+        let _ = CoOpMutableStringOperationDelete(parent: operation, attribute: self, context: self.managedObjectContext!)
+//        assert(operation.hasDeleteOperation())
+    }
+}
+
+
+extension CoOpMutableStringAttribute {
+    public override var description: String {
+        var output = ""
+        let _ = walk() { operation, escape in
+            output += operation.description + "\n"
+        }
+        return output
     }
 }

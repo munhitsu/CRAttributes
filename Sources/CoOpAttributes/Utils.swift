@@ -12,7 +12,7 @@ public func fatalNotImplemented() {
     fatalError("Not Implemented")
 }
 
-public func flushAllCoreData(container: NSPersistentContainer) {
+public func flushAllCoreData(_ container: NSPersistentContainer) {
     let context = container.viewContext
     // get all entities and loop over them
     let entityNames = container.managedObjectModel.entities.map({ $0.name!})
@@ -43,4 +43,14 @@ public func timeElapsedInSecondsWhenRunningCode(operation: () -> Void) -> Double
     operation()
     let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
     return Double(timeElapsed)
+}
+
+public struct Stack<Element> {
+    var items = [Element]()
+    mutating func push(_ item: Element) {
+        items.append(item)
+    }
+    mutating func pop() -> Element {
+        return items.removeLast()
+    }
 }

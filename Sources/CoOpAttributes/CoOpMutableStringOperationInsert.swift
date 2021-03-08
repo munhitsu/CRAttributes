@@ -38,7 +38,7 @@ extension CoOpMutableStringOperationInsert: Comparable {
         if lhs.lamport == rhs.lamport {
             return lhs.peerID < rhs.peerID
         } else {
-            return lhs.lamport < rhs.lamport
+            return lhs.lamport > rhs.lamport
         }
     }
 
@@ -46,11 +46,47 @@ extension CoOpMutableStringOperationInsert: Comparable {
         return (lhs.lamport == rhs.lamport) && (lhs.peerID == rhs.peerID)
     }
 
-    convenience init(isZero:Bool, context: NSManagedObjectContext) {
+    
+    //TODO: Maybe zero should have a real lamport and peerID???
+    convenience init(isZero: Bool, attribute: CoOpMutableStringAttribute, context: NSManagedObjectContext) {
         self.init(context:context)
         version = 0
         lamport = 0
         peerID = 0
         contribution = ""
+    }
+    
+    convenience init(contribution: String, parent: CoOpMutableStringOperationInsert, attribute: CoOpMutableStringAttribute, context: NSManagedObjectContext) {
+        self.init(context:context)
+        self.version = 0
+        self.lamport = getLamport()
+        self.peerID = localPeerID
+        self.parent = parent
+        self.attribute = attribute
+        self.contribution = contribution
+    }
+    
+    
+    public func orderedInserts() -> [CoOpMutableStringOperationInsert] {
+        //TODO: cache on 1st run and invalidate cache on new insert
+        return (self.inserts as! Set<CoOpMutableStringOperationInsert>).sorted()
+    }
+    
+    public func hasDeleteOperation() -> Bool {
+        return self.deletes.count > 0
+    }
+
+    //TODO: when is it really used?
+    public override func awakeFromInsert() {
+        super.awakeFromInsert()
+        lamport = getLamport()
+        peerID = localPeerID
+    }
+}
+
+
+extension CoOpMutableStringOperationInsert {
+    public override var description: String {
+        return "Insert(\(contribution):\(self.lamport):\(!isDeleted))"
     }
 }

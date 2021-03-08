@@ -3,7 +3,7 @@
 
 
 
-## Challenge
+## Goal/challenge
 is it possible to to describe text as an operation graph where adding operation does not modify exiting nodes (no reference updates)
 
 
@@ -33,7 +33,7 @@ let's ensure that we have the future path of sharing over synced core-data
 - SwiftUI demo app
 - mutable attributed string model field
 - cached rendered string (hash applied operation ids) (store op local id and true false)
-
+- optimise the structure with split and attached search tree (manually balanced once in a while)
 
 
 

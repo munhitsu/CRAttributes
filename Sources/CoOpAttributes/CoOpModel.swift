@@ -18,6 +18,7 @@ let modelDescription = CoreDataModelDescription(
                     .attribute(name: "version", type: .integer16AttributeType, defaultValue: Int16(0)),
                 ],
                 relationships: [
+                    .relationship(name: "head", destination: "CoOpMutableStringOperationInsert", toMany: false),
                     .relationship(name: "insert", destination: "CoOpMutableStringOperationInsert", toMany: false),
                     .relationship(name: "inserts", destination: "CoOpMutableStringOperationInsert", toMany: true),
                     .relationship(name: "deletes", destination: "CoOpMutableStringOperationDelete", toMany: true),
