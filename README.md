@@ -34,6 +34,8 @@ let's ensure that we have the future path of sharing over synced core-data
 
 ## future potential optimisations
 - var string: String - make our own String subclass and implement subscript and/or other used methods
+- remember location per each peerID (At least for the current) and search location from the last location
+- implement iterator for the above
 - binary tree initialised on every note load
 - compare full binary tree with binary tree and list search for last 20 elements
 - preload all related objects on document open

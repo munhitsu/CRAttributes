@@ -70,6 +70,32 @@ final class CoOpMutableStringTests: XCTestCase {
     }
 
     
+    func testPerformance() {
+        let limiter = 2000 //TODO change limitted interpretation to characters count
+
+        let context = CoOpPersistenceController.shared.container.viewContext
+        let stringAttribute = CoOpMutableStringAttribute(context: context)
+        stringAttribute.version = 0
+        XCTAssertEqual(stringAttribute.string, "")
+        
+        stringAttribute.loadFromJsonIndexDebug(limiter: limiter, bundle: Bundle(for: type(of: self)))
+        
+        do {
+            try context.save()
+        } catch {
+            let nsError = error as NSError
+            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+        }
+
+        print("saved")
+        measure {
+            print("loading")
+            let _ = stringAttribute.string
+        }
+
+    }
+
+    
     func testRemoteChanges() {
         
     }

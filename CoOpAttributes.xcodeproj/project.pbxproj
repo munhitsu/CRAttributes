@@ -21,6 +21,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		BB8C443725F82B68006398B2 /* test-mk-editing-trace.json in Resources */ = {isa = PBXBuildFile; fileRef = BB8C442625F82686006398B2 /* test-mk-editing-trace.json */; };
 		BBE0623325F6DEBF00142C33 /* CoOpTextStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBE0623225F6DEBF00142C33 /* CoOpTextStorage.swift */; };
 		OBJ_43 /* CoOpAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* CoOpAttributes.swift */; };
 		OBJ_44 /* CoOpID.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_10 /* CoOpID.swift */; };
@@ -79,6 +80,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		BB8C442625F82686006398B2 /* test-mk-editing-trace.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-mk-editing-trace.json"; sourceTree = "<group>"; };
 		BBE0623225F6DEBF00142C33 /* CoOpTextStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpTextStorage.swift; sourceTree = "<group>"; };
 		"CoOpAttributes::CoOpAttributes::Product" /* CoOpAttributes.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CoOpAttributes.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"CoOpAttributes::CoOpAttributesTests::Product" /* CoOpAttributesTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = CoOpAttributesTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -134,6 +136,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		BB8C442525F82677006398B2 /* Data Assets */ = {
+			isa = PBXGroup;
+			children = (
+				BB8C442625F82686006398B2 /* test-mk-editing-trace.json */,
+			);
+			path = "Data Assets";
+			sourceTree = "<group>";
+		};
 		OBJ_16 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
@@ -199,6 +209,7 @@
 		OBJ_5 = {
 			isa = PBXGroup;
 			children = (
+				BB8C442525F82677006398B2 /* Data Assets */,
 				OBJ_37 /* README.md */,
 				OBJ_6 /* Package.swift */,
 				OBJ_7 /* Sources */,
@@ -258,6 +269,7 @@
 			buildPhases = (
 				OBJ_69 /* Sources */,
 				OBJ_74 /* Frameworks */,
+				BB8C443625F82B62006398B2 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -367,6 +379,17 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BB8C443625F82B62006398B2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB8C443725F82B68006398B2 /* test-mk-editing-trace.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		OBJ_42 /* Sources */ = {

@@ -174,3 +174,48 @@ extension CoOpMutableStringAttribute {
         return output
     }
 }
+
+
+extension CoOpMutableStringAttribute {
+    /**
+    based on https://github.com/automerge/automerge-perf
+    compare results with https://github.com/dmonad/crdt-benchmarks
+     */
+    func loadFromJsonIndexDebug(limiter: Int = 1000000, bundle: Bundle = Bundle.main) {
+        printTimeElapsedWhenRunningCode(title: "loadFromJsonIndexDebug") {
+            guard let path = bundle.path(forResource: "test-mk-editing-trace", ofType: "json") else {
+                fatalError() }
+            let url = URL(fileURLWithPath: path)
+            let data = try? Data(contentsOf: url, options: .mappedIfSafe)
+            let json = try? JSONSerialization.jsonObject(with: data!)
+            // TODO: migrate to stream to reduce memory footprint (if used in production)
+
+            if let array = json as? [Any] {
+                for (arrayIndex, indexOp) in array.enumerated() {
+                    if arrayIndex > limiter {
+                        break
+                    }
+
+                    if let opArray = indexOp as? [Any],
+                       let index = opArray[0] as? Int,
+                       let deleteCount = opArray[1] as? Int {
+
+                        if deleteCount > 0 {
+                            replaceCharacters(in: NSRange.init(location: index, length: deleteCount), with: "")
+                        }
+
+                        if opArray.count > 2 {
+                            if let text = opArray[2] as? String {
+                                replaceCharacters(in: NSRange.init(location: index, length: 0), with: text)
+                            } else {
+                                fatalError()
+                            }
+                        }
+                    } else {
+                        fatalError()
+                    }
+                }
+            }
+        }
+    }
+}
