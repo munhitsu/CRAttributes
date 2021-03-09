@@ -24,9 +24,8 @@ extension CoOpMutableStringAttribute {
     @NSManaged public var deletes: NSSet
     @NSManaged public var inserts: NSSet
 
-    
     override public func awakeFromInsert() {
-        setPrimitiveValue(CoOpMutableStringOperationInsert(isZero: true, attribute: self, context: self.managedObjectContext!), forKey: "head")
+        setPrimitiveValue(CoOpMutableStringOperationInsert(contribution: "", parent: nil, attribute: self, context: self.managedObjectContext!), forKey: "head")
     }
 }
 
@@ -34,7 +33,7 @@ extension CoOpMutableStringAttribute {
 
 
 protocol MinimalNSMutableAttributedString {
-    var string: String { get }
+    var string: String { get } //should I expose the subscript somehow?
     func attributes(at location: Int, effectiveRange range: NSRangePointer?) -> [NSAttributedString.Key : Any]
 
     func replaceCharacters(in range: NSRange, with str: String)
@@ -45,16 +44,16 @@ protocol MinimalNSMutableAttributedString {
 
 extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
     
-    var string: String {
+    public var string: String {
         return walk().map({ $0.contribution }).joined()
     }
 
-    func attributes(at location: Int, effectiveRange range: NSRangePointer?) -> [NSAttributedString.Key : Any] {
+    public func attributes(at location: Int, effectiveRange range: NSRangePointer?) -> [NSAttributedString.Key : Any] {
         fatalNotImplemented()
         return [:]
     }
 
-    func replaceCharacters(in range: NSRange, with str: String) {
+    public func replaceCharacters(in range: NSRange, with str: String) {
         let opearationsRange = getOperationsFor(range:range)
 
         for operation in opearationsRange.operations {
@@ -69,8 +68,14 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
         
         //TODO implement delete
     }
-    func setAttributes(_ attrs: [NSAttributedString.Key : Any]?, range: NSRange) {
+    
+    public func setAttributes(_ attrs: [NSAttributedString.Key : Any]?, range: NSRange) {
         fatalNotImplemented()
+    }
+    
+    
+    public func getTextStorage() -> CoOpTextStorage {
+        return CoOpTextStorage(self)
     }
     
     // returns operation you can insert after (op + len=1 i  split node language)

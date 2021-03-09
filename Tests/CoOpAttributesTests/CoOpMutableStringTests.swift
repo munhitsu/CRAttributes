@@ -3,14 +3,7 @@ import XCTest
 
 
 final class CoOpMutableStringTests: XCTestCase {
-//    func testExample() {
-//        // This is an example of a functional test case.
-//        // Use XCTAssert and related functions to verify your tests produce the correct
-//        // results.
-//        XCTAssertEqual(CoOpAttributes().text, "Hello, World!")
-//    }
 
-    
     
     // test lamport creation
     func testStorageAndWalking() {
@@ -67,9 +60,19 @@ final class CoOpMutableStringTests: XCTestCase {
         stringAttribute.replaceCharacters(in: NSRange.init(location: 99, length: 3), with: "111")
         XCTAssertEqual(stringAttribute.string, "000ABC000222222111")
 
-        
+        do {
+            try context.save()
+        } catch {
+            let nsError = error as NSError
+            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+        }
+
     }
 
+    
+    func testRemoteChanges() {
+        
+    }
 //    static var allTests = [
 //        ("testExample", testExample),
 //    ]

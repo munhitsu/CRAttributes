@@ -9,12 +9,6 @@ is it possible to to describe text as an operation graph where adding operation 
 
 
 
-## how to regenerate protobuf
-protoc --swift_opt=Visibility=Public  --swift_out=. CoOpLogModel.proto
-
-
-
-
 ## Need
 Document created using this library allows for clean cross device sync (CRDT) and allows to invite others to collaborate
 
@@ -34,6 +28,17 @@ let's ensure that we have the future path of sharing over synced core-data
 - mutable attributed string model field
 - cached rendered string (hash applied operation ids) (store op local id and true false)
 - optimise the structure with split and attached search tree (manually balanced once in a while)
+
+
+
+
+## future potential optimisations
+- var string: String - make our own String subclass and implement subscript and/or other used methods
+- binary tree initialised on every note load
+- compare full binary tree with binary tree and list search for last 20 elements
+- preload all related objects on document open
+- cache rendered string in anothed data store
+
 
 
 

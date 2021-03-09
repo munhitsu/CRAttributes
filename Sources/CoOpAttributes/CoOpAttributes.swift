@@ -12,7 +12,7 @@ private let lastLamportQueue = DispatchQueue(label: "io.cr3.lastLamport")
 
 
 #if !os(macOS)
-public let localPeerID: Int64 = UIDevice.current.identifierForVendor!.hashValue
+public let localPeerID: Int64 = Int64(UIDevice.current.identifierForVendor!.hashValue)
 #else
 public let localPeerID: Int64 = 0
 // IOPlatformUUID

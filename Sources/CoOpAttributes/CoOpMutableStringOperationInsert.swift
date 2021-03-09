@@ -48,15 +48,15 @@ extension CoOpMutableStringOperationInsert: Comparable {
 
     
     //TODO: Maybe zero should have a real lamport and peerID???
-    convenience init(isZero: Bool, attribute: CoOpMutableStringAttribute, context: NSManagedObjectContext) {
-        self.init(context:context)
-        version = 0
-        lamport = 0
-        peerID = 0
-        contribution = ""
-    }
+//    convenience init(isZero: Bool, attribute: CoOpMutableStringAttribute, context: NSManagedObjectContext) {
+//        self.init(context:context)
+//        version = 0
+//        lamport = 0
+//        peerID = 0
+//        contribution = ""
+//    }
     
-    convenience init(contribution: String, parent: CoOpMutableStringOperationInsert, attribute: CoOpMutableStringAttribute, context: NSManagedObjectContext) {
+    convenience init(contribution: String, parent: CoOpMutableStringOperationInsert?, attribute: CoOpMutableStringAttribute, context: NSManagedObjectContext) {
         self.init(context:context)
         self.version = 0
         self.lamport = getLamport()
