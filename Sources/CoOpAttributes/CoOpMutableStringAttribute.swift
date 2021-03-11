@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreData
+import UIKit
 
 @objc(CoOpMutableStringAttribute)
 public class CoOpMutableStringAttribute: NSManagedObject {
@@ -45,15 +46,25 @@ protocol MinimalNSMutableAttributedString {
 extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
     
     public var string: String {
+        print("string")
         return walk().map({ $0.contribution }).joined()
     }
 
     public func attributes(at location: Int, effectiveRange range: NSRangePointer?) -> [NSAttributedString.Key : Any] {
-        fatalNotImplemented()
-        return [:]
+        //TODO implement
+        print("attributes for location:\(location)")
+        let font = UIFont.systemFont(ofSize: 24)
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .foregroundColor: UIColor.red,
+        ]
+        range?.pointee = NSRange(location: 0, length: string.count)
+        return attributes
+            //[:]
     }
 
     public func replaceCharacters(in range: NSRange, with str: String) {
+        print("replaceCharacters")
         let opearationsRange = getOperationsFor(range:range)
 
         for operation in opearationsRange.operations {
@@ -70,7 +81,8 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
     }
     
     public func setAttributes(_ attrs: [NSAttributedString.Key : Any]?, range: NSRange) {
-        fatalNotImplemented()
+        print("setAttributes")
+        //TODO implement
     }
     
     

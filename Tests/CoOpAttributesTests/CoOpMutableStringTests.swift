@@ -4,6 +4,16 @@ import XCTest
 
 final class CoOpMutableStringTests: XCTestCase {
 
+    override func setUpWithError() throws {
+        super.setUp()
+        // Put setup code here. This method is called before the invocation of each test method in the class.
+        flushAllCoreData(CoOpPersistenceController.shared.container)
+    }
+
+    override func tearDownWithError() throws {
+        super.tearDown()
+        // Put teardown code here. This method is called after the invocation of each test method in the class.
+    }
     
     // test lamport creation
     func testStorageAndWalking() {

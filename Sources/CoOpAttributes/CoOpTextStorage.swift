@@ -41,14 +41,19 @@ public class CoOpTextStorage: NSTextStorage {
     }
 
     public override func replaceCharacters(in range: NSRange, with str: String) {
+        beginEditing()
         storage!.replaceCharacters(in: range, with: str)
-        let changeInLength = str.count - range.length
-        self.edited(NSTextStorage.EditActions.editedCharacters, range: range, changeInLength: changeInLength)
+        edited(.editedCharacters,
+               range: range,
+               changeInLength: (str as NSString).length - range.length)
+        endEditing()
     }
     
     public override func setAttributes(_ attrs: [NSAttributedString.Key : Any]?, range: NSRange) {
+        beginEditing()
         storage!.setAttributes(attrs, range: range)
         edited(.editedAttributes, range: range, changeInLength: 0)
+        endEditing()
     }
     
 }
