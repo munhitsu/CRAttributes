@@ -11,6 +11,9 @@ import CoreData
 
 @objc(CoOpMutableStringOperationInsert)
 public class CoOpMutableStringOperationInsert: NSManagedObject {
+    deinit {
+        print("CoOpMutableStringOperationInsert.deinit")
+    }
 }
 
 extension CoOpMutableStringOperationInsert: Comparable {
@@ -87,6 +90,15 @@ extension CoOpMutableStringOperationInsert: Comparable {
 
 extension CoOpMutableStringOperationInsert {
     public override var description: String {
-        return "Insert(\(contribution):\(self.lamport):\(!isDeleted))"
+        return "Insert(\(contribution):\(self.lamport):\(!hasDeleteOperation()))"
     }
+
+    public var treeDescription: String {
+        var str = ">\(contribution)|\(self.lamport)|\(hasDeleteOperation() ? "deleted" : "")\n"
+        for op in orderedInserts() {
+            str += op.treeDescription.replacingOccurrences(of: "\n", with: "\n ")
+        }
+        return str
+    }
+
 }

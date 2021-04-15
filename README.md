@@ -2,10 +2,15 @@
 
 
 
+## usage
+
+you need to save context when you decide to - we just don't do it
+
 
 ## Goal/challenge
 is it possible to to describe text as an operation graph where adding operation does not modify exiting nodes (no reference updates)
 
+10K characters note needs to me low latency
 
 
 

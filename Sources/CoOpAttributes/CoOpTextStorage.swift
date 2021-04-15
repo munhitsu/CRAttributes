@@ -9,7 +9,9 @@ import Foundation
 //#if os(macOS)
 //import AppKit
 //#else
+#if os(iOS)
 import UIKit
+#endif
 //#endif
 
 public class CoOpTextStorage: NSTextStorage {

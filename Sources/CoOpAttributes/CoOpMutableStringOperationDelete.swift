@@ -11,6 +11,9 @@ import CoreData
 
 @objc(CoOpMutableStringOperationDelete)
 public class CoOpMutableStringOperationDelete: NSManagedObject {
+    deinit {
+        print("CoOpMutableStringOperationDelete.deinit")
+    }
 }
 
 extension CoOpMutableStringOperationDelete: Comparable {

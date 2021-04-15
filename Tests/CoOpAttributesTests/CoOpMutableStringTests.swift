@@ -7,6 +7,7 @@ final class CoOpMutableStringTests: XCTestCase {
     override func setUpWithError() throws {
         super.setUp()
         // Put setup code here. This method is called before the invocation of each test method in the class.
+        print("setUpWithError")
         flushAllCoreData(CoOpPersistenceController.shared.container)
     }
 
@@ -64,12 +65,15 @@ final class CoOpMutableStringTests: XCTestCase {
         stringAttribute.replaceCharacters(in: NSRange.init(location: 6, length: 3), with: "000")
         XCTAssertEqual(stringAttribute.string, "000ABC000DEF")
 
-        stringAttribute.replaceCharacters(in: NSRange.init(location: 9, length: 5), with: "222222")
+        stringAttribute.replaceCharacters(in: NSRange.init(location: 9, length: 3), with: "222222")
         XCTAssertEqual(stringAttribute.string, "000ABC000222222")
 
-        stringAttribute.replaceCharacters(in: NSRange.init(location: 99, length: 3), with: "111")
+        stringAttribute.replaceCharacters(in: NSRange.init(location: 15, length: 0), with: "111")
         XCTAssertEqual(stringAttribute.string, "000ABC000222222111")
 
+//        XCTAssertThrowsError(try stringAttribute.replaceCharacters(in: NSRange.init(location: 99, length: 0), with: "111"))
+        
+        
         do {
             try context.save()
         } catch {
@@ -105,6 +109,62 @@ final class CoOpMutableStringTests: XCTestCase {
 
     }
 
+    
+    func testSaveAndLoad() {
+        flushAllCoreData(CoOpPersistenceController.shared.container)
+
+        let context = CoOpPersistenceController.shared.container.viewContext
+        var stringAttribute:CoOpMutableStringAttribute? = CoOpMutableStringAttribute(context: context)
+        stringAttribute?.version = 0
+        XCTAssertEqual(stringAttribute?.string, "")
+        stringAttribute?.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: "ABCDEF") // ABCDEF
+        stringAttribute?.replaceCharacters(in: NSRange.init(location: 3, length: 3), with: "def") // ABCDEF
+        XCTAssertEqual(stringAttribute?.string, "ABCdef")
+        
+        do {
+            try context.save()
+        } catch {
+            let nsError = error as NSError
+            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+        }
+        
+        
+        print("reset")
+        context.reset()
+        print("deinit")
+        stringAttribute = nil
+        
+        let request:NSFetchRequest<CoOpMutableStringAttribute> = CoOpMutableStringAttribute.fetchRequest()
+        request.fetchLimit = 1
+        var rows = try? context.fetch(request)
+        var str = rows?.first
+
+        XCTAssertEqual(str!.string, "ABCdef")
+        str?.replaceCharacters(in: NSRange.init(location: 1, length: 0), with: " ") // ABCDEF
+        str?.replaceCharacters(in: NSRange.init(location: 3, length: 0), with: " ") // ABCDEF
+        str?.replaceCharacters(in: NSRange.init(location: 5, length: 0), with: " ") // ABCDEF
+        str?.replaceCharacters(in: NSRange.init(location: 7, length: 0), with: " ") // ABCDEF
+        str?.replaceCharacters(in: NSRange.init(location: 9, length: 0), with: " ") // ABCDEF
+        XCTAssertEqual(str!.string, "A B C d e f")
+        print(str?.head.treeDescription ?? "")
+
+        do {
+            try context.save()
+        } catch {
+            let nsError = error as NSError
+            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+        }
+        
+        print("reset")
+        context.reset()
+        print("deinit")
+        stringAttribute = nil
+
+        rows = try? context.fetch(request)
+        str = rows?.first
+        XCTAssertEqual(str!.string, "A B C d e f")
+        print(str?.head.treeDescription ?? "")
+    }
     
     func testRemoteChanges() {
         

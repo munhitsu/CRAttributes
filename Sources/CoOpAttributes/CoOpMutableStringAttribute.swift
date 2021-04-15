@@ -11,6 +11,10 @@ import UIKit
 
 @objc(CoOpMutableStringAttribute)
 public class CoOpMutableStringAttribute: NSManagedObject {
+    var stringCache: NSMutableString?
+    deinit {
+        print("CoOpMutableStringAttribute.deinit")
+    }
 }
 
 extension CoOpMutableStringAttribute {
@@ -45,14 +49,22 @@ protocol MinimalNSMutableAttributedString {
 
 extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
     
+    
     public var string: String {
-        print("string")
-        return walk().map({ $0.contribution }).joined()
+//        print("string")
+        if stringCache == nil {
+            stringCache = NSMutableString(utf8String: walk().map({ $0.contribution }).joined())
+        }
+        return stringCache! as String
+    }
+    
+    func invalidateCache() {
+        stringCache = nil
     }
 
     public func attributes(at location: Int, effectiveRange range: NSRangePointer?) -> [NSAttributedString.Key : Any] {
         //TODO implement
-        print("attributes for location:\(location)")
+//        print("attributes for location:\(location)")
         let font = UIFont.systemFont(ofSize: 24)
         let attributes: [NSAttributedString.Key: Any] = [
             .font: font,
@@ -65,18 +77,28 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
 
     public func replaceCharacters(in range: NSRange, with str: String) {
         print("replaceCharacters")
-        let opearationsRange = getOperationsFor(range:range)
+//        invalidateCache()
+        printTimeElapsedWhenRunningCode(title: "replaceCharacters duration: ") {
+            let opearationsRange = getOperationsFor(range:range)
 
-        for operation in opearationsRange.operations {
-            delete(operation)
+            for operation in opearationsRange.operations {
+                delete(operation)
+            }
+            
+            var locationOperation = opearationsRange.location
+            print("location: \(locationOperation)")
+            print("pre insert: \(self)")
+            for c in str {
+                let cOperation = CoOpMutableStringOperationInsert(contribution: String(c), parent: locationOperation, attribute: self, context: self.managedObjectContext!)
+                print("new operation: \(cOperation)")
+                locationOperation = cOperation
+            }
+            print("post insert: \(self)")
+
+            stringCache?.replaceCharacters(in: range, with: str)
+            let newString = walk().map({ $0.contribution }).joined()
+            assert(stringCache!.isEqual(to: newString))
         }
-        
-        var locationOperation = opearationsRange.location
-        for c in str {
-            let cOperation = CoOpMutableStringOperationInsert(contribution: String(c), parent: locationOperation, attribute: self, context: self.managedObjectContext!)
-            locationOperation = cOperation
-        }
-        
         //TODO implement delete
     }
     
