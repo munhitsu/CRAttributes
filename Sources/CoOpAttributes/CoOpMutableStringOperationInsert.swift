@@ -11,9 +11,8 @@ import CoreData
 
 @objc(CoOpMutableStringOperationInsert)
 public class CoOpMutableStringOperationInsert: NSManagedObject {
-    deinit {
-        print("CoOpMutableStringOperationInsert.deinit")
-    }
+    public var next: CoOpMutableStringOperationInsert?
+    public var prev: CoOpMutableStringOperationInsert?
 }
 
 extension CoOpMutableStringOperationInsert: Comparable {

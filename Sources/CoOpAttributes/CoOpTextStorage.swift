@@ -37,6 +37,9 @@ public class CoOpTextStorage: NSTextStorage {
             return storage!.string
         }
     }
+
+    //TODO: subclasses should implement it to execute in O(1) time. (source https://developer.apple.com/documentation/foundation/nsattributedstring/1412616-string)
+    
     
     public override func attributes(at location: Int, effectiveRange range: NSRangePointer?) -> [NSAttributedString.Key : Any] {
         return storage!.attributes(at: location, effectiveRange: range)

@@ -11,7 +11,7 @@ import UIKit
 
 @objc(CoOpMutableStringAttribute)
 public class CoOpMutableStringAttribute: NSManagedObject {
-    var stringCache: NSMutableString?
+    var renderedString: NSMutableString?
     deinit {
         print("CoOpMutableStringAttribute.deinit")
     }
@@ -47,20 +47,44 @@ protocol MinimalNSMutableAttributedString {
     // These primitives should perform the change, then call edited(_:range:changeInLength:) to let the parent class know what changes were made.
 }
 
+
 extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
     
     
     public var string: String {
 //        print("string")
-        if stringCache == nil {
-            stringCache = NSMutableString(utf8String: walk().map({ $0.contribution }).joined())
+        if renderedString == nil {
+            //we need to link all inserts as remote operaion may be linked to a deleted insert
+            let elements = walkTree(skipDeleted: false)
+            
+            var prev:CoOpMutableStringOperationInsert = head
+            for el in elements {
+                el.prev = prev
+                prev.next = el
+                prev = el
+            }
+            //TODO: why NSMutableString ??
+            renderedString = NSMutableString(utf8String: elements.filter({ $0.hasDeleteOperation() == false }).map({ $0.contribution }).joined())
         }
-        return stringCache! as String
+        return renderedString! as String
     }
     
     func invalidateCache() {
-        stringCache = nil
+        renderedString = nil
     }
+    
+    func stringFromList() -> String {
+        var text = ""
+        var node:CoOpMutableStringOperationInsert? = head
+        while node != nil {
+            if node!.hasDeleteOperation() == false {
+                text.append(node!.contribution)
+            }
+            node = node!.next
+        }
+        return text
+    }
+    
 
     public func attributes(at location: Int, effectiveRange range: NSRangePointer?) -> [NSAttributedString.Key : Any] {
         //TODO implement
@@ -86,18 +110,27 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
             }
             
             var locationOperation = opearationsRange.location
+            let initialNext = locationOperation.next
             print("location: \(locationOperation)")
             print("pre insert: \(self)")
             for c in str {
                 let cOperation = CoOpMutableStringOperationInsert(contribution: String(c), parent: locationOperation, attribute: self, context: self.managedObjectContext!)
+                locationOperation.next = cOperation
+                cOperation.prev = locationOperation
                 print("new operation: \(cOperation)")
                 locationOperation = cOperation
             }
+            locationOperation.next = initialNext
             print("post insert: \(self)")
 
-            stringCache?.replaceCharacters(in: range, with: str)
-            let newString = walk().map({ $0.contribution }).joined()
-            assert(stringCache!.isEqual(to: newString))
+            renderedString?.replaceCharacters(in: range, with: str)
+            //if debug:
+//            let newString = walk().map({ $0.contribution }).joined()
+//            assert(renderedString!.isEqual(to: newString))
+            let linkedString = stringFromList()
+            print("rendered: \(renderedString)")
+            print("linked: \(linkedString)")
+            assert(renderedString!.isEqual(to: linkedString))
         }
         //TODO implement delete
     }
@@ -120,7 +153,7 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
         }
         var position = 0
         var locationOperation: CoOpMutableStringOperationInsert? = nil
-        let ops = walk() { operation, escape in
+        let ops = walkTree() { operation, escape in
             position += operation.contribution.count
             if position >= location {
                 escape = true
@@ -144,7 +177,7 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
         if range.location == 0 {
             locationOperation = head
         }
-        let ops = walk() { operation, escape in
+        let ops = walkTree() { operation, escape in
             position += operation.contribution.count
             if position == range.location {
                 locationOperation = operation
@@ -163,13 +196,14 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
     }
     
     
-    public func walk(skipDeleted: Bool = true,
+    public func walkTree(skipDeleted: Bool = true,
                      action: (_ operation: CoOpMutableStringOperationInsert, _ escape: inout Bool) -> Void = {_,_ in }) -> [CoOpMutableStringOperationInsert] {
         var escape = false
-        return walk(from: head, escape: &escape, action: action)
+        return walkTree(from: head, escape: &escape, action: action)
     }
     
-    func walk(from operation: CoOpMutableStringOperationInsert,
+    //TODO: this wil stackoverflow - fixme
+    func walkTree(from operation: CoOpMutableStringOperationInsert,
               skipDeleted: Bool = true,
               escape: inout Bool,
               action: (_ operation: CoOpMutableStringOperationInsert, _ escape: inout Bool) -> Void = {_,_ in }) -> [CoOpMutableStringOperationInsert] {
@@ -184,7 +218,7 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
                 }
             }
 
-            ops.append(contentsOf: walk(from: operation, escape: &escape, action: action))
+            ops.append(contentsOf: walkTree(from: operation, escape: &escape, action: action))
             if escape {
                 break
             }
@@ -202,7 +236,7 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
 extension CoOpMutableStringAttribute {
     public override var description: String {
         var output = ""
-        let _ = walk() { operation, escape in
+        let _ = walkTree() { operation, escape in
             output += operation.description + "\n"
         }
         return output
