@@ -3,6 +3,16 @@
 
 # initial implementation was RGA tree split with dumb op replicaiton and graph build on load
 core data was just a mere log replication...
+so load of note was taking notable time
+
+also CoreData CK sync is unpredictible
+
+
+# native CK approach
+well it's... cumbersome to implement and Apple is constantly improving their CoreData Sync
+
+CoreData and CoreData CloudKit Sync are the official supported pattern
+
 
 # started from character based RGA
 where all ops are part of a replicated graph already

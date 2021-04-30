@@ -12,6 +12,11 @@ import UIKit
 @objc(CoOpMutableStringAttribute)
 public class CoOpMutableStringAttribute: NSManagedObject {
     var renderedString: NSMutableString?
+    var textStorageCache: CoOpTextStorage?
+    var selectionStartOp: CoOpMutableStringOperationInsert?
+    var selectionStartPos: Int = 0
+    var selectionEndOp: CoOpMutableStringOperationInsert?
+    var selectionEndPos: Int = 0
     deinit {
         print("CoOpMutableStringAttribute.deinit")
     }
@@ -51,6 +56,15 @@ protocol MinimalNSMutableAttributedString {
 extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
     
     
+    public var textStorage: CoOpTextStorage {
+        if textStorageCache == nil {
+            textStorageCache = CoOpTextStorage(self)
+        }
+        return textStorageCache!
+    }
+    
+    
+    // Call this function before any search
     public var string: String {
 //        print("string")
         if renderedString == nil {
@@ -103,13 +117,17 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
         print("replaceCharacters")
 //        invalidateCache()
         printTimeElapsedWhenRunningCode(title: "replaceCharacters duration: ") {
-            let opearationsRange = getOperationsFor(range:range)
-
-            for operation in opearationsRange.operations {
-                delete(operation)
+            
+            let startOperation = getOperationFor(position: range.location)
+            var posInRange = 0
+            var currentOperation = startOperation
+            while posInRange < range.length {
+                currentOperation = currentOperation.next!
+                posInRange += currentOperation.contribution.count
+                markDeleted(currentOperation)
             }
             
-            var locationOperation = opearationsRange.location
+            var locationOperation = startOperation
             let initialNext = locationOperation.next
             print("location: \(locationOperation)")
             print("pre insert: \(self)")
@@ -127,10 +145,10 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
             //if debug:
 //            let newString = walk().map({ $0.contribution }).joined()
 //            assert(renderedString!.isEqual(to: newString))
-            let linkedString = stringFromList()
-            print("rendered: \(renderedString)")
-            print("linked: \(linkedString)")
-            assert(renderedString!.isEqual(to: linkedString))
+//            let linkedString = stringFromList()
+//            print("rendered: \(renderedString)")
+//            print("linked: \(linkedString)")
+//            assert(renderedString!.isEqual(to: linkedString))
         }
         //TODO implement delete
     }
@@ -140,69 +158,40 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
         //TODO implement
     }
     
-    
-    public func getTextStorage() -> CoOpTextStorage {
-        return CoOpTextStorage(self)
-    }
-    
-    // returns operation you can insert after (op + len=1 i  split node language)
-    // if out of bounds then it will return the last operation
-    func getOperationFor(_ location: Int) -> CoOpMutableStringOperationInsert {
-        if location == 0 {
-            return head
+
+    // selection aware operation search
+    // will crash if asked for location outside of the storage
+    func getOperationFor(position: Int) -> CoOpMutableStringOperationInsert {
+        var tempPosition = selectionStartPos
+        var tempOperation:CoOpMutableStringOperationInsert
+        if tempPosition == 0 { //TODO: this should go to some sort of container init
+            tempOperation = head
+        } else {
+            tempOperation = selectionStartOp!
         }
-        var position = 0
-        var locationOperation: CoOpMutableStringOperationInsert? = nil
-        let ops = walkTree() { operation, escape in
-            position += operation.contribution.count
-            if position >= location {
-                escape = true
-                locationOperation = operation
+
+        if position >= tempPosition {
+            while tempPosition < position {
+                tempOperation = tempOperation.next!
+                tempPosition += tempOperation.contribution.count
             }
+            return tempOperation
+        } else {
+            while tempPosition > position {
+                tempPosition -= tempOperation.contribution.count
+                tempOperation = tempOperation.prev!
+            }
+            return tempOperation
         }
-        if locationOperation == nil {
-            locationOperation = ops.last
-        }
-        if locationOperation == nil {
-            locationOperation = head
-        }
-        return locationOperation!
     }
 
-    func getOperationsFor(range: NSRange) -> (location: CoOpMutableStringOperationInsert, operations: [CoOpMutableStringOperationInsert]) {
-        var locationOperation: CoOpMutableStringOperationInsert? = nil
-        var operations = [CoOpMutableStringOperationInsert]()
-        var position = 0
-
-        if range.location == 0 {
-            locationOperation = head
-        }
-        let ops = walkTree() { operation, escape in
-            position += operation.contribution.count
-            if position == range.location {
-                locationOperation = operation
-            } else if position > range.location && position <= range.location + range.length {
-                operations.append(operation)
-            }
-        }
-        if locationOperation == nil {
-            if ops.last != nil {
-                locationOperation = ops.last
-            } else {
-                locationOperation = head
-            }
-        }
-        return (location: locationOperation!, operations: operations)
-    }
-    
-    
     public func walkTree(skipDeleted: Bool = true,
                      action: (_ operation: CoOpMutableStringOperationInsert, _ escape: inout Bool) -> Void = {_,_ in }) -> [CoOpMutableStringOperationInsert] {
         var escape = false
         return walkTree(from: head, escape: &escape, action: action)
     }
     
-    //TODO: this wil stackoverflow - fixme
+    //TODO: this will stackoverflow - fixme
     func walkTree(from operation: CoOpMutableStringOperationInsert,
               skipDeleted: Bool = true,
               escape: inout Bool,
@@ -226,10 +215,73 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
         return ops
     }
     
-    func delete(_ operation: CoOpMutableStringOperationInsert) {
+    func markDeleted(_ operation: CoOpMutableStringOperationInsert) {
         let _ = CoOpMutableStringOperationDelete(parent: operation, attribute: self, context: self.managedObjectContext!)
 //        assert(operation.hasDeleteOperation())
     }
+    
+    public func updateSelectionFrom(range: NSRange) {
+        self.selectionStartOp = getOperationFor(position: range.location)
+        self.selectionStartPos = range.location
+        self.selectionEndOp = getOperationFor(position: range.location + range.length)
+        self.selectionEndPos = range.location + range.length
+        print("updated selection to:")
+        print(" start: \(selectionStartPos) \(String(describing: selectionStartOp))")
+        print("   end: \(selectionEndPos) \(String(describing: selectionEndOp))")
+    }
+}
+
+// legacy
+extension CoOpMutableStringAttribute {
+    // returns operation you can insert after (op + len=1 i  split node language)
+//    // if out of bounds then it will return the last operation
+//    func getTreeOperationFor(_ location: Int) -> CoOpMutableStringOperationInsert {
+//        if location == 0 {
+//            return head
+//        }
+//        var position = 0
+//        var locationOperation: CoOpMutableStringOperationInsert? = nil
+//        let ops = walkTree() { operation, escape in
+//            position += operation.contribution.count
+//            if position >= location {
+//                escape = true
+//                locationOperation = operation
+//            }
+//        }
+//        if locationOperation == nil {
+//            locationOperation = ops.last
+//        }
+//        if locationOperation == nil {
+//            locationOperation = head
+//        }
+//        return locationOperation!
+//    }
+//    
+//    func getOperationsFor(range: NSRange) -> (location: CoOpMutableStringOperationInsert, operations: [CoOpMutableStringOperationInsert]) {
+//        var locationOperation: CoOpMutableStringOperationInsert? = nil
+//        var operations = [CoOpMutableStringOperationInsert]()
+//        var position = 0
+//
+//        if range.location == 0 {
+//            locationOperation = head
+//        }
+//        let ops = walkTree() { operation, escape in
+//            position += operation.contribution.count
+//            if position == range.location {
+//                locationOperation = operation
+//            } else if position > range.location && position <= range.location + range.length {
+//                operations.append(operation)
+//            }
+//        }
+//        if locationOperation == nil {
+//            if ops.last != nil {
+//                locationOperation = ops.last
+//            } else {
+//                locationOperation = head
+//            }
+//        }
+//        return (location: locationOperation!, operations: operations)
+//    }
 }
 
 

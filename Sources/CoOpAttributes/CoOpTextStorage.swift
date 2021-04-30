@@ -14,6 +14,10 @@ import UIKit
 #endif
 //#endif
 
+
+// proxy over CoOpMutableStringAttribute
+// that takes care of beginEditing, edited and endEditing
+// and exposes NSTextStorage
 public class CoOpTextStorage: NSTextStorage {
     
     var storage: CoOpMutableStringAttribute?
