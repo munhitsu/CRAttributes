@@ -191,7 +191,8 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
         return walkTree(from: head, escape: &escape, action: action)
     }
     
-    //TODO: this will stackoverflow - fixme
+    //TODO: this will stack overflow - remove recursion
+    //TODO: this is too slow on 1st document open
     func walkTree(from operation: CoOpMutableStringOperationInsert,
               skipDeleted: Bool = true,
               escape: inout Bool,
@@ -256,7 +257,7 @@ extension CoOpMutableStringAttribute {
 //        }
 //        return locationOperation!
 //    }
-//    
+//
 //    func getOperationsFor(range: NSRange) -> (location: CoOpMutableStringOperationInsert, operations: [CoOpMutableStringOperationInsert]) {
 //        var locationOperation: CoOpMutableStringOperationInsert? = nil
 //        var operations = [CoOpMutableStringOperationInsert]()
@@ -286,13 +287,13 @@ extension CoOpMutableStringAttribute {
 
 
 extension CoOpMutableStringAttribute {
-    public override var description: String {
-        var output = ""
-        let _ = walkTree() { operation, escape in
-            output += operation.description + "\n"
-        }
-        return output
-    }
+//    public override var description: String {
+//        var output = ""
+//        let _ = walkTree() { operation, escape in
+//            output += operation.description + "\n"
+//        }
+//        return output
+//    }
 }
 
 

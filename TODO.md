@@ -1,9 +1,11 @@
 # TODO
 
-[] implement cursor
- [] view triggered selection update
- [] text replace views selection update
-
+- [x] implement cursor
+ - [x] view triggered selection update
+ - [x] text replace views selection update
+- [x] bug: tree walk is execuded one each edit (was debug)
+- [] speed up long note load
+- [] check for memory leaks
 [] process externall operations (re-link, update cursor, re-render)
 
 
