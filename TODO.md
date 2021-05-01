@@ -4,6 +4,7 @@
  - [x] view triggered selection update
  - [x] text replace views selection update
 - [x] bug: tree walk is execuded one each edit (was debug)
+- [x] bug: it's faulting on every operation on inserts and deletes
 - [] speed up long note load
 - [] check for memory leaks
 [] process externall operations (re-link, update cursor, re-render)

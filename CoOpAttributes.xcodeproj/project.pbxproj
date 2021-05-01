@@ -24,7 +24,6 @@
 		BB8C443725F82B68006398B2 /* test-mk-editing-trace.json in Resources */ = {isa = PBXBuildFile; fileRef = BB8C442625F82686006398B2 /* test-mk-editing-trace.json */; };
 		BBE0623325F6DEBF00142C33 /* CoOpTextStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBE0623225F6DEBF00142C33 /* CoOpTextStorage.swift */; };
 		OBJ_43 /* CoOpAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* CoOpAttributes.swift */; };
-		OBJ_44 /* CoOpID.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_10 /* CoOpID.swift */; };
 		OBJ_45 /* CoOpModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* CoOpModel.swift */; };
 		OBJ_46 /* CoOpMutableStringAttribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* CoOpMutableStringAttribute.swift */; };
 		OBJ_47 /* CoOpMutableStringOperationDelete.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_13 /* CoOpMutableStringOperationDelete.swift */; };
@@ -85,7 +84,6 @@
 		"CoOpAttributes::CoOpAttributes::Product" /* CoOpAttributes.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CoOpAttributes.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"CoOpAttributes::CoOpAttributesTests::Product" /* CoOpAttributesTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = CoOpAttributesTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		"CoreDataModelDescription::CoreDataModelDescription::Product" /* CoreDataModelDescription.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CoreDataModelDescription.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		OBJ_10 /* CoOpID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpID.swift; sourceTree = "<group>"; };
 		OBJ_11 /* CoOpModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpModel.swift; sourceTree = "<group>"; };
 		OBJ_12 /* CoOpMutableStringAttribute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpMutableStringAttribute.swift; sourceTree = "<group>"; };
 		OBJ_13 /* CoOpMutableStringOperationDelete.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpMutableStringOperationDelete.swift; sourceTree = "<group>"; };
@@ -231,7 +229,6 @@
 			isa = PBXGroup;
 			children = (
 				OBJ_9 /* CoOpAttributes.swift */,
-				OBJ_10 /* CoOpID.swift */,
 				OBJ_11 /* CoOpModel.swift */,
 				OBJ_12 /* CoOpMutableStringAttribute.swift */,
 				OBJ_15 /* Utils.swift */,
@@ -397,7 +394,6 @@
 			buildActionMask = 0;
 			files = (
 				OBJ_43 /* CoOpAttributes.swift in Sources */,
-				OBJ_44 /* CoOpID.swift in Sources */,
 				OBJ_45 /* CoOpModel.swift in Sources */,
 				BBE0623325F6DEBF00142C33 /* CoOpTextStorage.swift in Sources */,
 				OBJ_46 /* CoOpMutableStringAttribute.swift in Sources */,

@@ -69,6 +69,20 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
 //        print("string")
         if renderedString == nil {
             //we need to link all inserts as remote operaion may be linked to a deleted insert
+//            let _ = Array(self.inserts)
+//            let _ = Array(self.deletes)
+
+            let request:NSFetchRequest<CoOpMutableStringAttribute> = CoOpMutableStringAttribute.fetchRequest()
+            request.relationshipKeyPathsForPrefetching = ["inserts.parent.inserts", "deletes.parent.deletes"]
+            request.fetchLimit = 1
+            request.returnsObjectsAsFaults = false
+            let predicate = NSPredicate(format: "self == %@", self)
+            request.predicate = predicate
+            
+            let _ = try? self.managedObjectContext!.fetch(request)
+
+//            relationshipKeyPathsForPrefetching
+            
             let elements = walkTree(skipDeleted: false)
             
             var prev:CoOpMutableStringOperationInsert = head
