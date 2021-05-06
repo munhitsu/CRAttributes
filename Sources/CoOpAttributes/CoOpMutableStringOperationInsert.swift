@@ -69,11 +69,16 @@ extension CoOpMutableStringOperationInsert: Comparable {
     }
     
     
-    public func orderedInserts() -> [CoOpMutableStringOperationInsert] {
+    public func sortedInserts() -> [CoOpMutableStringOperationInsert] {
         //TODO: cache on 1st run and invalidate cache on new insert
         return (self.inserts as! Set<CoOpMutableStringOperationInsert>).sorted()
     }
-    
+
+    public func reversedInserts() -> [CoOpMutableStringOperationInsert] {
+        //TODO: cache on 1st run and invalidate cache on new insert
+        return (self.inserts as! Set<CoOpMutableStringOperationInsert>).sorted().reversed()
+    }
+
     public func hasDeleteOperation() -> Bool {
         return self.deletes.count > 0
     }
@@ -94,7 +99,7 @@ extension CoOpMutableStringOperationInsert {
 
     public var treeDescription: String {
         var str = ">\(contribution)|\(self.lamport)|\(hasDeleteOperation() ? "deleted" : "")\n"
-        for op in orderedInserts() {
+        for op in sortedInserts() {
             str += op.treeDescription.replacingOccurrences(of: "\n", with: "\n ")
         }
         return str

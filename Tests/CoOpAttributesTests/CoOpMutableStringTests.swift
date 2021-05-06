@@ -59,6 +59,8 @@ final class CoOpMutableStringTests: XCTestCase {
         XCTAssertEqual(stringAttribute.string, "123ABCDEF")
         stringAttribute.replaceCharacters(in: NSRange.init(location: 6, length: 0), with: "XYZ") // 123 ABC XYZ DEF
         XCTAssertEqual(stringAttribute.string, "123ABCXYZDEF")
+        XCTAssertEqual(stringAttribute.stringFromList(), "123ABCXYZDEF")
+
 
         
         
@@ -132,7 +134,7 @@ final class CoOpMutableStringTests: XCTestCase {
         stringAttribute = nil
 
         measure {
-            print("pre-fetch")
+            print("fetch")
             let request:NSFetchRequest<CoOpMutableStringAttribute> = CoOpMutableStringAttribute.fetchRequest()
 //            request.fetchLimit = 1
 //            request.relationshipKeyPathsForPrefetching = ["inserts.inserts", "inserts.deletes"]
@@ -147,11 +149,6 @@ final class CoOpMutableStringTests: XCTestCase {
             context.reset()
             print("deinit")
             stringAttribute = nil
-        }
-
-        measure {
-            print("Walking linked list")
-            _ = stringAttribute?.stringFromList()
         }
     }
     
@@ -247,6 +244,7 @@ final class CoOpMutableStringTests: XCTestCase {
         str?.replaceCharacters(in: NSRange.init(location: 7, length: 0), with: " ") // ABCDEF
         str?.replaceCharacters(in: NSRange.init(location: 9, length: 0), with: " ") // ABCDEF
         XCTAssertEqual(str!.string, "A B C d e f")
+        XCTAssertEqual(str!.stringFromList(), "A B C d e f")
         print(str?.head.treeDescription ?? "")
 
         do {

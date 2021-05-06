@@ -44,11 +44,11 @@ Note: sharing will eventually come and meanwhile at worse we can do sharing by h
 - mutable string model field (https://developer.apple.com/documentation/uikit/nstextstorage)
 - SwiftUI demo app
 - mutable attributed string model field
+- migrate 1st string rendering from recursion to the loop
 
 ### future milestone
-- migrate 1st string rendering from recursion to loop
 - enable cloudkit sync and process remote updates
-- cached rendered string (hash applied operation ids) (store op local id and true false)
+- cached rendered string (hash applied operation ids) (store op local id and true false) / or prerender only what is being displayed
 - optimise the structure with split and attached search tree (manually balanced once in a while)
 
 
@@ -77,4 +77,5 @@ benchmarking first string building
 
 ### lorem impsum walking
 avg 0.288 - with faults
-avg 0.168 - after introducing prefetching
+avg 0.165 - after introducing prefetching
+avg 0.047 - after replacing recursion with a loop (1st run is 0.078)

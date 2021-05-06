@@ -81,18 +81,20 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
             
             let _ = try? self.managedObjectContext!.fetch(request)
 
-//            relationshipKeyPathsForPrefetching
             
-            let elements = walkTree(skipDeleted: false)
+            renderedString = NSMutableString(utf8String: walkTree())
+
             
-            var prev:CoOpMutableStringOperationInsert = head
-            for el in elements {
-                el.prev = prev
-                prev.next = el
-                prev = el
-            }
-            //TODO: why NSMutableString ??
-            renderedString = NSMutableString(utf8String: elements.filter({ $0.hasDeleteOperation() == false }).map({ $0.contribution }).joined())
+//            let elements = walkTreeOld(skipDeleted: false)
+//
+//            var prev:CoOpMutableStringOperationInsert = head
+//            for el in elements {
+//                el.prev = prev
+//                prev.next = el
+//                prev = el
+//            }
+//            //TODO: why NSMutableString ??
+//            renderedString = NSMutableString(utf8String: elements.filter({ $0.hasDeleteOperation() == false }).map({ $0.contribution }).joined())
         }
         return renderedString! as String
     }
@@ -199,21 +201,49 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
         }
     }
 
-    public func walkTree(skipDeleted: Bool = true,
+    
+    public func walkTree() -> String {
+        var previous = head
+        var str = ""
+        // head is empty
+        func linkElement(_ operation: CoOpMutableStringOperationInsert) {
+            previous.next = operation
+            operation.prev = previous
+            previous = operation
+            if !operation.hasDeleteOperation() {
+                str.append(operation.contribution)
+            }
+        }
+        
+        // stores all operations that we need to come back
+        var stack = [CoOpMutableStringOperationInsert]()
+        stack.append(contentsOf: head.reversedInserts())
+        
+        // we ignore head contribution as it's always ""
+
+        while !stack.isEmpty {
+            let operation = stack.popLast()!
+            linkElement(operation)
+            stack.append(contentsOf: operation.reversedInserts())
+        }
+        return str
+    }
+    
+    public func walkTreeOld(skipDeleted: Bool = true,
                      action: (_ operation: CoOpMutableStringOperationInsert, _ escape: inout Bool) -> Void = {_,_ in }) -> [CoOpMutableStringOperationInsert] {
         var escape = false
-        return walkTree(from: head, escape: &escape, action: action)
+        return walkTreeOld(from: head, escape: &escape, action: action)
     }
     
     //TODO: this will stack overflow - remove recursion
     //TODO: this is too slow on 1st document open
-    func walkTree(from operation: CoOpMutableStringOperationInsert,
+    func walkTreeOld(from operation: CoOpMutableStringOperationInsert,
               skipDeleted: Bool = true,
               escape: inout Bool,
               action: (_ operation: CoOpMutableStringOperationInsert, _ escape: inout Bool) -> Void = {_,_ in }) -> [CoOpMutableStringOperationInsert] {
         var ops = [CoOpMutableStringOperationInsert]()
 
-        for operation in operation.orderedInserts() {
+        for operation in operation.sortedInserts() {
             if (skipDeleted == false) || (skipDeleted && !operation.hasDeleteOperation()) {
                 ops.append(operation)
                 action(operation, &escape)
@@ -222,7 +252,7 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
                 }
             }
 
-            ops.append(contentsOf: walkTree(from: operation, escape: &escape, action: action))
+            ops.append(contentsOf: walkTreeOld(from: operation, escape: &escape, action: action))
             if escape {
                 break
             }
