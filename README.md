@@ -1,113 +1,68 @@
 # CoOpAttributes
 
+Enables colaboration on text field across multiple iOS devices.
+
+It's based on operation based CRDT (RGA) with replication leveraging native graph synchronisation using CoreData CloudKit sync.
+
+## research
+Merging:
+- Weihai Yu Linked List with cursor approach from "A String-Wise CRDT for Group Editing" [2012]
+- RGA Tree Split (w/o tree) from "High Responsiveness for Group Editing CRDTs" [2016]
+- "CloudKit - Structured Storage for Mobile Applications" [2018]
+
+### future roadmap
+- split string from "A String-Wise CRDT for Group Editing" [2012]
+- potentially undo support from "Supporting String-Wise Operations and Selective Undo for Peer-to-Peer Group Editing" [2014]
 
 
 ## usage
+Build your data model on top of the CoOpAttributes one. We found CoreDataModelDescription framework the missing piece to enable usable programatic declaration of CoreData Model.
+See ModelTests.swift for an example.
 
-you need to save context when you decide to - we just don't do it
-
-
-## Goal/challenge
-is it possible to to describe text as an operation graph where adding operation does not modify exiting nodes (no reference updates)
-
-10K characters note needs to me low latency
+Plese note that you decide when changes are commited - you perform core data save.
 
 
+## Goal
+To describe text as an operation graph where adding operation does not modify exiting nodes (no foreign key updates, but leveraging reverse foreign key updates).
+10K characters note needs to load with low latency - below 0.1s
 
-## Need
-Document created using this library allows for clean cross device sync (CRDT) and allows to invite others to collaborate
-
-Operation based CRDT
+Source: https://www.nngroup.com/articles/response-times-3-important-limits/
+"0.1 second is about the limit for having the user feel that the system is reacting instantaneously, meaning that no special feedback is necessary except to display the result."
 
 
+## Missign cloudkit core data functionality
+- sharing of object trees between users
+- exclusion of specific attributes from the sync
+- exclusion of specific objects from the sync
+- fine tuning cloudkit sync to prioritise specific objects
+- easy hook for a code block on every remote object creation, object update, object delete
 
-## Ideas
-
-we just provide attributes
-let's ensure that we have the future path of sharing over synced core-data
+Note: sharing will eventually come and meanwhile at worse we can do sharing by hand
 
 
 ## Milestones
 - mutable string model field (https://developer.apple.com/documentation/uikit/nstextstorage)
 - SwiftUI demo app
 - mutable attributed string model field
+
+### future milestone
+- migrate 1st string rendering from recursion to loop
+- enable cloudkit sync and process remote updates
 - cached rendered string (hash applied operation ids) (store op local id and true false)
 - optimise the structure with split and attached search tree (manually balanced once in a while)
 
 
-
-
 ## future potential optimisations
-- var string: String - make our own String subclass and implement subscript and/or other used methods
-- remember location per each peerID (At least for the current) and search location from the last location
-- implement iterator for the above
-- binary tree initialised on every note load
-- compare full binary tree with binary tree and list search for last 20 elements
-- preload all related objects on document open
-- cache rendered string in anothed data store
+- var string: String - make our own String subclass and implement subscript and/or other used methods (1st note load should not need he whole note)
+- cache rendered string in anothed data store - warning, remote operations may have arrived
 
+- remember location for the user - done
+- preload all related objects on document open - done
 
-
-
-## Missign cloudkit core data functionality
-
-- sharing of object trees
-- fine tuning sync of specific objects 1st
-- exclusion of specific attributes
-
-but sharing will come and at worse we can do sharing by hand
-
-
-
-## CK plan
-
-1st run sync
-
-on app launch - ask for changes you don't have
-
-register for notificaiton (notifications can be coalesced) 
-on each notification... pull changes
-
-enable push notifications
-enable abckground changes
- 
-set parent for each operation to be attribute
-
-fetch references - what are the errors?
-
-register to network changes to sync the offline operations
-
-register to CKAccountChange - as user may eb logged off 
-
-batch operations to save bandwidth
-
-qos user initiated - maybe
-
-
-
-
-KVO with Combine
-https://gist.github.com/hermanbanken/cf635644147abd0e330fb6deae758ce4
-Performing Key-Value Observing with Combine https://developer.apple.com/documentation/combine/performing-key-value-observing-with-combine
-
-
-How to make a singleton
-https://developer.apple.com/documentation/swift/cocoa_design_patterns/managing_a_shared_resource_using_a_singleton
-
-
-
-CoudKit allows for atomic commits (follows relations) in special zones
-
-delta downlaod and recording change tokens
-
-
-There is no cross zone linking
-
-
-
-
-
-
+### not sure anymore
+- implement iterator for the above - not really needed after introducing linked list perspective
+- binary tree initialised on every note load - not really needed if we remember the current user cursor and have the linked list perspective
+- compare full binary tree with binary tree and list search for last 20 elements - not needed, see above
 
 
 ## HowTo add a local package to your application
@@ -117,7 +72,9 @@ https://forums.swift.org/t/how-to-add-local-swift-package-as-dependency/26457/7
 - Click the Plus button in the "Link Binary with Libraries" section, locate the package in the modal dialog, select the gray library icon inside the package, and add this one.
 
 
+## benchmarking
+benchmarking first string building
 
-## Readings
-Advanced CloudKit
-https://www.youtube.com/watch?v=8iHfrqvF5po
+### lorem impsum walking
+avg 0.288 - with faults
+avg 0.168 - after introducing prefetching

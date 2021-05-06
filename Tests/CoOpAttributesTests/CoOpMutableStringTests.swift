@@ -108,7 +108,7 @@ final class CoOpMutableStringTests: XCTestCase {
     }
 
     
-    func testWalkingFaults() {
+    func testWalkingFaultsBenchmark() {
         flushAllCoreData(CoOpPersistenceController.shared.container)
 
         let context = CoOpPersistenceController.shared.container.viewContext
@@ -134,9 +134,9 @@ final class CoOpMutableStringTests: XCTestCase {
         measure {
             print("pre-fetch")
             let request:NSFetchRequest<CoOpMutableStringAttribute> = CoOpMutableStringAttribute.fetchRequest()
-            request.fetchLimit = 1
-            request.relationshipKeyPathsForPrefetching = ["inserts.inserts", "inserts.deletes"]
-            request.returnsObjectsAsFaults = false
+//            request.fetchLimit = 1
+//            request.relationshipKeyPathsForPrefetching = ["inserts.inserts", "inserts.deletes"]
+//            request.returnsObjectsAsFaults = false
             let rows = try? context.fetch(request)
             stringAttribute = rows?.first
             print("crawl")
@@ -147,6 +147,41 @@ final class CoOpMutableStringTests: XCTestCase {
             context.reset()
             print("deinit")
             stringAttribute = nil
+        }
+
+        measure {
+            print("Walking linked list")
+            _ = stringAttribute?.stringFromList()
+        }
+    }
+    
+    func testWalkingListBenchmark() {
+        flushAllCoreData(CoOpPersistenceController.shared.container)
+
+        let context = CoOpPersistenceController.shared.container.viewContext
+        var stringAttribute:CoOpMutableStringAttribute? = CoOpMutableStringAttribute(context: context)
+        stringAttribute!.version = 0
+        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: lorem)
+        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 10), with: "ABCD")
+
+        var strCount = stringAttribute?.string.count as! Int
+        print("lorem len: \(strCount)")
+
+        do {
+            try context.save()
+        } catch {
+            let nsError = error as NSError
+            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+        }
+        print("crawl as tree")
+        strCount = stringAttribute?.string.count as! Int
+
+        print("lorem len: \(strCount)")
+        XCTAssertGreaterThan(strCount, 100)
+
+        measure {
+            print("Walking linked list")
+            _ = stringAttribute?.stringFromList()
         }
     }
     

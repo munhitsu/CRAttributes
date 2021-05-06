@@ -73,7 +73,7 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
 //            let _ = Array(self.deletes)
 
             let request:NSFetchRequest<CoOpMutableStringAttribute> = CoOpMutableStringAttribute.fetchRequest()
-            request.relationshipKeyPathsForPrefetching = ["inserts.parent.inserts", "deletes.parent.deletes"]
+            request.relationshipKeyPathsForPrefetching = ["inserts.inserts", "inserts.deletes"]
             request.fetchLimit = 1
             request.returnsObjectsAsFaults = false
             let predicate = NSPredicate(format: "self == %@", self)
