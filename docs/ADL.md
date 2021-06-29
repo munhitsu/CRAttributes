@@ -1,13 +1,39 @@
 #  ADL
 
+14. 
+
+
+
+option A) react to the didSaveObjectIDsNotification and query for specific real object
+inpired by: https://www.donnywals.com/observing-changes-to-managed-objects-across-contexts-with-combine/
+docs: https://developer.apple.com/documentation/foundation/nsnotification/name/1506884-nsmanagedobjectcontextobjectsdid
+
+option B) reacting to store changes through keeping revision history and observing remote changes
+https://developer.apple.com/documentation/coredata/consuming_relevant_store_changes
+
+another voice for option B
+https://beckyhansmeyer.com/tag/cloudkit/
+
+this pproach will work with batch operations
+
+
+
+
+objects will be updated by cloudkit, we onlhy do append object
+
+
+
+
+
+
 13. we keep lamport and peerid for consistent ordering for all replicas
 
 12. use core data references
-but monitor fo updated objects as it's uknown what sync will do
+but monitor for updated objects as it's uknown what sync will do
 
-11. drop transformation from core data to operation to node
+11. drop transformation from core data to operation to node (sync the graph, not the list of operations)
 
-10. I'm considering dropping protobuf as we only have one operation type to focus on
+10. Dropping protobuf as we only have one operation type to focus on
 and coredata is your in memory database
 
 9. pivot

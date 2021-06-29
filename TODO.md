@@ -5,7 +5,8 @@
  - [x] text replace views selection update
 - [x] bug: tree walk is execuded one each edit (was debug)
 - [x] bug: it's faulting on every operation on inserts and deletes
-- [] remove recursion
+- [x] remove recursion
+- [] ensure that cache update combined with linked list update is atomic (https://www.avanderlee.com/swift/concurrent-serial-dispatchqueue/)
 - [] speed up long note load
 - [] check for memory leaks
 [] process externall operations (re-link, update cursor, re-render)

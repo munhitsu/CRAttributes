@@ -6,9 +6,14 @@ It's based on operation based CRDT (RGA) with replication leveraging native grap
 
 ## research
 Merging:
-- Weihai Yu Linked List with cursor approach from "A String-Wise CRDT for Group Editing" [2012]
-- RGA Tree Split (w/o tree) from "High Responsiveness for Group Editing CRDTs" [2016]
+- Weihai Yu Linked List with cursor approach from "A String-Wise CRDT for Group Editing" [2012] and "Supporting String-Wise Operations and Selective Undo for Peer-to-Peer Group Editing" 2014
+- RGA Tree Split (w/o tree) from - Marc Shapiro at other - "High Responsiveness for Group Editing CRDTs" [2016]
 - "CloudKit - Structured Storage for Mobile Applications" [2018]
+
+
+## warning
+This code is not produciton ready. Data structures and api may change as we are polishing the solution.
+
 
 ### future roadmap
 - split string from "A String-Wise CRDT for Group Editing" [2012]
@@ -24,7 +29,7 @@ Plese note that you decide when changes are commited - you perform core data sav
 
 ## Goal
 To describe text as an operation graph where adding operation does not modify exiting nodes (no foreign key updates, but leveraging reverse foreign key updates).
-10K characters note needs to load with low latency - below 0.1s
+10K characters note needs to load with low latency - below 0.1s - within the requirements on M1
 
 Source: https://www.nngroup.com/articles/response-times-3-important-limits/
 "0.1 second is about the limit for having the user feel that the system is reacting instantaneously, meaning that no special feedback is necessary except to display the result."
@@ -61,7 +66,7 @@ Note: sharing will eventually come and meanwhile at worse we can do sharing by h
 
 ### not sure anymore
 - implement iterator for the above - not really needed after introducing linked list perspective
-- binary tree initialised on every note load - not really needed if we remember the current user cursor and have the linked list perspective
+- binary tree initialised on every note load - not really needed if we remember the current user cursor and have the linked list perspective - though it will optimise remote operations
 - compare full binary tree with binary tree and list search for last 20 elements - not needed, see above
 
 
@@ -76,6 +81,13 @@ https://forums.swift.org/t/how-to-add-local-swift-package-as-dependency/26457/7
 benchmarking first string building
 
 ### lorem impsum walking
+tested on MBP M1
+lorem 5 paragraphs - approx 5K characters
 avg 0.288 - with faults
 avg 0.165 - after introducing prefetching
-avg 0.047 - after replacing recursion with a loop (1st run is 0.078)
+avg 0.047 - after replacing recursion tree walk with a loop (1st run is 0.078)
+
+
+lorem 10K
+avg 0.080 - after replacing recursion tree walk with a loop (1st run is 0.118)
+
