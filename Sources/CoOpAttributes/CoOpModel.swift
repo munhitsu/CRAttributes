@@ -10,20 +10,43 @@ import CoreData
 import CoreDataModelDescription
 
 
-let modelDescription = CoreDataModelDescription(
+
+let replicatedModelDescription = CoreDataModelDescription(
     entities: [
-        .entity(name: "CoOpMutableStringAttribute",
+        .entity(name: "Attribute",
                 managedObjectClass: CoOpMutableStringAttribute.self,
                 attributes: [
                     .attribute(name: "version", type: .integer16AttributeType, defaultValue: Int16(0)),
+                    .attribute(name: "type", type: .integer16AttributeType, defaultValue: Int16(0)),
                 ],
                 relationships: [
-                    .relationship(name: "head", destination: "CoOpMutableStringOperationInsert", toMany: false),
-                    .relationship(name: "insert", destination: "CoOpMutableStringOperationInsert", toMany: false), // what is it for?
-                    .relationship(name: "inserts", destination: "CoOpMutableStringOperationInsert", toMany: true),
-                    .relationship(name: "deletes", destination: "CoOpMutableStringOperationDelete", toMany: true),
+                    .relationship(name: "opGroups", destination: "AttributeOpGroup", toMany: true, inverse: "attribute"),
                 ]
         ),
+        .entity(name: "AttributeOpGroup",
+                managedObjectClass: AttributeOpGroup.self,
+                attributes: [
+                    .attribute(name: "value", type: .binaryDataAttributeType) // a group of operations, may have multiple roots
+                ],
+                relationships: [
+                    .relationship(name: "attribute", destination: "CoOpMutableStringAttribute", toMany: false, inverse: "opGroups"),
+                ]
+        )
+])
+
+let localModelDescription = CoreDataModelDescription(
+    entities: [
+        .entity(name: "Attribute",
+                managedObjectClass: CoOpMutableStringAttribute.self,
+                attributes: [
+                    .attribute(name: "version", type: .integer16AttributeType, defaultValue: Int16(0)),
+                    .attribute(name: "type", type: .integer16AttributeType, defaultValue: Int16(0)),
+                    .attribute(name: "renderedString", type: .stringAttributeType, defaultValue: ""),
+                ],
+        ),
+
+
+
         .entity(
             name: "CoOpMutableStringOperationInsert",
             managedObjectClass: CoOpMutableStringOperationInsert.self,

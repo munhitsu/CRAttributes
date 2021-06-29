@@ -9,6 +9,12 @@ import Foundation
 import CoreData
 import UIKit
 
+/**
+ when object is present, it will listen to remote changes and keep the linked list updated
+ 
+ */
+
+
 @objc(CoOpMutableStringAttribute)
 public class CoOpMutableStringAttribute: NSManagedObject {
     var renderedString: NSMutableString?
@@ -40,8 +46,6 @@ extension CoOpMutableStringAttribute {
 }
 
 
-
-
 protocol MinimalNSMutableAttributedString {
     var string: String { get } //should I expose the subscript somehow?
     func attributes(at location: Int, effectiveRange range: NSRangePointer?) -> [NSAttributedString.Key : Any]
@@ -63,45 +67,29 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
         return textStorageCache!
     }
     
-    
+        
     // Call this function before any search
     public var string: String {
-//        print("string")
         if renderedString == nil {
-            //we need to link all inserts as remote operaion may be linked to a deleted insert
-//            let _ = Array(self.inserts)
-//            let _ = Array(self.deletes)
 
+            // let's prefetch
             let request:NSFetchRequest<CoOpMutableStringAttribute> = CoOpMutableStringAttribute.fetchRequest()
             request.relationshipKeyPathsForPrefetching = ["inserts.inserts", "inserts.deletes"]
             request.fetchLimit = 1
             request.returnsObjectsAsFaults = false
             let predicate = NSPredicate(format: "self == %@", self)
             request.predicate = predicate
-            
             let _ = try? self.managedObjectContext!.fetch(request)
 
-            
             renderedString = NSMutableString(utf8String: walkTree())
 
-            
-//            let elements = walkTreeOld(skipDeleted: false)
-//
-//            var prev:CoOpMutableStringOperationInsert = head
-//            for el in elements {
-//                el.prev = prev
-//                prev.next = el
-//                prev = el
-//            }
-//            //TODO: why NSMutableString ??
-//            renderedString = NSMutableString(utf8String: elements.filter({ $0.hasDeleteOperation() == false }).map({ $0.contribution }).joined())
         }
         return renderedString! as String
     }
     
-    func invalidateCache() {
-        renderedString = nil
-    }
+//    func invalidateCache() {
+//        renderedString = nil
+//    }
     
     func stringFromList() -> String {
         var text = ""
@@ -205,7 +193,7 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
     public func walkTree() -> String {
         var previous = head
         var str = ""
-        // head is empty
+        // head is always empty ("")
         func linkElement(_ operation: CoOpMutableStringOperationInsert) {
             previous.next = operation
             operation.prev = previous
@@ -219,8 +207,7 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
         var stack = [CoOpMutableStringOperationInsert]()
         stack.append(contentsOf: head.reversedInserts())
         
-        // we ignore head contribution as it's always ""
-
+        // we ignore head contribution as it's always empty ("")
         while !stack.isEmpty {
             let operation = stack.popLast()!
             linkElement(operation)
@@ -235,8 +222,6 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
         return walkTreeOld(from: head, escape: &escape, action: action)
     }
     
-    //TODO: this will stack overflow - remove recursion
-    //TODO: this is too slow on 1st document open
     func walkTreeOld(from operation: CoOpMutableStringOperationInsert,
               skipDeleted: Bool = true,
               escape: inout Bool,
@@ -274,59 +259,6 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
         print(" start: \(selectionStartPos) \(String(describing: selectionStartOp))")
         print("   end: \(selectionEndPos) \(String(describing: selectionEndOp))")
     }
-}
-
-// legacy
-extension CoOpMutableStringAttribute {
-    // returns operation you can insert after (op + len=1 i  split node language)
-//    // if out of bounds then it will return the last operation
-//    func getTreeOperationFor(_ location: Int) -> CoOpMutableStringOperationInsert {
-//        if location == 0 {
-//            return head
-//        }
-//        var position = 0
-//        var locationOperation: CoOpMutableStringOperationInsert? = nil
-//        let ops = walkTree() { operation, escape in
-//            position += operation.contribution.count
-//            if position >= location {
-//                escape = true
-//                locationOperation = operation
-//            }
-//        }
-//        if locationOperation == nil {
-//            locationOperation = ops.last
-//        }
-//        if locationOperation == nil {
-//            locationOperation = head
-//        }
-//        return locationOperation!
-//    }
-//
-//    func getOperationsFor(range: NSRange) -> (location: CoOpMutableStringOperationInsert, operations: [CoOpMutableStringOperationInsert]) {
-//        var locationOperation: CoOpMutableStringOperationInsert? = nil
-//        var operations = [CoOpMutableStringOperationInsert]()
-//        var position = 0
-//
-//        if range.location == 0 {
-//            locationOperation = head
-//        }
-//        let ops = walkTree() { operation, escape in
-//            position += operation.contribution.count
-//            if position == range.location {
-//                locationOperation = operation
-//            } else if position > range.location && position <= range.location + range.length {
-//                operations.append(operation)
-//            }
-//        }
-//        if locationOperation == nil {
-//            if ops.last != nil {
-//                locationOperation = ops.last
-//            } else {
-//                locationOperation = head
-//            }
-//        }
-//        return (location: locationOperation!, operations: operations)
-//    }
 }
 
 
