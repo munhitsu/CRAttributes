@@ -38,7 +38,7 @@ let testModelDescription = CoreDataModelDescription(
     ]
 )
 
-let testModel = testModelDescription.makeModel(byMerging: coOpModel)
+let testModel = testModelDescription.makeModel(byMerging: coOpLocalModel)
 
 
 

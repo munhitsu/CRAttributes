@@ -7,9 +7,6 @@ import UIKit
 #endif
 
 
-public var lastLamport: Int64 = 0
-private let lastLamportQueue = DispatchQueue(label: "io.cr3.lastLamport")
-
 
 #if !os(macOS)
 public let localPeerID: Int64 = Int64(UIDevice.current.identifierForVendor!.hashValue)
@@ -20,21 +17,25 @@ public let localPeerID: Int64 = 0
 #endif
 
 
-//TODO: make me atomic
-func getLamport() -> Int64 {
-    return lastLamportQueue.sync {
+
+
+
+actor lamportActor {
+    var lastLamport: Int64 = 0
+    func get() -> Int64 {
         lastLamport += 1
         return lastLamport
     }
+    /**
+     exeute on every incoming message unless you create an Id object
+    */
+    func seen(_ seenLamport: Int64) {
+        lastLamport = max(lastLamport, seenLamport)
+    }
 }
 
-/**
- exeute on every incoming message unless you create an Id object
-*/
-public func newLamportSeen(_ seenLamport: Int64) {
-    lastLamport = max(lastLamport, seenLamport)
-}
 
+var lamport = lamportActor()
 
 
 /**
@@ -42,6 +43,7 @@ public func newLamportSeen(_ seenLamport: Int64) {
  
  scans alll operation logs for the maximum known lamport
  */
+@available(macCatalyst 15.0, *)
 public func updateLastLamportFromCoOpLog(in context: NSManagedObjectContext) {
     //TODO:  deduplicate code through inheritance and maybe even model inheritance to have one query
     let fetchRequestInsert:NSFetchRequest<CoOpMutableStringOperationInsert> = CoOpMutableStringOperationInsert.fetchRequest()
@@ -51,7 +53,9 @@ public func updateLastLamportFromCoOpLog(in context: NSManagedObjectContext) {
     let opsInsert = try? context.fetch(fetchRequestInsert)
     for op in opsInsert ?? [] {
         print("Max insert lamport observed: \(op.lamport)")
-        newLamportSeen(op.lamport)
+        Task.detached {
+            await lamport.seen(op.lamport)
+        }
     }
 
     let fetchRequestDelete:NSFetchRequest<CoOpMutableStringOperationDelete> = CoOpMutableStringOperationDelete.fetchRequest()
@@ -61,7 +65,9 @@ public func updateLastLamportFromCoOpLog(in context: NSManagedObjectContext) {
     let opsDelete = try? context.fetch(fetchRequestDelete)
     for op in opsDelete ?? [] {
         print("Max delete lamport observed: \(op.lamport)")
-        newLamportSeen(op.lamport)
+        Task.detached {
+            await lamport.seen(op.lamport)
+        }
     }
 }
 

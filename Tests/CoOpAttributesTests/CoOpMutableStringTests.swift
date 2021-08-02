@@ -48,7 +48,7 @@ final class CoOpMutableStringTests: XCTestCase {
         super.setUp()
         // Put setup code here. This method is called before the invocation of each test method in the class.
         print("setUpWithError")
-        flushAllCoreData(CoOpPersistenceController.shared.container)
+        flushAllCoreData(CoOpLocalContainerController.shared.container)
     }
 
     override func tearDownWithError() throws {
@@ -58,9 +58,9 @@ final class CoOpMutableStringTests: XCTestCase {
     
     // test lamport creation
     func testStorageAndWalking() {
-        flushAllCoreData(CoOpPersistenceController.shared.container)
+        flushAllCoreData(CoOpLocalContainerController.shared.container)
 
-        let context = CoOpPersistenceController.shared.container.viewContext
+        let context = CoOpLocalContainerController.shared.container.viewContext
         let stringAttribute = CoOpMutableStringAttribute(context: context)
         stringAttribute.version = 0
         XCTAssertEqual(stringAttribute.string, "")
@@ -127,9 +127,9 @@ final class CoOpMutableStringTests: XCTestCase {
 
     
     func testWalkingFaultsBenchmark() {
-        flushAllCoreData(CoOpPersistenceController.shared.container)
+        flushAllCoreData(CoOpLocalContainerController.shared.container)
 
-        let context = CoOpPersistenceController.shared.container.viewContext
+        let context = CoOpLocalContainerController.shared.container.viewContext
         var stringAttribute:CoOpMutableStringAttribute? = CoOpMutableStringAttribute(context: context)
         stringAttribute!.version = 0
         stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: lorem)
@@ -169,9 +169,9 @@ final class CoOpMutableStringTests: XCTestCase {
     }
     
     func testWalkingListBenchmark() {
-        flushAllCoreData(CoOpPersistenceController.shared.container)
+        flushAllCoreData(CoOpLocalContainerController.shared.container)
 
-        let context = CoOpPersistenceController.shared.container.viewContext
+        let context = CoOpLocalContainerController.shared.container.viewContext
         var stringAttribute:CoOpMutableStringAttribute? = CoOpMutableStringAttribute(context: context)
         stringAttribute!.version = 0
         stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: lorem)
@@ -201,7 +201,7 @@ final class CoOpMutableStringTests: XCTestCase {
     func testPerformance() {
         let limiter = 2000 //TODO change limitted interpretation to characters count
 
-        let context = CoOpPersistenceController.shared.container.viewContext
+        let context = CoOpLocalContainerController.shared.container.viewContext
         let stringAttribute = CoOpMutableStringAttribute(context: context)
         stringAttribute.version = 0
         XCTAssertEqual(stringAttribute.string, "")
@@ -225,9 +225,9 @@ final class CoOpMutableStringTests: XCTestCase {
   
     
     func testSaveAndLoad() {
-        flushAllCoreData(CoOpPersistenceController.shared.container)
+        flushAllCoreData(CoOpLocalContainerController.shared.container)
 
-        let context = CoOpPersistenceController.shared.container.viewContext
+        let context = CoOpLocalContainerController.shared.container.viewContext
         var stringAttribute:CoOpMutableStringAttribute? = CoOpMutableStringAttribute(context: context)
         stringAttribute?.version = 0
         XCTAssertEqual(stringAttribute?.string, "")

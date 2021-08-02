@@ -21,11 +21,20 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		BB4B0F4E26AC7F7400B64669 /* CoOpStringInsert.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB4B0F4D26AC7F7400B64669 /* CoOpStringInsert.swift */; };
+		BB71AC5A269E391600FC9FAA /* CoOpAbstractOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB71AC59269E391600FC9FAA /* CoOpAbstractOperation.swift */; };
+		BB71AC5C269E392700FC9FAA /* CoOpLLW.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB71AC5B269E392700FC9FAA /* CoOpLLW.swift */; };
+		BB71AC5E269E393A00FC9FAA /* CoOpDelete.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB71AC5D269E393A00FC9FAA /* CoOpDelete.swift */; };
+		BB71AC60269E394300FC9FAA /* CoOpAttribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB71AC5F269E394300FC9FAA /* CoOpAttribute.swift */; };
+		BB71AC62269E394C00FC9FAA /* CoOpObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB71AC61269E394C00FC9FAA /* CoOpObject.swift */; };
+		BB71AC64269F7F5D00FC9FAA /* CoOpQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB71AC63269F7F5D00FC9FAA /* CoOpQueue.swift */; };
+		BB71AC66269F8CEA00FC9FAA /* ReplcatedOperationPack.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB71AC65269F8CEA00FC9FAA /* ReplcatedOperationPack.swift */; };
+		BB71AC72269F94DC00FC9FAA /* RenderedString.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB71AC71269F94DC00FC9FAA /* RenderedString.swift */; };
 		BB8C443725F82B68006398B2 /* test-mk-editing-trace.json in Resources */ = {isa = PBXBuildFile; fileRef = BB8C442625F82686006398B2 /* test-mk-editing-trace.json */; };
 		BBE0623325F6DEBF00142C33 /* CoOpTextStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBE0623225F6DEBF00142C33 /* CoOpTextStorage.swift */; };
-		OBJ_43 /* CoOpAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* CoOpAttributes.swift */; };
-		OBJ_45 /* CoOpModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* CoOpModel.swift */; };
-		OBJ_46 /* CoOpMutableStringAttribute.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* CoOpMutableStringAttribute.swift */; };
+		OBJ_43 /* Lamport.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* Lamport.swift */; };
+		OBJ_45 /* CoOpStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* CoOpStorage.swift */; };
+		OBJ_46 /* CoOpStringInsertOld.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_12 /* CoOpStringInsertOld.swift */; };
 		OBJ_47 /* CoOpMutableStringOperationDelete.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_13 /* CoOpMutableStringOperationDelete.swift */; };
 		OBJ_48 /* CoOpMutableStringOperationInsert.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_14 /* CoOpMutableStringOperationInsert.swift */; };
 		OBJ_49 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_15 /* Utils.swift */; };
@@ -79,13 +88,24 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		BB4B0F4D26AC7F7400B64669 /* CoOpStringInsert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpStringInsert.swift; sourceTree = "<group>"; };
+		BB71AC59269E391600FC9FAA /* CoOpAbstractOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpAbstractOperation.swift; sourceTree = "<group>"; };
+		BB71AC5B269E392700FC9FAA /* CoOpLLW.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpLLW.swift; sourceTree = "<group>"; };
+		BB71AC5D269E393A00FC9FAA /* CoOpDelete.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpDelete.swift; sourceTree = "<group>"; };
+		BB71AC5F269E394300FC9FAA /* CoOpAttribute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpAttribute.swift; sourceTree = "<group>"; };
+		BB71AC61269E394C00FC9FAA /* CoOpObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpObject.swift; sourceTree = "<group>"; };
+		BB71AC63269F7F5D00FC9FAA /* CoOpQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpQueue.swift; sourceTree = "<group>"; };
+		BB71AC65269F8CEA00FC9FAA /* ReplcatedOperationPack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplcatedOperationPack.swift; sourceTree = "<group>"; };
+		BB71AC71269F94DC00FC9FAA /* RenderedString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderedString.swift; sourceTree = "<group>"; };
+		BB71AC73269F95B900FC9FAA /* docs */ = {isa = PBXFileReference; lastKnownFileType = folder; path = docs; sourceTree = "<group>"; };
+		BB71AC74269F95CA00FC9FAA /* TODO.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = TODO.md; sourceTree = "<group>"; };
 		BB8C442625F82686006398B2 /* test-mk-editing-trace.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "test-mk-editing-trace.json"; sourceTree = "<group>"; };
 		BBE0623225F6DEBF00142C33 /* CoOpTextStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpTextStorage.swift; sourceTree = "<group>"; };
 		"CoOpAttributes::CoOpAttributes::Product" /* CoOpAttributes.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CoOpAttributes.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"CoOpAttributes::CoOpAttributesTests::Product" /* CoOpAttributesTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = CoOpAttributesTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		"CoreDataModelDescription::CoreDataModelDescription::Product" /* CoreDataModelDescription.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CoreDataModelDescription.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		OBJ_11 /* CoOpModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpModel.swift; sourceTree = "<group>"; };
-		OBJ_12 /* CoOpMutableStringAttribute.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpMutableStringAttribute.swift; sourceTree = "<group>"; };
+		OBJ_11 /* CoOpStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpStorage.swift; sourceTree = "<group>"; };
+		OBJ_12 /* CoOpStringInsertOld.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpStringInsertOld.swift; sourceTree = "<group>"; };
 		OBJ_13 /* CoOpMutableStringOperationDelete.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpMutableStringOperationDelete.swift; sourceTree = "<group>"; };
 		OBJ_14 /* CoOpMutableStringOperationInsert.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpMutableStringOperationInsert.swift; sourceTree = "<group>"; };
 		OBJ_15 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
@@ -103,7 +123,7 @@
 		OBJ_32 /* Package.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; name = Package.swift; path = "/Users/munhitsu/hack-memory/CoOpAttributes/.build/checkouts/core-data-model-description/Package.swift"; sourceTree = "<group>"; };
 		OBJ_37 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		OBJ_6 /* Package.swift */ = {isa = PBXFileReference; explicitFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
-		OBJ_9 /* CoOpAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoOpAttributes.swift; sourceTree = "<group>"; };
+		OBJ_9 /* Lamport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lamport.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -134,6 +154,30 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		BB4B0F6B26B1F02800B64669 /* Replicated Model */ = {
+			isa = PBXGroup;
+			children = (
+				BB71AC65269F8CEA00FC9FAA /* ReplcatedOperationPack.swift */,
+			);
+			path = "Replicated Model";
+			sourceTree = "<group>";
+		};
+		BB71ABD92699F95600FC9FAA /* Local Model */ = {
+			isa = PBXGroup;
+			children = (
+				BB71AC59269E391600FC9FAA /* CoOpAbstractOperation.swift */,
+				BB71AC5F269E394300FC9FAA /* CoOpAttribute.swift */,
+				BB71AC61269E394C00FC9FAA /* CoOpObject.swift */,
+				BB71AC5B269E392700FC9FAA /* CoOpLLW.swift */,
+				BB4B0F4D26AC7F7400B64669 /* CoOpStringInsert.swift */,
+				OBJ_12 /* CoOpStringInsertOld.swift */,
+				BB71AC5D269E393A00FC9FAA /* CoOpDelete.swift */,
+				BB71AC63269F7F5D00FC9FAA /* CoOpQueue.swift */,
+				BB71AC71269F94DC00FC9FAA /* RenderedString.swift */,
+			);
+			path = "Local Model";
+			sourceTree = "<group>";
+		};
 		BB8C442525F82677006398B2 /* Data Assets */ = {
 			isa = PBXGroup;
 			children = (
@@ -207,6 +251,8 @@
 		OBJ_5 = {
 			isa = PBXGroup;
 			children = (
+				BB71AC74269F95CA00FC9FAA /* TODO.md */,
+				BB71AC73269F95B900FC9FAA /* docs */,
 				BB8C442525F82677006398B2 /* Data Assets */,
 				OBJ_37 /* README.md */,
 				OBJ_6 /* Package.swift */,
@@ -228,9 +274,10 @@
 		OBJ_8 /* CoOpAttributes */ = {
 			isa = PBXGroup;
 			children = (
-				OBJ_9 /* CoOpAttributes.swift */,
-				OBJ_11 /* CoOpModel.swift */,
-				OBJ_12 /* CoOpMutableStringAttribute.swift */,
+				BB71ABD92699F95600FC9FAA /* Local Model */,
+				BB4B0F6B26B1F02800B64669 /* Replicated Model */,
+				OBJ_11 /* CoOpStorage.swift */,
+				OBJ_9 /* Lamport.swift */,
 				OBJ_15 /* Utils.swift */,
 				OBJ_13 /* CoOpMutableStringOperationDelete.swift */,
 				OBJ_14 /* CoOpMutableStringOperationInsert.swift */,
@@ -393,13 +440,22 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
-				OBJ_43 /* CoOpAttributes.swift in Sources */,
-				OBJ_45 /* CoOpModel.swift in Sources */,
+				OBJ_43 /* Lamport.swift in Sources */,
+				OBJ_45 /* CoOpStorage.swift in Sources */,
 				BBE0623325F6DEBF00142C33 /* CoOpTextStorage.swift in Sources */,
-				OBJ_46 /* CoOpMutableStringAttribute.swift in Sources */,
+				OBJ_46 /* CoOpStringInsertOld.swift in Sources */,
+				BB71AC60269E394300FC9FAA /* CoOpAttribute.swift in Sources */,
 				OBJ_47 /* CoOpMutableStringOperationDelete.swift in Sources */,
+				BB71AC5E269E393A00FC9FAA /* CoOpDelete.swift in Sources */,
+				BB71AC66269F8CEA00FC9FAA /* ReplcatedOperationPack.swift in Sources */,
+				BB71AC5A269E391600FC9FAA /* CoOpAbstractOperation.swift in Sources */,
+				BB71AC72269F94DC00FC9FAA /* RenderedString.swift in Sources */,
 				OBJ_48 /* CoOpMutableStringOperationInsert.swift in Sources */,
+				BB71AC5C269E392700FC9FAA /* CoOpLLW.swift in Sources */,
 				OBJ_49 /* Utils.swift in Sources */,
+				BB71AC64269F7F5D00FC9FAA /* CoOpQueue.swift in Sources */,
+				BB4B0F4E26AC7F7400B64669 /* CoOpStringInsert.swift in Sources */,
+				BB71AC62269E394C00FC9FAA /* CoOpObject.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -485,7 +541,7 @@
 					"SWIFT_PACKAGE=1",
 					"DEBUG=1",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_SWIFT_FLAGS = "$(inherited) -DXcode";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -510,7 +566,7 @@
 					"$(inherited)",
 					"SWIFT_PACKAGE=1",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MACOSX_DEPLOYMENT_TARGET = 11.5;
 				OTHER_SWIFT_FLAGS = "$(inherited) -DXcode";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;

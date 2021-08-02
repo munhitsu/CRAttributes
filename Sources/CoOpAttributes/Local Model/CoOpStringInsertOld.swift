@@ -9,8 +9,8 @@ import Foundation
 import CoreData
 import UIKit
 
-@objc(CoOpMutableStringAttribute)
-public class CoOpMutableStringAttribute: NSManagedObject {
+@objc(CoOpAttributeStringInsert)
+public class CoOpAttributeStringInsert: NSManagedObject {
     var renderedString: NSMutableString?
     var textStorageCache: CoOpTextStorage?
     var selectionStartOp: CoOpMutableStringOperationInsert?
@@ -18,14 +18,28 @@ public class CoOpMutableStringAttribute: NSManagedObject {
     var selectionEndOp: CoOpMutableStringOperationInsert?
     var selectionEndPos: Int = 0
     deinit {
-        print("CoOpMutableStringAttribute.deinit")
+        print("CoOpAttributeStringInsert.deinit")
     }
 }
 
-extension CoOpMutableStringAttribute {
+extension CoOpAttributeStringInsert {
 
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<CoOpMutableStringAttribute> {
-        return NSFetchRequest<CoOpMutableStringAttribute>(entityName: "CoOpMutableStringAttribute")
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<CoOpAttributeStringInsert> {
+        return NSFetchRequest<CoOpAttributeStringInsert>(entityName: "CoOpAttributeStringInsert")
+    }
+
+    @NSManaged public var character: Int32
+    @NSManaged public var next: CoOpAttributeStringInsert?
+    @NSManaged public var prev: CoOpAttributeStringInsert?
+
+}
+
+
+
+extension CoOpAttributeStringInsert {
+
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<CoOpAttributeStringInsert> {
+        return NSFetchRequest<CoOpAttributeStringInsert>(entityName: "CoOpAttributeStringInsert")
     }
     @NSManaged public var version: Int16
 
@@ -53,7 +67,7 @@ protocol MinimalNSMutableAttributedString {
 }
 
 
-extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
+extension CoOpAttributeStringInsert: MinimalNSMutableAttributedString {
     
     
     public var textStorage: CoOpTextStorage {
@@ -72,7 +86,7 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
 //            let _ = Array(self.inserts)
 //            let _ = Array(self.deletes)
 
-            let request:NSFetchRequest<CoOpMutableStringAttribute> = CoOpMutableStringAttribute.fetchRequest()
+            let request:NSFetchRequest<CoOpAttributeStringInsert> = CoOpAttributeStringInsert.fetchRequest()
             request.relationshipKeyPathsForPrefetching = ["inserts.inserts", "inserts.deletes"]
             request.fetchLimit = 1
             request.returnsObjectsAsFaults = false
@@ -277,7 +291,7 @@ extension CoOpMutableStringAttribute: MinimalNSMutableAttributedString {
 }
 
 // legacy
-extension CoOpMutableStringAttribute {
+extension CoOpAttributeStringInsert {
     // returns operation you can insert after (op + len=1 i  split node language)
 //    // if out of bounds then it will return the last operation
 //    func getTreeOperationFor(_ location: Int) -> CoOpMutableStringOperationInsert {
@@ -330,7 +344,7 @@ extension CoOpMutableStringAttribute {
 }
 
 
-extension CoOpMutableStringAttribute {
+extension CoOpAttributeStringInsert {
 //    public override var description: String {
 //        var output = ""
 //        let _ = walkTree() { operation, escape in
@@ -341,7 +355,7 @@ extension CoOpMutableStringAttribute {
 }
 
 
-extension CoOpMutableStringAttribute {
+extension CoOpAttributeStringInsert {
     /**
     based on https://github.com/automerge/automerge-perf
     compare results with https://github.com/dmonad/crdt-benchmarks

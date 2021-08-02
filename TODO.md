@@ -1,5 +1,15 @@
 # TODO
 
+next
+- [] string...
+- [] Implement sample LLW end to end as a POC
+
+
+
+
+
+
+
 - [x] implement cursor
  - [x] view triggered selection update
  - [x] text replace views selection update
