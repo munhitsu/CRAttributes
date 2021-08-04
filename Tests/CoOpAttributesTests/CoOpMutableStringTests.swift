@@ -174,17 +174,24 @@ final class CoOpMutableStringTests: XCTestCase {
         let context = CoOpPersistenceController.shared.container.viewContext
         var stringAttribute:CoOpMutableStringAttribute? = CoOpMutableStringAttribute(context: context)
         stringAttribute!.version = 0
+        // good enough approximation as paste is split into single character operations
         stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: lorem)
+//        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: lorem)
+//        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: lorem)
+//        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: lorem)
+//        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: lorem)
         stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 10), with: "ABCD")
 
         var strCount = stringAttribute?.string.count as! Int
         print("lorem len: \(strCount)")
 
-        do {
-            try context.save()
-        } catch {
-            let nsError = error as NSError
-            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+        printTimeElapsedWhenRunningCode(title: "saving operations") {
+            do {
+                try context.save()
+            } catch {
+                let nsError = error as NSError
+                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+            }
         }
         print("crawl as tree")
         strCount = stringAttribute?.string.count as! Int
@@ -198,29 +205,33 @@ final class CoOpMutableStringTests: XCTestCase {
         }
     }
     
+    // broken
     func testPerformance() {
-        let limiter = 2000 //TODO change limitted interpretation to characters count
+        let operationsLimit = 50000
 
         let context = CoOpPersistenceController.shared.container.viewContext
         let stringAttribute = CoOpMutableStringAttribute(context: context)
         stringAttribute.version = 0
         XCTAssertEqual(stringAttribute.string, "")
         
-        stringAttribute.loadFromJsonIndexDebug(limiter: limiter, bundle: Bundle(for: type(of: self)))
+        printTimeElapsedWhenRunningCode(title:"creating operations") {
+            stringAttribute.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
+        }
         
-        do {
-            try context.save()
-        } catch {
-            let nsError = error as NSError
-            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+        printTimeElapsedWhenRunningCode(title:"saving operations") {
+            do {
+                try context.save()
+            } catch {
+                let nsError = error as NSError
+                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+            }
         }
 
         print("saved")
         measure {
-            print("loading")
-            let _ = stringAttribute.string
+            print("Walking linked list")
+            let _ = stringAttribute.stringFromList()
         }
-
     }
   
     

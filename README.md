@@ -88,6 +88,26 @@ avg 0.165 - after introducing prefetching
 avg 0.047 - after replacing recursion tree walk with a loop (1st run is 0.078)
 
 
-lorem 10K
+10K ops testWalkingListBenchmark
 avg 0.080 - after replacing recursion tree walk with a loop (1st run is 0.118)
 
+
+
+## 10K -  using xcode 13.0 betas:
+Time elapsed for saving operations: 8.156451940536499 s.
+Version 13.0 beta 1
+average: 0.004, relative standard deviation: 30.181%, values: [0.005170, 0.005433, 0.006467, 0.005196, 0.003543, 0.002320, 0.002265, 0.003901, 0.004191, 0.003972]
+
+Version 13.0 beta 4 (13A5201i):
+average: 0.008, relative standard deviation: 30.413%, values: [0.012892, 0.010469, 0.009059, 0.008257, 0.007364, 0.006581, 0.006141, 0.005799, 0.005536, 0.005177]
+
+## 50K ops from testWalkingListBenchmark:
+Time elapsed for saving operations: 201.65687596797943 s.
+average: 0.027, relative standard deviation: 34.418%, values: [0.053208, 0.030514, 0.024415, 0.022593, 0.022593, 0.022532, 0.022595, 0.022581, 0.022704, 0.022588]
+
+
+## opening 50K ops from testPerformance:
+Time elapsed for creating operations: 184.44972002506256 s.
+Time elapsed for saving operations: 146.00910997390747 s.
+
+average: 0.022, relative standard deviation: 37.334%, values: [0.044644, 0.027610, 0.021237, 0.018515, 0.017842, 0.017754, 0.017686, 0.017655, 0.017596, 0.017944]
