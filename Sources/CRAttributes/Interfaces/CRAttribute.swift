@@ -13,32 +13,39 @@ import CoreData
 //TODO: CRAttribute should be a template...
 
 class CRAttribute {
-    let operation: CRAttributeOp
+    var operationObjectID: NSManagedObjectID? = nil
     let container: CRObject
     let name: String
     let type: CRAttributeType
     
-    init(container:CRObject, name:String, type:CRAttributeType) {
+    init(container: CRObject, name: String, type: CRAttributeType) {
         let context = CRStorageController.shared.localContainer.viewContext
-        operation = CRAttributeOp(context: context, container: container.operation, type: type)
         self.container = container
         self.name = name
         self.type = type
-        try! context.save()
+        context.performAndWait {
+            let containerObject: CRObjectOp?
+            containerObject = context.object(with: container.operationObjectID!) as? CRObjectOp
+            let operation = CRAttributeOp(context: context, container: containerObject, type: type)
+            try! context.save()
+            self.operationObjectID = operation.objectID
+        }
     }
     
-    init(from:CRAttributeOp) {
-        operation = from
-        container = CRObject(from:operation.parent as! CRObjectOp)
-        name = operation.name!
-        type = operation.type
+    // Remember to execute within context.perform {}
+    init(from: CRAttributeOp) {
+        operationObjectID = from.objectID
+        container = CRObject(from:from.parent as! CRObjectOp)
+        name = from.name!
+        type = from.type
     }
     
+    // Remember to execute within context.perform {}
     public static func factory(from: CRAttributeOp) -> CRAttribute {
         //TODO: (low) make it nicer (e.g. store types classes in CRAttributeType
         switch from.type {
         case CRAttributeType.mutableString:
-            return CRAttributeMutableString(from:from)
+            return CRAttributeMutableString(from: from)
         case .int:
             return CRAttributeInt(from: from)
         case .float:
@@ -52,7 +59,7 @@ class CRAttribute {
         }
     }
     
-    public static func factory(container:CRObject, name:String, type:CRAttributeType) -> CRAttribute {
+    public static func factory(container: CRObject, name: String, type: CRAttributeType) -> CRAttribute {
         switch type {
         case CRAttributeType.mutableString:
             return CRAttributeMutableString(container: container, name: name)
@@ -70,11 +77,14 @@ class CRAttribute {
     }
     
     public func operationsCount() -> Int {
-        let request:NSFetchRequest<CRAbstractOp> = CRAbstractOp.fetchRequest()
-        request.predicate = NSPredicate(format: "attribute == %@", operation)
-
         let context = CRStorageController.shared.localContainer.viewContext
-        return try! context.count(for: request)
+        var count = 0
+        context.performAndWait {
+            let request:NSFetchRequest<CRAbstractOp> = CRAbstractOp.fetchRequest()
+            request.predicate = NSPredicate(format: "attribute == %@", context.object(with: operationObjectID!))
+            count = try! context.count(for: request)
+        }
+        return count
     }
 }
 
@@ -82,24 +92,29 @@ class CRAttributeInt: CRAttribute {
     
     var value:Int? {
         get {
-            let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
-            request.returnsObjectsAsFaults = false
-            request.fetchLimit = 1
-            request.predicate = NSPredicate(format: "attribute == %@", operation)
-            request.sortDescriptors = [NSSortDescriptor(keyPath: \CRStringInsertOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRStringInsertOp.peerID, ascending: false)]
-
             let context = CRStorageController.shared.localContainer.viewContext
-            let operations:[CRLWWOp] = try! context.fetch(request)
-            if operations.isEmpty {
-                return nil
-            } else {
-                return Int(operations.first!.int)
+            var value:Int?
+            context.performAndWait {
+                let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
+                request.returnsObjectsAsFaults = false
+                request.fetchLimit = 1
+                request.predicate = NSPredicate(format: "attribute == %@", context.object(with:operationObjectID!))
+                request.sortDescriptors = [NSSortDescriptor(keyPath: \CRLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRLWWOp.peerID, ascending: false)]
+
+                let operations:[CRLWWOp] = try! context.fetch(request)
+                if operations.isEmpty {
+                    value = nil
+                } else {
+                    value = Int(operations.first!.int)
+                }
             }
+            return value
         }
         set {
             let context = CRStorageController.shared.localContainer.viewContext
-            _ = CRLWWOp(context: context, attribute: operation, value: newValue!)
-//            try! context.save()
+            context.performAndWait {
+                _ = CRLWWOp(context: context, attribute: context.object(with:operationObjectID!) as? CRAttributeOp, value: newValue!)
+            }
         }
     }
 
@@ -116,23 +131,29 @@ class CRAttributeFloat: CRAttribute {
     
     var value:Float? {
         get {
-            let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
-            request.returnsObjectsAsFaults = false
-            request.fetchLimit = 1
-            request.predicate = NSPredicate(format: "attribute == %@", operation)
-            request.sortDescriptors = [NSSortDescriptor(keyPath: \CRStringInsertOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRStringInsertOp.peerID, ascending: false)]
-
             let context = CRStorageController.shared.localContainer.viewContext
-            let operations:[CRLWWOp] = try! context.fetch(request)
-            if operations.isEmpty {
-                return nil
-            } else {
-                return operations.first!.float
+            var value:Float?
+            context.performAndWait {
+                let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
+                request.returnsObjectsAsFaults = false
+                request.fetchLimit = 1
+                request.predicate = NSPredicate(format: "attribute == %@", context.object(with:operationObjectID!))
+                request.sortDescriptors = [NSSortDescriptor(keyPath: \CRLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRLWWOp.peerID, ascending: false)]
+
+                let operations:[CRLWWOp] = try! context.fetch(request)
+                if operations.isEmpty {
+                    value = nil
+                } else {
+                    value = operations.first!.float
+                }
             }
+            return value
         }
         set {
             let context = CRStorageController.shared.localContainer.viewContext
-            _ = CRLWWOp(context: context, attribute: operation, value: newValue!)
+            context.performAndWait {
+                _ = CRLWWOp(context: context, attribute: context.object(with: operationObjectID!) as? CRAttributeOp, value: newValue!)
+            }
         }
     }
 
@@ -149,23 +170,29 @@ class CRAttributeDate: CRAttribute {
     
     var value:Date? {
         get {
-            let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
-            request.returnsObjectsAsFaults = false
-            request.fetchLimit = 1
-            request.predicate = NSPredicate(format: "attribute == %@", operation)
-            request.sortDescriptors = [NSSortDescriptor(keyPath: \CRStringInsertOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRStringInsertOp.peerID, ascending: false)]
-
             let context = CRStorageController.shared.localContainer.viewContext
-            let operations:[CRLWWOp] = try! context.fetch(request)
-            if operations.isEmpty {
-                return nil
-            } else {
-                return operations.first!.date
+            var value:Date?
+            context.performAndWait {
+                let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
+                request.returnsObjectsAsFaults = false
+                request.fetchLimit = 1
+                request.predicate = NSPredicate(format: "attribute == %@", context.object(with:operationObjectID!))
+                request.sortDescriptors = [NSSortDescriptor(keyPath: \CRLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRLWWOp.peerID, ascending: false)]
+
+                let operations:[CRLWWOp] = try! context.fetch(request)
+                if operations.isEmpty {
+                    value = nil
+                } else {
+                    value = operations.first!.date
+                }
             }
+            return value
         }
         set {
             let context = CRStorageController.shared.localContainer.viewContext
-            _ = CRLWWOp(context: context, attribute: operation, value: newValue!)
+            context.performAndWait {
+                _ = CRLWWOp(context: context, attribute: context.object(with: operationObjectID!) as? CRAttributeOp, value: newValue!)
+            }
         }
     }
 
@@ -182,23 +209,29 @@ class CRAttributeBool: CRAttribute {
     
     var value:Bool? {
         get {
-            let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
-            request.returnsObjectsAsFaults = false
-            request.fetchLimit = 1
-            request.predicate = NSPredicate(format: "attribute == %@", operation)
-            request.sortDescriptors = [NSSortDescriptor(keyPath: \CRStringInsertOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRStringInsertOp.peerID, ascending: false)]
-
             let context = CRStorageController.shared.localContainer.viewContext
-            let operations:[CRLWWOp] = try! context.fetch(request)
-            if operations.isEmpty {
-                return nil
-            } else {
-                return operations.first!.boolean
+            var value:Bool?
+            context.performAndWait {
+                let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
+                request.returnsObjectsAsFaults = false
+                request.fetchLimit = 1
+                request.predicate = NSPredicate(format: "attribute == %@", context.object(with:operationObjectID!))
+                request.sortDescriptors = [NSSortDescriptor(keyPath: \CRLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRLWWOp.peerID, ascending: false)]
+
+                let operations:[CRLWWOp] = try! context.fetch(request)
+                if operations.isEmpty {
+                    value = nil
+                } else {
+                    value = operations.first!.boolean
+                }
             }
+            return value
         }
         set {
             let context = CRStorageController.shared.localContainer.viewContext
-            _ = CRLWWOp(context: context, attribute: operation, value: newValue!)
+            context.performAndWait {
+                _ = CRLWWOp(context: context, attribute: context.object(with: operationObjectID!) as? CRAttributeOp, value: newValue!)
+            }
         }
     }
 
@@ -215,23 +248,29 @@ class CRAttributeString: CRAttribute {
     
     var value:String? {
         get {
-            let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
-            request.returnsObjectsAsFaults = false
-            request.fetchLimit = 1
-            request.predicate = NSPredicate(format: "attribute == %@", operation)
-            request.sortDescriptors = [NSSortDescriptor(keyPath: \CRStringInsertOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRStringInsertOp.peerID, ascending: false)]
-
             let context = CRStorageController.shared.localContainer.viewContext
-            let operations:[CRLWWOp] = try! context.fetch(request)
-            if operations.isEmpty {
-                return nil
-            } else {
-                return operations.first!.string
+            var value:String?
+            context.performAndWait {
+                let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
+                request.returnsObjectsAsFaults = false
+                request.fetchLimit = 1
+                request.predicate = NSPredicate(format: "attribute == %@", context.object(with:operationObjectID!))
+                request.sortDescriptors = [NSSortDescriptor(keyPath: \CRLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRLWWOp.peerID, ascending: false)]
+
+                let operations:[CRLWWOp] = try! context.fetch(request)
+                if operations.isEmpty {
+                    value = nil
+                } else {
+                    value = operations.first!.string
+                }
             }
+            return value
         }
         set {
             let context = CRStorageController.shared.localContainer.viewContext
-            _ = CRLWWOp(context: context, attribute: operation, value: newValue!)
+            context.performAndWait {
+                _ = CRLWWOp(context: context, attribute: context.object(with: operationObjectID!) as? CRAttributeOp, value: newValue!)
+            }
         }
     }
 

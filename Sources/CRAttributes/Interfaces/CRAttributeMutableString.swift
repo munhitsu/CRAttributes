@@ -22,9 +22,13 @@ class CRAttributeMutableString: CRAttribute {
     init(container:CRObject, name:String) {
         textStorage = CRTextStorage()
         super.init(container: container, name: name, type: .mutableString)
-        textStorage.attributeOp = self.operation
+        let context = CRStorageController.shared.localContainer.viewContext
+        context.performAndWait {
+            textStorage.attributeOp = context.object(with: operationObjectID!) as? CRAttributeOp
+        }
     }
 
+    // Remember to execute within context.perform {}
     override init(from:CRAttributeOp) {
         textStorage = CRTextStorage(attributeOp: from)
         super.init(from: from)

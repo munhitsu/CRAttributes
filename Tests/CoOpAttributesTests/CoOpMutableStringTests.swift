@@ -223,12 +223,31 @@ final class CoOpMutableStringTests: XCTestCase {
         XCTAssertEqual(a1.value, 2)
         let a1b:CRAttributeInt = n1.attribute(name: "count", type: .int) as! CRAttributeInt
         XCTAssertEqual(a1.value, a1b.value)
-        XCTAssertEqual(a1.operation.objectID, a1b.operation.objectID)
+        XCTAssertEqual(a1.operationObjectID, a1b.operationObjectID)
 
-        let a2:CRAttributeString = n1.attribute(name: "title", type: .string) as! CRAttributeString
-        XCTAssertEqual(a2.operationsCount(), 0)
-        XCTAssertEqual(a2.value, "")
-                
+        let a2:CRAttributeFloat = n1.attribute(name: "weight", type: .float) as! CRAttributeFloat
+        a2.value = 0.1
+        a2.value = 0.2
+        XCTAssertGreaterThan(Double(a2.value!), 0.19)
+
+        let a3:CRAttributeBool = n1.attribute(name: "active", type: .boolean) as! CRAttributeBool
+        a3.value = false
+        a3.value = true
+        XCTAssertEqual(a3.value, true)
+
+        let a4:CRAttributeDate = n1.attribute(name: "created_on", type: .date) as! CRAttributeDate
+        a4.value = Date()
+        a4.value = Date()
+        XCTAssertEqual(a4.operationsCount(), 2)
+        
+        
+        let a5:CRAttributeString = n1.attribute(name: "title", type: .string) as! CRAttributeString
+        XCTAssertEqual(a5.operationsCount(), 0)
+        XCTAssertNil(a5.value)
+        a5.value = "abc"
+        XCTAssertEqual(a5.operationsCount(), 1)
+        XCTAssertEqual(a5.value, "abc")
+
 //        let a5:CRAttributeMutableString = n1.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
 
     }
