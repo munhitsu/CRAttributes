@@ -17,8 +17,8 @@ import CoreDataModelDescription
 
 let localModelDescription = CoreDataModelDescription(
     entities: [
-        .entity(name: "CoOpAbstractOperation",
-                managedObjectClass: CoOpAbstractOperation.self,
+        .entity(name: "CRAbstractOp",
+                managedObjectClass: CRAbstractOp.self,
                 isAbstract: true,
                 attributes: [
                     .attribute(name: "version", type: .integer16AttributeType, defaultValue: Int16(0)),
@@ -28,56 +28,56 @@ let localModelDescription = CoreDataModelDescription(
                     .attribute(name: "hasTombstone", type: .booleanAttributeType),
                 ],
                 relationships: [
-                    .relationship(name: "parent", destination: "CoOpAbstractOperation", optional: true, toMany: false, inverse: "subOperations"),  // insertion point
-                    .relationship(name: "attribute", destination: "CoOpAttribute", optional: true, toMany: false),  // insertion point
-                    .relationship(name: "subOperations", destination: "CoOpAbstractOperation", optional: true, toMany: true, inverse: "parent"),  // insertion point
+                    .relationship(name: "parent", destination: "CRAbstractOp", optional: true, toMany: false, inverse: "subOperations"),  // insertion point
+                    .relationship(name: "attribute", destination: "CRAttributeOp", optional: true, toMany: false),  // insertion point
+                    .relationship(name: "subOperations", destination: "CRAbstractOp", optional: true, toMany: true, inverse: "parent"),  // insertion point
                 ],
                 indexes: [
                     .index(name: "lamport", elements: [.property(name: "lamport")]),
-                    .index(name: "lamport-peerID", elements: [.property(name: "lamport"),.property(name: "peerID")])
+                    .index(name: "lamportPeerID", elements: [.property(name: "lamport"),.property(name: "peerID")])
                 ],
                 constraints: ["lamport", "peerID"]
         ),
         // object parent is an object it is nested within
         // null parent means it's a top level object
-        // if you are a folder then set yourself a CoOpAttribute "name"
+        // if you are a folder then set yourself a CRAttributeOp "name"
         // subOperations will be either sub attributes or sub objects
-        .entity(name: "CoOpObject",
-                managedObjectClass: CoOpObject.self,
-                parentEntity: "CoOpAbstractOperation",
+        .entity(name: "CRObjectOp",
+                managedObjectClass: CRObjectOp.self,
+                parentEntity: "CRAbstractOp",
                 attributes: [
                     .attribute(name: "rawType", type: .integer16AttributeType, defaultValue: Int16(0))
                 ]
         ),
         // attribute parent is an object attribute is nested within
-        .entity(name: "CoOpAttribute",
-                managedObjectClass: CoOpAttribute.self,
-                parentEntity: "CoOpAbstractOperation",
+        .entity(name: "CRAttributeOp",
+                managedObjectClass: CRAttributeOp.self,
+                parentEntity: "CRAbstractOp",
                 attributes: [
                     .attribute(name: "name", type: .stringAttributeType, defaultValue: "default"),
                     .attribute(name: "rawType", type: .integer16AttributeType, defaultValue: Int16(0))
                 ],
                 relationships: [
-                    .relationship(name: "attributeOperations", destination: "CoOpAbstractOperation", toMany: true, inverse: "attribute"),
+                    .relationship(name: "attributeOperations", destination: "CRAbstractOp", toMany: true, inverse: "attribute"),
                     // we may need the head attribute operation or a quick query to find it - e.g. all operations pointint to this attribute but without parent - shoub be good enough
                 ]
         ),
         .entity(
-            name: "CoOpLWW",
-            managedObjectClass: CoOpLWW.self,
-            parentEntity: "CoOpAbstractOperation",
+            name: "CRLWWOp",
+            managedObjectClass: CRLWWOp.self,
+            parentEntity: "CRAbstractOp",
             attributes: [
-                .attribute(name: "int", type: .integer64AttributeType),
-                .attribute(name: "float", type: .floatAttributeType),
-                .attribute(name: "date", type: .dateAttributeType),
-                .attribute(name: "boolean", type: .booleanAttributeType),
-                .attribute(name: "string", type: .stringAttributeType)
+                .attribute(name: "int", type: .integer64AttributeType, isOptional: true),
+                .attribute(name: "float", type: .floatAttributeType, isOptional: true),
+                .attribute(name: "date", type: .dateAttributeType, isOptional: true),
+                .attribute(name: "boolean", type: .booleanAttributeType, isOptional: true),
+                .attribute(name: "string", type: .stringAttributeType, isOptional: true)
             ]
         ),
         // parent is what was deleted
         .entity(
-            name: "CoOpDelete",
-            managedObjectClass: CoOpMutableStringOperationDelete.self
+            name: "CRDeleteOp",
+            managedObjectClass: CRDeleteOp.self
         ),
         .entity(
             name: "RenderedString",
@@ -87,27 +87,27 @@ let localModelDescription = CoreDataModelDescription(
             ]
         ),
         .entity(
-            name: "CoOpStringInsert",
-            managedObjectClass: CoOpStringInsert.self,
-            parentEntity: "CoOpAbstractOperation",
+            name: "CRStringInsertOp",
+            managedObjectClass: CRStringInsertOp.self,
+            parentEntity: "CRAbstractOp",
             attributes: [
                 .attribute(name: "character", type: .integer32AttributeType),
             ],
             relationships: [
-                .relationship(name: "next", destination: "CoOpStringInsert", toMany: false, inverse: "prev"),
-                .relationship(name: "prev", destination: "CoOpStringInsert", toMany: false, inverse: "next"),
+                .relationship(name: "next", destination: "CRStringInsertOp", toMany: false, inverse: "prev"),
+                .relationship(name: "prev", destination: "CRStringInsertOp", toMany: false, inverse: "next"),
             ]
         ),
         .entity(
-            name: "CoOpQueue",
-            managedObjectClass: CoOpQueue.self,
+            name: "CRQueue",
+            managedObjectClass: CRQueue.self,
             attributes: [
                 .attribute(name: "rawType", type: .integer64AttributeType),
                 .attribute(name: "lamport", type: .integer64AttributeType),
                 .attribute(name: "peerID", type: .integer64AttributeType),
             ],
             relationships: [
-                .relationship(name: "operation", destination: "CoOpAbstractOperation", optional: false, toMany: false)
+                .relationship(name: "operation", destination: "CRAbstractOp", optional: false, toMany: false)
             ]
         )
     ]
@@ -130,17 +130,17 @@ let replicatedModelDescription = CoreDataModelDescription(
         
 
 // global variables are lazy
-public let coOpLocalModel = localModelDescription.makeModel()
-public let coOpReplicatedModel = replicatedModelDescription.makeModel()
+public let CRLocalModel = localModelDescription.makeModel()
+public let CRReplicatedModel = replicatedModelDescription.makeModel()
 
 
 //TODO: follow iwht https://developer.apple.com/documentation/coredata/consuming_relevant_store_changes
-public struct CoOpStorageController {
+public struct CRStorageController {
 
-    static let shared = CoOpStorageController()
+    static let shared = CRStorageController()
 
-    static var preview: CoOpStorageController = {
-        let result = CoOpStorageController(inMemory: true)
+    static var preview: CRStorageController = {
+        let result = CRStorageController(inMemory: true)
 //        let viewContext = result.container.viewContext
 //        for _ in 0..<10 {
 //            let newItem = Note(context: viewContext)
@@ -159,8 +159,8 @@ public struct CoOpStorageController {
 
     init(inMemory: Bool = false) {
 
-        localContainer = NSPersistentContainer(name: "CoOpLocalModel", managedObjectModel: coOpLocalModel)
-        replicatedContainer = NSPersistentCloudKitContainer(name: "CoOpReplicatedModel", managedObjectModel: coOpReplicatedModel)
+        localContainer = NSPersistentContainer(name: "CRLocalModel", managedObjectModel: CRLocalModel)
+        replicatedContainer = NSPersistentCloudKitContainer(name: "CRReplicatedModel", managedObjectModel: CRReplicatedModel)
 
         if inMemory {
             localContainer.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")

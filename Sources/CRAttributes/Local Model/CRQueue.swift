@@ -1,6 +1,6 @@
 //
-//  CoOpObject.swift
-//  CoOpAttributes
+//  CRObject.swift
+//  CRAttributes
 //
 //  Created by Mateusz Lapsa-Malawski on 14/07/2021.
 //
@@ -8,8 +8,8 @@
 import Foundation
 import CoreData
 
-@objc(CoOpQueue)
-public class CoOpQueue: NSManagedObject {
+@objc(CRQueue)
+public class CRQueue: NSManagedObject {
 
 }
 
@@ -18,18 +18,18 @@ enum QueueType: Int16 {
     case upstream = 1 // our user operations we are buffering before packaging
 }
 
-extension CoOpQueue {
+extension CRQueue {
 
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<CoOpQueue> {
-        return NSFetchRequest<CoOpQueue>(entityName: "CoOpQueue")
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<CRQueue> {
+        return NSFetchRequest<CRQueue>(entityName: "CRQueue")
     }
     @NSManaged public var rawType: Int16
-    @NSManaged public var operation: CoOpAbstractOperation?
+    @NSManaged public var operation: CRAbstractOp?
     @NSManaged public var attributeLamport: Int64 // 0 means null
     @NSManaged public var attributePeerID: Int64 // 0 means null
 }
 
-extension CoOpQueue {
+extension CRQueue {
     var type: QueueType {
         get {
             return QueueType(rawValue: self.rawType)!

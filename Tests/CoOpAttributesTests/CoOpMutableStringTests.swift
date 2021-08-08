@@ -42,13 +42,19 @@ let lorem = """
     """
 
 
+// example usage
+extension CRObjectType {
+    static let testNote = CRObjectType(rawValue: 2)
+}
+
+
 final class CoOpMutableStringTests: XCTestCase {
 
     override func setUpWithError() throws {
         super.setUp()
         // Put setup code here. This method is called before the invocation of each test method in the class.
         print("setUpWithError")
-        flushAllCoreData(CoOpLocalContainerController.shared.container)
+        flushAllCoreData(CRStorageController.shared.localContainer)
     }
 
     override func tearDownWithError() throws {
@@ -57,244 +63,288 @@ final class CoOpMutableStringTests: XCTestCase {
     }
     
     // test lamport creation
-    func testStorageAndWalking() {
-        flushAllCoreData(CoOpLocalContainerController.shared.container)
+//    func testStorageAndWalking() {
+//        flushAllCoreData(CoOpLocalContainerController.shared.container)
+//
+//        let context = CoOpLocalContainerController.shared.container.viewContext
+//        let stringAttribute = CoOpMutableStringAttribute(context: context)
+//        stringAttribute.version = 0
+//        XCTAssertEqual(stringAttribute.string, "")
+//        stringAttribute.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: "ABCDEF") // ABCDEF
+//        XCTAssertEqual(stringAttribute.string, "ABCDEF")
+//
+//        XCTAssertEqual(stringAttribute.getOperationFor(position:0).contribution,"")
+//        XCTAssertEqual(stringAttribute.getOperationFor(position:1).contribution,"A")
+//        XCTAssertEqual(stringAttribute.getOperationFor(position:2).contribution,"B")
+//
+//        stringAttribute.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: "123") // 123 ABCDEF
+//        XCTAssertEqual(stringAttribute.string, "123ABCDEF")
+//        stringAttribute.replaceCharacters(in: NSRange.init(location: 6, length: 0), with: "XYZ") // 123 ABC XYZ DEF
+//        XCTAssertEqual(stringAttribute.string, "123ABCXYZDEF")
+//        XCTAssertEqual(stringAttribute.stringFromList(), "123ABCXYZDEF")
+//
+//
+//
+//
+//        do {
+//            try context.save()
+//        } catch {
+//            let nsError = error as NSError
+//            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+//        }
+//        print(stringAttribute.objectID.uriRepresentation())
+//        print(stringAttribute)
+//
+//        XCTAssertEqual(stringAttribute.string, "123ABCXYZDEF")
+//        XCTAssertEqual(stringAttribute.getOperationFor(position:12).contribution, "F")
+//
+//        stringAttribute.replaceCharacters(in: NSRange.init(location: 0, length: 3), with: "")
+//        print(stringAttribute)
+//        XCTAssertEqual(stringAttribute.string, "ABCXYZDEF")
+//
+//        stringAttribute.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: "123")
+//        print(stringAttribute)
+//        XCTAssertEqual(stringAttribute.string, "123ABCXYZDEF")
+//
+//        stringAttribute.replaceCharacters(in: NSRange.init(location: 0, length: 3), with: "000")
+//        print(stringAttribute)
+//        XCTAssertEqual(stringAttribute.string, "000ABCXYZDEF")
+//
+//        stringAttribute.replaceCharacters(in: NSRange.init(location: 6, length: 3), with: "000")
+//        XCTAssertEqual(stringAttribute.string, "000ABC000DEF")
+//
+//        stringAttribute.replaceCharacters(in: NSRange.init(location: 9, length: 3), with: "222222")
+//        XCTAssertEqual(stringAttribute.string, "000ABC000222222")
+//
+//        stringAttribute.replaceCharacters(in: NSRange.init(location: 15, length: 0), with: "111")
+//        XCTAssertEqual(stringAttribute.string, "000ABC000222222111")
+//
+////        XCTAssertThrowsError(try stringAttribute.replaceCharacters(in: NSRange.init(location: 99, length: 0), with: "111"))
+//
+//
+//        do {
+//            try context.save()
+//        } catch {
+//            let nsError = error as NSError
+//            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+//        }
+//
+//    }
+//
+//
+//    func testWalkingFaultsBenchmark() {
+//        flushAllCoreData(CoOpLocalContainerController.shared.container)
+//
+//        let context = CoOpLocalContainerController.shared.container.viewContext
+//        var stringAttribute:CoOpMutableStringAttribute? = CoOpMutableStringAttribute(context: context)
+//        stringAttribute!.version = 0
+//        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: lorem)
+//        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 10), with: "ABCD")
+//
+//        var strCount = stringAttribute?.string.count as! Int
+//        print("lorem len: \(strCount)")
+//
+//        do {
+//            try context.save()
+//        } catch {
+//            let nsError = error as NSError
+//            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+//        }
+//        print("reset")
+//        context.reset()
+//        print("deinit")
+//        stringAttribute = nil
+//
+//        measure {
+//            print("fetch")
+//            let request:NSFetchRequest<CoOpMutableStringAttribute> = CoOpMutableStringAttribute.fetchRequest()
+////            request.fetchLimit = 1
+////            request.relationshipKeyPathsForPrefetching = ["inserts.inserts", "inserts.deletes"]
+////            request.returnsObjectsAsFaults = false
+//            let rows = try? context.fetch(request)
+//            stringAttribute = rows?.first
+//            print("crawl")
+//            strCount = stringAttribute?.string.count as! Int
+//            print("lorem len: \(strCount)")
+//            XCTAssertGreaterThan(strCount, 100)
+//            print("reset")
+//            context.reset()
+//            print("deinit")
+//            stringAttribute = nil
+//        }
+//    }
+//
+//    func testWalkingListBenchmark() {
+//        flushAllCoreData(CoOpLocalContainerController.shared.container)
+//
+//        let context = CoOpLocalContainerController.shared.container.viewContext
+//        var stringAttribute:CoOpMutableStringAttribute? = CoOpMutableStringAttribute(context: context)
+//        stringAttribute!.version = 0
+//        // good enough approximation as paste is split into single character operations
+//        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: lorem)
+////        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: lorem)
+////        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: lorem)
+////        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: lorem)
+////        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: lorem)
+//        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 10), with: "ABCD")
+//
+//        var strCount = stringAttribute?.string.count as! Int
+//        print("lorem len: \(strCount)")
+//
+//        printTimeElapsedWhenRunningCode(title: "saving operations") {
+//            do {
+//                try context.save()
+//            } catch {
+//                let nsError = error as NSError
+//                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+//            }
+//        }
+//        print("crawl as tree")
+//        strCount = stringAttribute?.string.count as! Int
+//
+//        print("lorem len: \(strCount)")
+//        XCTAssertGreaterThan(strCount, 100)
+//
+//        measure {
+//            print("Walking linked list")
+//            _ = stringAttribute?.stringFromList()
+//        }
+//    }
+//
+    
+    
+    func testModeling() {
+        let n1 = CRObject(type: .testNote, container: nil)
+        let a1:CRAttributeInt = n1.attribute(name: "count", type: .int) as! CRAttributeInt
+        a1.value = 1
+        XCTAssertEqual(a1.operationsCount(), 1)
+        a1.value = 2
+        XCTAssertEqual(a1.operationsCount(), 2)
+        XCTAssertEqual(a1.value, 2)
+        let a1b:CRAttributeInt = n1.attribute(name: "count", type: .int) as! CRAttributeInt
+        XCTAssertEqual(a1.value, a1b.value)
+        XCTAssertEqual(a1.operation.objectID, a1b.operation.objectID)
 
-        let context = CoOpLocalContainerController.shared.container.viewContext
-        let stringAttribute = CoOpMutableStringAttribute(context: context)
-        stringAttribute.version = 0
-        XCTAssertEqual(stringAttribute.string, "")
-        stringAttribute.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: "ABCDEF") // ABCDEF
-        XCTAssertEqual(stringAttribute.string, "ABCDEF")
-        
-        XCTAssertEqual(stringAttribute.getOperationFor(position:0).contribution,"")
-        XCTAssertEqual(stringAttribute.getOperationFor(position:1).contribution,"A")
-        XCTAssertEqual(stringAttribute.getOperationFor(position:2).contribution,"B")
-
-        stringAttribute.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: "123") // 123 ABCDEF
-        XCTAssertEqual(stringAttribute.string, "123ABCDEF")
-        stringAttribute.replaceCharacters(in: NSRange.init(location: 6, length: 0), with: "XYZ") // 123 ABC XYZ DEF
-        XCTAssertEqual(stringAttribute.string, "123ABCXYZDEF")
-        XCTAssertEqual(stringAttribute.stringFromList(), "123ABCXYZDEF")
-
-
-        
-        
-        do {
-            try context.save()
-        } catch {
-            let nsError = error as NSError
-            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-        }
-        print(stringAttribute.objectID.uriRepresentation())
-        print(stringAttribute)
-
-        XCTAssertEqual(stringAttribute.string, "123ABCXYZDEF")
-        XCTAssertEqual(stringAttribute.getOperationFor(position:12).contribution, "F")
-
-        stringAttribute.replaceCharacters(in: NSRange.init(location: 0, length: 3), with: "")
-        print(stringAttribute)
-        XCTAssertEqual(stringAttribute.string, "ABCXYZDEF")
-
-        stringAttribute.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: "123")
-        print(stringAttribute)
-        XCTAssertEqual(stringAttribute.string, "123ABCXYZDEF")
-        
-        stringAttribute.replaceCharacters(in: NSRange.init(location: 0, length: 3), with: "000")
-        print(stringAttribute)
-        XCTAssertEqual(stringAttribute.string, "000ABCXYZDEF")
-
-        stringAttribute.replaceCharacters(in: NSRange.init(location: 6, length: 3), with: "000")
-        XCTAssertEqual(stringAttribute.string, "000ABC000DEF")
-
-        stringAttribute.replaceCharacters(in: NSRange.init(location: 9, length: 3), with: "222222")
-        XCTAssertEqual(stringAttribute.string, "000ABC000222222")
-
-        stringAttribute.replaceCharacters(in: NSRange.init(location: 15, length: 0), with: "111")
-        XCTAssertEqual(stringAttribute.string, "000ABC000222222111")
-
-//        XCTAssertThrowsError(try stringAttribute.replaceCharacters(in: NSRange.init(location: 99, length: 0), with: "111"))
-        
-        
-        do {
-            try context.save()
-        } catch {
-            let nsError = error as NSError
-            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-        }
+        let a2:CRAttributeString = n1.attribute(name: "title", type: .string) as! CRAttributeString
+        XCTAssertEqual(a2.operationsCount(), 0)
+        XCTAssertEqual(a2.value, "")
+                
+//        let a5:CRAttributeMutableString = n1.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
 
     }
-
     
-    func testWalkingFaultsBenchmark() {
-        flushAllCoreData(CoOpLocalContainerController.shared.container)
-
-        let context = CoOpLocalContainerController.shared.container.viewContext
-        var stringAttribute:CoOpMutableStringAttribute? = CoOpMutableStringAttribute(context: context)
-        stringAttribute!.version = 0
-        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: lorem)
-        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 10), with: "ABCD")
-
-        var strCount = stringAttribute?.string.count as! Int
-        print("lorem len: \(strCount)")
-
-        do {
-            try context.save()
-        } catch {
-            let nsError = error as NSError
-            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-        }
-        print("reset")
-        context.reset()
-        print("deinit")
-        stringAttribute = nil
-
-        measure {
-            print("fetch")
-            let request:NSFetchRequest<CoOpMutableStringAttribute> = CoOpMutableStringAttribute.fetchRequest()
-//            request.fetchLimit = 1
-//            request.relationshipKeyPathsForPrefetching = ["inserts.inserts", "inserts.deletes"]
-//            request.returnsObjectsAsFaults = false
-            let rows = try? context.fetch(request)
-            stringAttribute = rows?.first
-            print("crawl")
-            strCount = stringAttribute?.string.count as! Int
-            print("lorem len: \(strCount)")
-            XCTAssertGreaterThan(strCount, 100)
-            print("reset")
-            context.reset()
-            print("deinit")
-            stringAttribute = nil
-        }
-    }
     
-    func testWalkingListBenchmark() {
-        flushAllCoreData(CoOpLocalContainerController.shared.container)
-
-        let context = CoOpLocalContainerController.shared.container.viewContext
-        var stringAttribute:CoOpMutableStringAttribute? = CoOpMutableStringAttribute(context: context)
-        stringAttribute!.version = 0
-        // good enough approximation as paste is split into single character operations
-        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: lorem)
-//        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: lorem)
-//        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: lorem)
-//        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: lorem)
-//        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: lorem)
-        stringAttribute!.replaceCharacters(in: NSRange.init(location: 0, length: 10), with: "ABCD")
-
-        var strCount = stringAttribute?.string.count as! Int
-        print("lorem len: \(strCount)")
-
-        printTimeElapsedWhenRunningCode(title: "saving operations") {
-            do {
-                try context.save()
-            } catch {
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-        }
-        print("crawl as tree")
-        strCount = stringAttribute?.string.count as! Int
-
-        print("lorem len: \(strCount)")
-        XCTAssertGreaterThan(strCount, 100)
-
-        measure {
-            print("Walking linked list")
-            _ = stringAttribute?.stringFromList()
-        }
-    }
-    
-    // broken
     func testPerformance() {
-        let operationsLimit = 50000
+        let operationsLimit = 200000
 
-        let context = CoOpLocalContainerController.shared.container.viewContext
-        let stringAttribute = CoOpMutableStringAttribute(context: context)
-        stringAttribute.version = 0
-        XCTAssertEqual(stringAttribute.string, "")
-        
-        printTimeElapsedWhenRunningCode(title:"creating operations") {
+//        let context = CoOpStorageController.shared.localContainer.viewContext
+//        measure {
+
+//            let stringAttribute = CRTextStorage(container: CRObject(), attributeName: "foo")
+            let stringAttribute = NSTextStorage()
+//            let stringAttribute = NSMutableAttributedString(string:"")
+            XCTAssertEqual(stringAttribute.string, "")
+            
             stringAttribute.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
-        }
+            XCTAssertGreaterThan(stringAttribute.string.count, 1000)
         
-        printTimeElapsedWhenRunningCode(title:"saving operations") {
-            do {
-                try context.save()
-            } catch {
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-            }
-        }
-
-        print("saved")
-        measure {
-            print("Walking linked list")
-            let _ = stringAttribute.stringFromList()
-        }
+            let _ = stringAttribute.string
+//        }
     }
+    
   
-    
-    func testSaveAndLoad() {
-        flushAllCoreData(CoOpLocalContainerController.shared.container)
-
-        let context = CoOpLocalContainerController.shared.container.viewContext
-        var stringAttribute:CoOpMutableStringAttribute? = CoOpMutableStringAttribute(context: context)
-        stringAttribute?.version = 0
-        XCTAssertEqual(stringAttribute?.string, "")
-        stringAttribute?.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: "ABCDEF") // ABCDEF
-        stringAttribute?.replaceCharacters(in: NSRange.init(location: 3, length: 3), with: "def") // ABCDEF
-        XCTAssertEqual(stringAttribute?.string, "ABCdef")
+    func testCompareStringPerformance() {
+        let operationsLimit = 500000
         
-        do {
-            try context.save()
-        } catch {
-            let nsError = error as NSError
-            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+        printTimeElapsedWhenRunningCode(title: "NSMutableAttributedString") {
+            let string = NSMutableAttributedString()
+            string.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
         }
-        
-        
-        print("reset")
-        context.reset()
-        print("deinit")
-        stringAttribute = nil
-        
-        let request:NSFetchRequest<CoOpMutableStringAttribute> = CoOpMutableStringAttribute.fetchRequest()
-        request.fetchLimit = 1
-        var rows = try? context.fetch(request)
-        var str = rows?.first
-
-        XCTAssertEqual(str!.string, "ABCdef")
-        str?.replaceCharacters(in: NSRange.init(location: 1, length: 0), with: " ") // ABCDEF
-        str?.replaceCharacters(in: NSRange.init(location: 3, length: 0), with: " ") // ABCDEF
-        str?.replaceCharacters(in: NSRange.init(location: 5, length: 0), with: " ") // ABCDEF
-        str?.replaceCharacters(in: NSRange.init(location: 7, length: 0), with: " ") // ABCDEF
-        str?.replaceCharacters(in: NSRange.init(location: 9, length: 0), with: " ") // ABCDEF
-        XCTAssertEqual(str!.string, "A B C d e f")
-        XCTAssertEqual(str!.stringFromList(), "A B C d e f")
-        print(str?.head.treeDescription ?? "")
-
-        do {
-            try context.save()
-        } catch {
-            let nsError = error as NSError
-            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+        printTimeElapsedWhenRunningCode(title: "NSTextStorage") {
+            let string = NSTextStorage()
+            string.beginEditing()
+            string.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
+            string.endEditing()
         }
-        
-        print("reset")
-        context.reset()
-        print("deinit")
-        stringAttribute = nil
+        printTimeElapsedWhenRunningCode(title: "NSTextStorage") {
+            let string = NSTextStorage()
+            string.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
+        }
+//        printTimeElapsedWhenRunningCode(title: "CRTextStorage") {
+//            let string = CRTextStorage(container: CRObject(), attributeName: "foo")
+//            string.beginEditing()
+//            string.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
+//            string.endEditing()
+//        }
+//        // The line below triggers: "Terminated due to signal 9"
+//        // TODO: (low) investigate why this triggers signal 9 while native NSTextStorage doesn't
+//        printTimeElapsedWhenRunningCode(title: "CRTextStorage-each edit with NSTextStorage notifications") {
+//            let string = CRTextStorage(container: CRObject(), attributeName: "foo")
+//            string.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
+//        }
 
-        rows = try? context.fetch(request)
-        str = rows?.first
-        XCTAssertEqual(str!.string, "A B C d e f")
-        print(str?.head.treeDescription ?? "")
     }
     
-    func testRemoteChanges() {
-        
-    }
+    
+  
+//
+//    func testSaveAndLoad() {
+//        flushAllCoreData(CoOpLocalContainerController.shared.container)
+//
+//        let context = CoOpLocalContainerController.shared.container.viewContext
+//        var stringAttribute:CoOpMutableStringAttribute? = CoOpMutableStringAttribute(context: context)
+//        stringAttribute?.version = 0
+//        XCTAssertEqual(stringAttribute?.string, "")
+//        stringAttribute?.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: "ABCDEF") // ABCDEF
+//        stringAttribute?.replaceCharacters(in: NSRange.init(location: 3, length: 3), with: "def") // ABCDEF
+//        XCTAssertEqual(stringAttribute?.string, "ABCdef")
+//
+//        do {
+//            try context.save()
+//        } catch {
+//            let nsError = error as NSError
+//            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+//        }
+//
+//
+//        print("reset")
+//        context.reset()
+//        print("deinit")
+//        stringAttribute = nil
+//
+//        let request:NSFetchRequest<CoOpMutableStringAttribute> = CoOpMutableStringAttribute.fetchRequest()
+//        request.fetchLimit = 1
+//        var rows = try? context.fetch(request)
+//        var str = rows?.first
+//
+//        XCTAssertEqual(str!.string, "ABCdef")
+//        str?.replaceCharacters(in: NSRange.init(location: 1, length: 0), with: " ") // ABCDEF
+//        str?.replaceCharacters(in: NSRange.init(location: 3, length: 0), with: " ") // ABCDEF
+//        str?.replaceCharacters(in: NSRange.init(location: 5, length: 0), with: " ") // ABCDEF
+//        str?.replaceCharacters(in: NSRange.init(location: 7, length: 0), with: " ") // ABCDEF
+//        str?.replaceCharacters(in: NSRange.init(location: 9, length: 0), with: " ") // ABCDEF
+//        XCTAssertEqual(str!.string, "A B C d e f")
+//        XCTAssertEqual(str!.stringFromList(), "A B C d e f")
+//        print(str?.head.treeDescription ?? "")
+//
+//        do {
+//            try context.save()
+//        } catch {
+//            let nsError = error as NSError
+//            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+//        }
+//
+//        print("reset")
+//        context.reset()
+//        print("deinit")
+//        stringAttribute = nil
+//
+//        rows = try? context.fetch(request)
+//        str = rows?.first
+//        XCTAssertEqual(str!.string, "A B C d e f")
+//        print(str?.head.treeDescription ?? "")
+//    }
+    
 //    static var allTests = [
 //        ("testExample", testExample),
 //    ]
