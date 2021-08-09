@@ -77,7 +77,8 @@ let localModelDescription = CoreDataModelDescription(
         // parent is what was deleted
         .entity(
             name: "CRDeleteOp",
-            managedObjectClass: CRDeleteOp.self
+            managedObjectClass: CRDeleteOp.self,
+            parentEntity: "CRAbstractOp"
         ),
         .entity(
             name: "RenderedString",
@@ -91,7 +92,7 @@ let localModelDescription = CoreDataModelDescription(
             managedObjectClass: CRStringInsertOp.self,
             parentEntity: "CRAbstractOp",
             attributes: [
-                .attribute(name: "character", type: .integer32AttributeType),
+                .attribute(name: "contribution", type: .stringAttributeType),
             ],
             relationships: [
                 .relationship(name: "next", destination: "CRStringInsertOp", toMany: false, inverse: "prev"),
@@ -157,8 +158,7 @@ public struct CRStorageController {
     let localContainer: NSPersistentContainer
     let replicatedContainer: NSPersistentContainer
 
-    init(inMemory: Bool = false) {
-
+    init(inMemory: Bool = true) {
         localContainer = NSPersistentContainer(name: "CRLocalModel", managedObjectModel: CRLocalModel)
         replicatedContainer = NSPersistentCloudKitContainer(name: "CRReplicatedModel", managedObjectModel: CRReplicatedModel)
 
@@ -184,6 +184,5 @@ public struct CRStorageController {
         let replicatedDescription  = replicatedContainer.persistentStoreDescriptions.first
         replicatedDescription?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         replicatedDescription?.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
-        
     }
 }

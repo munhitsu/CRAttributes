@@ -11,6 +11,9 @@ import CoreData
 
 //TODO: (IDEA) - this feels like a perfect candidate for actors, but let's wait for a wider understanding of actors and async/await
 
+//TODO: future - delay attribute creation until it's used - but then it increases prorability of duplicate attribute objects...., so maybe not
+// ideally object creation should instantly create attributes
+
 class CRObject {
     var operationObjectID: NSManagedObjectID? = nil // CRObjectOp
     let type: CRObjectType
@@ -38,7 +41,6 @@ class CRObject {
         operationObjectID = from.objectID
         type = from.type
         prefetchAttributes()
-        
     }
         
     //getOrCreate
@@ -61,7 +63,7 @@ class CRObject {
             let attribute:CRAttribute
             if cdResults.count > 0 {
                 assert(cdResults.first!.type == attributeType)
-                attribute = CRAttribute.factory(from:cdResults.first!)
+                attribute = CRAttribute.factory(from: cdResults.first!, container: self)
             } else {
                 attribute = CRAttribute.factory(container:self, name:name, type:attributeType)
             }
@@ -79,18 +81,19 @@ class CRObject {
         context.performAndWait {
             let request:NSFetchRequest<CRObjectOp> = CRObjectOp.fetchRequest()
             request.returnsObjectsAsFaults = false
-            request.predicate = NSPredicate(format: "typeRaw == %@", type.rawValue)
+            request.predicate = NSPredicate(format: "rawType == \(type.rawValue)")
 
             let cdResults:[CRObjectOp] = try! context.fetch(request)
             
             crResults = cdResults.map { CRObject(from: $0) }
+            
         }
         return crResults
     }
 
     func prefetchAttributes() {
         let context = CRStorageController.shared.localContainer.viewContext
-        context.performAndWait {
+//        context.performAndWait {
             let request:NSFetchRequest<CRAttributeOp> = CRAttributeOp.fetchRequest()
             request.returnsObjectsAsFaults = false
             request.predicate = NSPredicate(format: "parent == %@", context.object(with: operationObjectID!))
@@ -100,10 +103,10 @@ class CRObject {
 
             if cdResults.count > 0 {
                 for attributeOp in cdResults {
-                    attributesDict[attributeOp.name!] = CRAttribute.factory(from:attributeOp)
+                    attributesDict[attributeOp.name!] = CRAttribute.factory(from:attributeOp, container: self)
                 }
             }
-        }
+//        }
     }
         
     func subObjects() -> [CRObject] {

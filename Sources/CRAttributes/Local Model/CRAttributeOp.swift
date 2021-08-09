@@ -63,8 +63,16 @@ extension CRAttributeOp {
 }
 
 extension CRAttributeOp {
-    convenience init(context: NSManagedObjectContext, container: CRObjectOp?, type: CRAttributeType) {
+    convenience init(context: NSManagedObjectContext, container: CRObjectOp?, type: CRAttributeType, name: String) {
         self.init(context: context, parent: container, attribute: nil)
         self.type = type
+        self.name = name
+    }
+    
+    static func allObjects() -> [CRAttributeOp]{
+        let context = CRStorageController.shared.localContainer.viewContext
+        let request:NSFetchRequest<CRAttributeOp> = CRAttributeOp.fetchRequest()
+        request.returnsObjectsAsFaults = false
+        return try! context.fetch(request)
     }
 }

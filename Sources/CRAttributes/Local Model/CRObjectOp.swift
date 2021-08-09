@@ -57,6 +57,13 @@ extension CRObjectOp {
         self.init(context:context, parent: container, attribute: nil)
         self.type = type
     }
+    
+    static func allObjects() -> [CRObjectOp]{
+        let context = CRStorageController.shared.localContainer.viewContext
+        let request:NSFetchRequest<CRObjectOp> = CRObjectOp.fetchRequest()
+        request.returnsObjectsAsFaults = false
+        return try! context.fetch(request)
+    }
 }
 
 

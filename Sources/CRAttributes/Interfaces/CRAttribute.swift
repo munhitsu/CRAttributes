@@ -26,36 +26,36 @@ class CRAttribute {
         context.performAndWait {
             let containerObject: CRObjectOp?
             containerObject = context.object(with: container.operationObjectID!) as? CRObjectOp
-            let operation = CRAttributeOp(context: context, container: containerObject, type: type)
+            let operation = CRAttributeOp(context: context, container: containerObject, type: type, name: name)
             try! context.save()
             self.operationObjectID = operation.objectID
         }
     }
     
     // Remember to execute within context.perform {}
-    init(from: CRAttributeOp) {
+    init(from: CRAttributeOp, container: CRObject) {
         operationObjectID = from.objectID
-        container = CRObject(from:from.parent as! CRObjectOp)
+        self.container = container
         name = from.name!
         type = from.type
     }
     
     // Remember to execute within context.perform {}
-    public static func factory(from: CRAttributeOp) -> CRAttribute {
+    public static func factory(from attributeOperation: CRAttributeOp, container: CRObject) -> CRAttribute {
         //TODO: (low) make it nicer (e.g. store types classes in CRAttributeType
-        switch from.type {
+        switch attributeOperation.type {
         case CRAttributeType.mutableString:
-            return CRAttributeMutableString(from: from)
+            return CRAttributeMutableString(from: attributeOperation, container: container)
         case .int:
-            return CRAttributeInt(from: from)
+            return CRAttributeInt(from: attributeOperation, container: container)
         case .float:
-            return CRAttributeFloat(from: from)
+            return CRAttributeFloat(from: attributeOperation, container: container)
         case .date:
-            return CRAttributeDate(from: from)
+            return CRAttributeDate(from: attributeOperation, container: container)
         case .boolean:
-            return CRAttributeBool(from: from)
+            return CRAttributeBool(from: attributeOperation, container: container)
         case .string:
-            return CRAttributeString(from: from)
+            return CRAttributeString(from: attributeOperation, container: container)
         }
     }
     
@@ -122,8 +122,8 @@ class CRAttributeInt: CRAttribute {
         super.init(container: container, name: name, type: .int)
     }
 
-    override init(from:CRAttributeOp) {
-        super.init(from: from)
+    override init(from: CRAttributeOp, container: CRObject) {
+        super.init(from: from, container: container)
     }
 }
 
@@ -161,8 +161,8 @@ class CRAttributeFloat: CRAttribute {
         super.init(container: container, name: name, type: .float)
     }
 
-    override init(from:CRAttributeOp) {
-        super.init(from: from)
+    override init(from: CRAttributeOp, container: CRObject) {
+        super.init(from: from, container: container)
     }
 }
 
@@ -200,8 +200,8 @@ class CRAttributeDate: CRAttribute {
         super.init(container: container, name: name, type: .date)
     }
 
-    override init(from:CRAttributeOp) {
-        super.init(from: from)
+    override init(from: CRAttributeOp, container: CRObject) {
+        super.init(from: from, container: container)
     }
 }
 
@@ -239,8 +239,8 @@ class CRAttributeBool: CRAttribute {
         super.init(container: container, name: name, type: .boolean)
     }
 
-    override init(from:CRAttributeOp) {
-        super.init(from: from)
+    override init(from: CRAttributeOp, container: CRObject) {
+        super.init(from: from, container: container)
     }
 }
 
@@ -278,7 +278,7 @@ class CRAttributeString: CRAttribute {
         super.init(container: container, name: name, type: .string)
     }
 
-    override init(from:CRAttributeOp) {
-        super.init(from: from)
+    override init(from: CRAttributeOp, container: CRObject) {
+        super.init(from: from, container: container)
     }
 }

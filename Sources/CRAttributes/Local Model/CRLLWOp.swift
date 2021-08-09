@@ -53,4 +53,11 @@ extension CRLWWOp {
         self.string = value
         try! context.save()
     }
+
+    static func allObjects() -> [CRLWWOp]{
+        let context = CRStorageController.shared.localContainer.viewContext
+        let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
+        request.returnsObjectsAsFaults = false
+        return try! context.fetch(request)
+    }
 }

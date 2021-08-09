@@ -17,21 +17,21 @@ import UIKit
 
 
 class CRAttributeMutableString: CRAttribute {
-    let textStorage: CRTextStorage
+    var textStorage: CRTextStorage? = nil
 
     init(container:CRObject, name:String) {
-        textStorage = CRTextStorage()
         super.init(container: container, name: name, type: .mutableString)
         let context = CRStorageController.shared.localContainer.viewContext
         context.performAndWait {
-            textStorage.attributeOp = context.object(with: operationObjectID!) as? CRAttributeOp
+            let attributeOp = context.object(with: operationObjectID!) as? CRAttributeOp
+            textStorage = CRTextStorage(attributeOp: attributeOp!)
         }
     }
 
     // Remember to execute within context.perform {}
-    override init(from:CRAttributeOp) {
+    override init(from:CRAttributeOp, container: CRObject) {
         textStorage = CRTextStorage(attributeOp: from)
-        super.init(from: from)
+        super.init(from: from, container: container)
     }
 }
 
@@ -47,33 +47,24 @@ extension NSAttributedString.Key {
 class CRTextStorage: NSTextStorage {
 //    let container: CRObject
 //    let attributeName: String
-    var attributeOp: CRAttributeOp?
-    let attributedString: NSMutableAttributedString // TODO: later use the internal storage
+    var attributeObjectID: NSManagedObjectID
+    var attributedString: NSMutableAttributedString? = nil
+    // TODO: later use the internal storage
 
-    override init() {
-//        self.container = container
-//        self.attributeName = attributeName
-        attributedString = NSMutableAttributedString(string:"")
-        attributeOp = nil
-        super.init()
-    }
+//    override init() {
+////        self.container = container
+////        self.attributeName = attributeName
+//        attributedString = NSMutableAttributedString(string:"")
+//        attributeOp = nil
+//        super.init()
+//    }
     
+    //Execute within context.perform
     init(attributeOp: CRAttributeOp) {
-        self.attributeOp = attributeOp
-        
-        //we can pre-fetch only inserts as deletes are never used here
-        let request:NSFetchRequest<CRStringInsertOp> = CRStringInsertOp.fetchRequest()
-        request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "attribute == %@", attributeOp)
-        request.sortDescriptors = [NSSortDescriptor(keyPath: \CRStringInsertOp.parent, ascending: true)]
-
-        let context = CRStorageController.shared.localContainer.viewContext
-
-        let cdOps:[CRStringInsertOp] = try! context.fetch(request)
-        print(cdOps.first)
-        //TODO: walk and render
+        self.attributeObjectID = attributeOp.objectID
         attributedString = NSMutableAttributedString(string:"")
         super.init()
+        prebuildAttributedStringFromOperations(attributeOp: attributeOp)
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -81,6 +72,7 @@ class CRTextStorage: NSTextStorage {
 //        self.container = CRObject()
 //        self.attributeName = ""
         attributedString = NSMutableAttributedString(string:"")
+        attributeObjectID = NSManagedObjectID()
         super.init(coder: aDecoder)
     }
 
@@ -88,27 +80,28 @@ class CRTextStorage: NSTextStorage {
     // source https://developer.apple.com/documentation/foundation/nsattributedstring/1412616-string
     public override var string: String {
         get {
-            return attributedString.string
+            return attributedString?.string ?? ""
         }
     }
 
     public override func attributes(at location: Int, effectiveRange range: NSRangePointer?) -> [NSAttributedString.Key : Any] {
-        return attributedString.attributes(at: location, effectiveRange: range)
+        return attributedString?.attributes(at: location, effectiveRange: range) ?? [:]
     }
 
     public override func replaceCharacters(in range: NSRange, with str: String) {
+        let context = CRStorageController.shared.localContainer.viewContext
         beginEditing()
 
-        let attributeOp:CRAttributeOp? = nil
+        let attributeOp:CRAttributeOp = (context.object(with: attributeObjectID) as? CRAttributeOp)!
 
         // insertion address
         var parentOp:CRStringInsertOp? = nil
         if range.location > 0 {
-            parentOp = operationForPosition(range.location)
+            parentOp = operationForPosition(range.location - 1)
         }
 
         // deleting operations
-        for position in range.location...(range.location + range.length) {
+        for position in range.location..<(range.location + range.length) {
             let op = operationForPosition(position)
             markDeleted(op)
         }
@@ -116,23 +109,25 @@ class CRTextStorage: NSTextStorage {
         let strAttributed = NSMutableAttributedString(string: str)
         
         var prevOp = parentOp
-        for position in 0...strAttributed.length {
-            let newOp:CRStringInsertOp = CRStringInsertOp(context: CRStorageController.shared.localContainer.viewContext, parent: prevOp, attribute: attributeOp, character: strAttributed.mutableString.character(at: position))
-            strAttributed.setAttributes([.opObjectID: newOp.objectID], range: NSRange(location: position, length: 1))
+        for position in 0..<strAttributed.length {
+            let newOp:CRStringInsertOp = CRStringInsertOp(context: context, parent: prevOp, attribute: attributeOp, contribution: strAttributed.mutableString.character(at: position))
             prevOp?.next = newOp
             newOp.prev = prevOp
+            try! context.save()
+            strAttributed.setAttributes([.opObjectID: newOp.objectID], range: NSRange(location: position, length: 1))
             prevOp = newOp
         }
         
-        attributedString.replaceCharacters(in: range, with: strAttributed)
+        attributedString!.replaceCharacters(in: range, with: strAttributed)
 
         let tailPosition = range.location + strAttributed.length + 1
-        if tailPosition <= attributedString.length {
+        if tailPosition <= attributedString!.length {
             let tailOp = operationForPosition(tailPosition)
             tailOp.prev = prevOp
             prevOp?.next = tailOp
         }
-        
+        try! context.save()
+
         edited(.editedCharacters,
                range: range,
                changeInLength: (str as NSString).length - range.length)
@@ -140,11 +135,10 @@ class CRTextStorage: NSTextStorage {
         
         // TODO: how to fire it on the last endEditing ?
         // we could listen to: didProcessEditingNotification
-        try! CRStorageController.shared.localContainer.viewContext.save()
     }
     
     func operationForPosition(_ position: Int) -> CRStringInsertOp {
-        let objectID:NSManagedObjectID = attributedString.attribute(.opObjectID, at: position, effectiveRange: nil) as! NSManagedObjectID
+        let objectID:NSManagedObjectID = attributedString!.attribute(.opObjectID, at: position, effectiveRange: nil) as! NSManagedObjectID
         return CRStorageController.shared.localContainer.viewContext.object(with: objectID) as! CRStringInsertOp
     }
 
@@ -154,7 +148,8 @@ class CRTextStorage: NSTextStorage {
 //    }
     
     func markDeleted(_ operation: CRAbstractOp) {
-        let _ = CRDeleteOp(context: CRStorageController.shared.localContainer.viewContext, parent: operation, attribute: operation.attribute)
+        let context = CRStorageController.shared.localContainer.viewContext
+        let _ = CRDeleteOp(context: context, parent: operation, attribute: operation.attribute)
         operation.hasTombstone = true
     }
     
@@ -167,7 +162,28 @@ class CRTextStorage: NSTextStorage {
 //        endEditing()
     }
 
-    
+    func prebuildAttributedStringFromOperations(attributeOp: CRAttributeOp) {
+        let request:NSFetchRequest<CRStringInsertOp> = CRStringInsertOp.fetchRequest()
+        request.returnsObjectsAsFaults = false
+        request.predicate = NSPredicate(format: "attribute == %@", attributeOp)
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \CRStringInsertOp.parent, ascending: true)]
+
+        let context = CRStorageController.shared.localContainer.viewContext
+
+        let cdOps:[CRStringInsertOp] = try! context.fetch(request)
+        let head = cdOps.first
+        
+        attributedString = NSMutableAttributedString("")
+        var node:CRStringInsertOp? = head
+        while node != nil {
+            if node!.hasTombstone == false {
+                let contribution = NSMutableAttributedString(string:node!.contribution)
+                contribution.setAttributes([.opObjectID: node!.objectID], range: NSRange(location: 0, length: 1))
+                attributedString!.append(contribution)
+            }
+            node = node!.next
+        }
+    }
 }
 
 
@@ -188,7 +204,7 @@ extension NSMutableAttributedString {
 
         if let array = json as? [Any] {
             for (arrayIndex, indexOp) in array.enumerated() {
-                if arrayIndex > limiter {
+                if arrayIndex >= limiter {
                     break
                 }
 

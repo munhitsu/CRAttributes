@@ -213,6 +213,30 @@ final class CoOpMutableStringTests: XCTestCase {
 //
     
     
+    func testAttributeRecovery() {
+        let n1 = CRObject(type: .testNote, container: nil)
+        let a1:CRAttributeInt = n1.attribute(name: "count", type: .int) as! CRAttributeInt
+        a1.value = 1
+        a1.value = 2
+        XCTAssertEqual(a1.value, 2)
+//        print("CRObjectOps:")
+//        print(CRObjectOp.allObjects())
+//
+//        print("CRAttributeOps:")
+//        print(CRAttributeOp.allObjects())
+//
+//        print("CRLLWOps:")
+//        print(CRLWWOp.allObjects())
+
+        let b_n1 = CRObject.allObjects(type: .testNote)[0]
+        XCTAssertEqual(b_n1.operationObjectID, n1.operationObjectID)
+        
+        let b_a1:CRAttributeInt = b_n1.attribute(name: "count", type: .int) as! CRAttributeInt
+        XCTAssertEqual(b_a1.operationObjectID, a1.operationObjectID)
+        XCTAssertEqual(b_a1.value, 2)
+
+    }
+    
     func testModeling() {
         let n1 = CRObject(type: .testNote, container: nil)
         let a1:CRAttributeInt = n1.attribute(name: "count", type: .int) as! CRAttributeInt
@@ -248,32 +272,60 @@ final class CoOpMutableStringTests: XCTestCase {
         XCTAssertEqual(a5.operationsCount(), 1)
         XCTAssertEqual(a5.value, "abc")
 
-//        let a5:CRAttributeMutableString = n1.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
+        let a6:CRAttributeMutableString = n1.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
+        XCTAssertEqual(a6.operationsCount(), 0)
+//        XCTAssertNil(a6.value)
+        a6.textStorage!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: "A")
+        XCTAssertEqual(a6.textStorage!.string, "A")
+        a6.textStorage!.replaceCharacters(in: NSRange.init(location: 1, length: 0), with: "BCDEF")
+        XCTAssertEqual(a6.textStorage!.string, "ABCDEF")
+        a6.textStorage!.replaceCharacters(in: NSRange.init(location: 3, length: 3), with: "def")
+        XCTAssertEqual(a6.textStorage!.string, "ABCdef")
 
-    }
-    
-    
-    func testPerformance() {
-        let operationsLimit = 200000
-
-//        let context = CoOpStorageController.shared.localContainer.viewContext
-//        measure {
-
-//            let stringAttribute = CRTextStorage(container: CRObject(), attributeName: "foo")
-            let stringAttribute = NSTextStorage()
-//            let stringAttribute = NSMutableAttributedString(string:"")
-            XCTAssertEqual(stringAttribute.string, "")
-            
-            stringAttribute.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
-            XCTAssertGreaterThan(stringAttribute.string.count, 1000)
         
-            let _ = stringAttribute.string
-//        }
+        let operationsLimit = 10
+        let string = NSMutableAttributedString()
+        string.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
+        
+        let a7:CRAttributeMutableString = n1.attribute(name: "note2", type: .mutableString) as! CRAttributeMutableString
+        a7.textStorage!.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
+        XCTAssertEqual(string.string, a7.textStorage!.string)
+        XCTAssertEqual(a7.operationsCount(), operationsLimit)
+        
+        
+        
+        //restoring
+        
+        let b_n1 = CRObject.allObjects(type: .testNote)[0]
+        XCTAssertEqual(b_n1.operationObjectID, n1.operationObjectID)
+        
+        let b_a1:CRAttributeInt = b_n1.attribute(name: "count", type: .int) as! CRAttributeInt
+        XCTAssertEqual(b_a1.operationObjectID, a1.operationObjectID)
+        XCTAssertEqual(b_a1.value, 2)
+
+        let b_a2:CRAttributeFloat = b_n1.attribute(name: "weight", type: .float) as! CRAttributeFloat
+        XCTAssertGreaterThan(Double(b_a2.value!), 0.19)
+
+        let b_a3:CRAttributeBool = b_n1.attribute(name: "active", type: .boolean) as! CRAttributeBool
+        XCTAssertEqual(b_a3.value, true)
+
+        let b_a4:CRAttributeDate = b_n1.attribute(name: "created_on", type: .date) as! CRAttributeDate
+        XCTAssertEqual(b_a4.operationsCount(), 2)
+
+        let b_a5:CRAttributeString = b_n1.attribute(name: "title", type: .string) as! CRAttributeString
+        XCTAssertEqual(b_a5.value, "abc")
+
+
+        let b_a6:CRAttributeMutableString = b_n1.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
+        XCTAssertEqual(b_a6.textStorage!.string, "ABCdef")
+
+        let b_a7:CRAttributeMutableString = b_n1.attribute(name: "note2", type: .mutableString) as! CRAttributeMutableString
+        XCTAssertEqual(string.string, b_a7.textStorage!.string)
+
     }
-    
   
-    func testCompareStringPerformance() {
-        let operationsLimit = 500000
+    func testCompareStringPerformanceUpstream() {
+        let operationsLimit = 50000
         
         printTimeElapsedWhenRunningCode(title: "NSMutableAttributedString") {
             let string = NSMutableAttributedString()
@@ -289,12 +341,13 @@ final class CoOpMutableStringTests: XCTestCase {
             let string = NSTextStorage()
             string.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
         }
-//        printTimeElapsedWhenRunningCode(title: "CRTextStorage") {
-//            let string = CRTextStorage(container: CRObject(), attributeName: "foo")
-//            string.beginEditing()
-//            string.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
-//            string.endEditing()
-//        }
+        printTimeElapsedWhenRunningCode(title: "CRTextStorage") {
+            let noteObject = CRObject(type: .testNote, container: nil)
+            let noteAttribute:CRAttributeMutableString = noteObject.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
+            noteAttribute.textStorage!.beginEditing()
+            noteAttribute.textStorage!.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
+            noteAttribute.textStorage!.endEditing()
+        }
 //        // The line below triggers: "Terminated due to signal 9"
 //        // TODO: (low) investigate why this triggers signal 9 while native NSTextStorage doesn't
 //        printTimeElapsedWhenRunningCode(title: "CRTextStorage-each edit with NSTextStorage notifications") {
@@ -302,6 +355,24 @@ final class CoOpMutableStringTests: XCTestCase {
 //            string.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
 //        }
 
+    }
+    
+    func testLoadingPerformance() {
+        let operationsLimit = 50000
+        
+        printTimeElapsedWhenRunningCode(title: "CRTextStorage") {
+            let noteObject = CRObject(type: .testNote, container: nil)
+            let noteAttribute:CRAttributeMutableString = noteObject.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
+            noteAttribute.textStorage!.beginEditing()
+            noteAttribute.textStorage!.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
+            noteAttribute.textStorage!.endEditing()
+        }
+        measure {
+            let noteObject = CRObject.allObjects(type: .testNote)[0]
+            XCTAssertEqual(noteObject.operationObjectID, noteObject.operationObjectID)
+            let noteAttribute = noteObject.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
+            let _ = noteAttribute.textStorage?.string
+        }
     }
     
     
