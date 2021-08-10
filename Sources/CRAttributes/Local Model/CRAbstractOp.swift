@@ -24,7 +24,7 @@ extension CRAbstractOp {
     @NSManaged public var peerID: Int64
     @NSManaged public var hasTombstone: Bool
     @NSManaged public var parent: CRAbstractOp?
-    @objc @NSManaged public var attribute: CRAttributeOp?
+    @NSManaged public var attribute: CRAttributeOp?
     @NSManaged public var subOperations: NSSet?
 
 }

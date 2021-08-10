@@ -17,7 +17,7 @@
 
 
 
-## ObjectID can chance
+## ObjectID can change
 - When you create a new object, but it has not yet been committed, its id will be temporary. You can check for this condition with isTemporaryId.
 - When the backing store has been mutated, i.e. if you're using iCloud and you migrate to a new version of your database.
 

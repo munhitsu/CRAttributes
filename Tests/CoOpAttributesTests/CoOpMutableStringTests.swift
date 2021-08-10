@@ -357,7 +357,7 @@ final class CoOpMutableStringTests: XCTestCase {
 
     }
     
-    func testLoadingPerformance() {
+    func testLoadingPerformanceUpstreamOperations() {
         let operationsLimit = 50000
         
         printTimeElapsedWhenRunningCode(title: "CRTextStorage") {
