@@ -27,3 +27,7 @@ position search is user driven, so cursor and linked list seems... optimal
 
 
 # meeting with Nick - back to the drawing board
+use attributedstring attributes to record references to the operations (it's still missing deleted operations so it's not a complete form)
+serialise attributedstring
+separate cloudkit form into occasional big envelopes to exchange
+ 

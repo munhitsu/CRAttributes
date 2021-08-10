@@ -375,6 +375,23 @@ final class CoOpMutableStringTests: XCTestCase {
         }
     }
     
+    func testLoadingPerformanceSinglePaste() {
+        print("String length:\(lorem.count*5)")
+        printTimeElapsedWhenRunningCode(title: "CRTextStorage") {
+            let noteObject = CRObject(type: .testNote, container: nil)
+            let noteAttribute:CRAttributeMutableString = noteObject.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
+            noteAttribute.textStorage!.beginEditing()
+            noteAttribute.textStorage!.replaceCharacters(in: NSRange(location: 0, length: 0), with: lorem+lorem+lorem+lorem+lorem)
+            noteAttribute.textStorage!.endEditing()
+        }
+//        CRStorageController.shared.localContainer.viewContext.reset()
+        measure {
+            let noteObject = CRObject.allObjects(type: .testNote)[0]
+            XCTAssertEqual(noteObject.operationObjectID, noteObject.operationObjectID)
+            let noteAttribute = noteObject.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
+            let _ = noteAttribute.textStorage?.string
+        }
+    }
     
   
 //
