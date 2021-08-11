@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "CoOpAttributes::CoOpAttributes"
-               BuildableName = "CoOpAttributes.framework"
-               BlueprintName = "CoOpAttributes"
-               ReferencedContainer = "container:CoOpAttributes.xcodeproj">
+               BlueprintIdentifier = "CRAttributes::CRAttributes"
+               BuildableName = "CRAttributes.framework"
+               BlueprintName = "CRAttributes"
+               ReferencedContainer = "container:CRAttributes.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -32,10 +32,10 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "CoOpAttributes::CoOpAttributesTests"
-               BuildableName = "CoOpAttributesTests.xctest"
-               BlueprintName = "CoOpAttributesTests"
-               ReferencedContainer = "container:CoOpAttributes.xcodeproj">
+               BlueprintIdentifier = "CRAttributes::CRAttributesTests"
+               BuildableName = "CRAttributesTests.xctest"
+               BlueprintName = "CRAttributesTests"
+               ReferencedContainer = "container:CRAttributes.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -50,12 +50,6 @@
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES">
-      <CommandLineArguments>
-         <CommandLineArgument
-            argument = "-com.apple.CoreData.SQLDebug 1"
-            isEnabled = "NO">
-         </CommandLineArgument>
-      </CommandLineArguments>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

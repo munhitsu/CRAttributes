@@ -13,9 +13,9 @@ private let lastLamportQueue = DispatchQueue(label: "io.cr3.lastLamport")
 
 
 #if !os(macOS)
-public let localPeerID: Int64 = Int64(UIDevice.current.identifierForVendor!.hashValue)
+public let localPeerID: UUID = UIDevice.current.identifierForVendor!
 #else
-public let localPeerID: Int64 = 0
+public let localPeerID: UUID = UUID()
 // IOPlatformUUID
 //FIX me - we need macOS implementation (apparently GUID https://developer.apple.com/library/archive/releasenotes/General/ValidateAppStoreReceipt/Chapters/ValidateLocally.html#//apple_ref/doc/uid/TP40010573-CH1-SW14)
 #endif
@@ -61,14 +61,14 @@ public func updateLastLamportFromCoOpLog(in context: NSManagedObjectContext) {
 
 struct CROperationID: Comparable {
     var lamport: Int64
-    var peerID: Int64
+    var peerID: UUID
     
     init() {
         self.peerID = localPeerID
         self.lamport = getLamport()
     }
     
-    init(lamport: Int64, peerID: Int64) {
+    init(lamport: Int64, peerID: UUID) {
         self.lamport = lamport
         self.peerID = peerID
         newLamportSeen(lamport)
@@ -80,5 +80,18 @@ struct CROperationID: Comparable {
         } else {
             return lhs.lamport < rhs.lamport
         }
+    }
+}
+
+
+
+extension UUID {
+    public static func < (lhs: UUID, rhs: UUID) -> Bool {
+        return lhs.uuidString < rhs.uuidString
+        //TODO: speed it up!
+        // maybe with https://developer.apple.com/documentation/foundation/nsuuid/1411420-getbytes
+        // I wonder if I can use https://developer.apple.com/documentation/accelerate/vs128
+        // or https://developer.apple.com/documentation/accelerate/vdsp
+        // as its a comparision of 2 int128 or 2 vectors
     }
 }

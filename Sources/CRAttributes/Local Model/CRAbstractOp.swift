@@ -21,11 +21,12 @@ extension CRAbstractOp {
 
     @NSManaged public var version: Int16
     @NSManaged public var lamport: Int64
-    @NSManaged public var peerID: Int64
+    @NSManaged public var peerID: UUID
     @NSManaged public var hasTombstone: Bool
     @NSManaged public var parent: CRAbstractOp?
     @NSManaged public var attribute: CRAttributeOp?
     @NSManaged public var subOperations: NSSet?
+    // TODO: add boolean attributes that it's waiting in pecific queues
 
 }
 

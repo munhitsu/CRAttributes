@@ -20,7 +20,7 @@ extension ReplicatedOperationPack {
     
     @NSManaged public var version: Int16
     @NSManaged public var attributeLamport: Int64 // 0 means null
-    @NSManaged public var attributePeerID: Int64 // 0 means null
+    @NSManaged public var attributePeerID: UUID // 0 means null
     @NSManaged public var rawPack: Data?
 }
 

@@ -24,7 +24,7 @@ let localModelDescription = CoreDataModelDescription(
                     .attribute(name: "version", type: .integer16AttributeType, defaultValue: Int16(0)),
 
                     .attribute(name: "lamport", type: .integer64AttributeType),
-                    .attribute(name: "peerID", type: .integer64AttributeType),
+                    .attribute(name: "peerID", type: .UUIDAttributeType),
                     .attribute(name: "hasTombstone", type: .booleanAttributeType),
                 ],
                 relationships: [
@@ -117,12 +117,12 @@ let localModelDescription = CoreDataModelDescription(
 
 let replicatedModelDescription = CoreDataModelDescription(
     entities: [
-        .entity(name: "ReplicatedOperationPack",
+        .entity(name: "OperationsBundle",
                 managedObjectClass: ReplicatedOperationPack.self,
                 attributes: [
                     .attribute(name: "version", type: .integer16AttributeType, defaultValue: Int16(0)),
                     .attribute(name: "attributeLamport", type: .integer64AttributeType),
-                    .attribute(name: "attributePeerID", type: .integer64AttributeType),
+                    .attribute(name: "attributePeerID", type: .UUIDAttributeType),
                     .attribute(name: "rawPack", type: .binaryDataAttributeType),
                 ]
         )

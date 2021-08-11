@@ -105,9 +105,27 @@ average: 0.008, relative standard deviation: 30.413%, values: [0.012892, 0.01046
 Time elapsed for saving operations: 201.65687596797943 s.
 average: 0.027, relative standard deviation: 34.418%, values: [0.053208, 0.030514, 0.024415, 0.022593, 0.022593, 0.022532, 0.022595, 0.022581, 0.022704, 0.022588]
 
-
 ## opening 50K ops from testPerformance:
 Time elapsed for creating operations: 184.44972002506256 s.
 Time elapsed for saving operations: 146.00910997390747 s.
-
 average: 0.022, relative standard deviation: 37.334%, values: [0.044644, 0.027610, 0.021237, 0.018515, 0.017842, 0.017754, 0.017686, 0.017655, 0.017596, 0.017944]
+
+
+## migrated to AttributedString
+
+## opening 50K ops from testLoadingPerformanceUpstreamOperations
+1. Time to convert upstream operations into the string:
+Time elapsed for CRTextStorage: 11.415868997573853 s.
+
+2. Time to rebuild the string from the saved from:
+average: 0.073, relative standard deviation: 10.412%, values: [0.094805, 0.073712, 0.070798, 0.069835, 0.069900, 0.068491, 0.069923, 0.068632, 0.069312, 0.069902]
+
+
+
+
+# Tasks
+rebuilding model
+```
+cd "CRAttributes/Sources/CRAttributes/Replicated Model"
+protoc --swift_out=. model.proto
+```

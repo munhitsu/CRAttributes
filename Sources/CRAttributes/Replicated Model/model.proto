@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+
+message OperationID {
+    int64 lamport = 1;
+    bytes peerID = 2; //UUID to 16 bytes
+}
+//TODO: later optimise representation to e.g. 2 x int64
+
+
+message BaseOperation {
+    int64 version = 1;
+    OperationID id = 2;
+    OperationID parentID = 3;
+    OperationID attributeID = 4; // TODO: it's not always needed so maybe handcraft the objects
+}
+
+message ObjectOperation {
+    BaseOperation base = 1;
+    int64 rawType = 2;
+}
+
+message AttributeOperation {
+    BaseOperation base = 1;
+    string name = 2;
+    int64 rawType = 3;
+}
+
+message DeleteOperation {
+    BaseOperation base = 1;
+}
+
+message LLWOperation {
+    int64 int = 1;
+    float float = 2;
+    double date = 3;
+    bool boolean = 4;
+    string string = 5;
+}
+
+message StringInsertOperation {
+    BaseOperation base = 1;
+    string contribution = 2;
+}
+
+message OperationsBundle {
+    int64 version = 1;
+    OperationID attributeID = 2;
+    repeated ObjectOperation objectOperations = 3;
+    repeated AttributeOperation attributeOperations = 4;
+    repeated DeleteOperation deleteOperations = 5;
+    repeated LLWOperation llwOperations = 6;
+    repeated StringInsertOperation stringInsertOperations = 7;
+}

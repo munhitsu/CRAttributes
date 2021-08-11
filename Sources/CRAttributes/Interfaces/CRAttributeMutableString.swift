@@ -197,6 +197,8 @@ extension NSMutableAttributedString {
     func loadFromJsonIndexDebug(limiter: Int = 1000000, bundle: Bundle = Bundle.main) {
         guard let path = bundle.path(forResource: "test-mk-editing-trace", ofType: "json") else {
             fatalError() }
+        
+        
         let url = URL(fileURLWithPath: path)
         let data = try? Data(contentsOf: url, options: .mappedIfSafe)
         let json = try? JSONSerialization.jsonObject(with: data!)

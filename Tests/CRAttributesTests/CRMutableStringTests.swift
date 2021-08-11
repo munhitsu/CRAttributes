@@ -1,6 +1,6 @@
 import XCTest
 import CoreData
-@testable import CoOpAttributes
+@testable import CRAttributes
 
 
 let lorem = """
@@ -42,13 +42,13 @@ let lorem = """
     """
 
 
-// example usage
+// adding out object type
 extension CRObjectType {
     static let testNote = CRObjectType(rawValue: 2)
 }
 
 
-final class CoOpMutableStringTests: XCTestCase {
+final class CRMutableStringTests: XCTestCase {
 
     override func setUpWithError() throws {
         super.setUp()
@@ -285,7 +285,7 @@ final class CoOpMutableStringTests: XCTestCase {
         
         let operationsLimit = 10
         let string = NSMutableAttributedString()
-        string.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
+        string.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: Self.self))
         
         let a7:CRAttributeMutableString = n1.attribute(name: "note2", type: .mutableString) as! CRAttributeMutableString
         a7.textStorage!.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
