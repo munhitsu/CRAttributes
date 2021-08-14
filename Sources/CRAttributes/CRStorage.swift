@@ -21,11 +21,11 @@ let localModelDescription = CoreDataModelDescription(
                 managedObjectClass: CRAbstractOp.self,
                 isAbstract: true,
                 attributes: [
-                    .attribute(name: "version", type: .integer16AttributeType, defaultValue: Int16(0)),
-
+                    .attribute(name: "version", type: .integer32AttributeType, defaultValue: Int32(0)),
                     .attribute(name: "lamport", type: .integer64AttributeType),
                     .attribute(name: "peerID", type: .UUIDAttributeType),
                     .attribute(name: "hasTombstone", type: .booleanAttributeType),
+                    .attribute(name: "upstreamQueue", type: .booleanAttributeType, defaultValue: true) //TODO: remove default
                 ],
                 relationships: [
                     .relationship(name: "parent", destination: "CRAbstractOp", optional: true, toMany: false, inverse: "subOperations"),  // insertion point
@@ -37,80 +37,75 @@ let localModelDescription = CoreDataModelDescription(
                     .index(name: "lamportPeerID", elements: [.property(name: "lamport"),.property(name: "peerID")])
                 ],
                 constraints: ["lamport", "peerID"]
-        ),
+               ),
         // object parent is an object it is nested within
         // null parent means it's a top level object
         // if you are a folder then set yourself a CRAttributeOp "name"
         // subOperations will be either sub attributes or sub objects
-        .entity(name: "CRObjectOp",
-                managedObjectClass: CRObjectOp.self,
-                parentEntity: "CRAbstractOp",
-                attributes: [
-                    .attribute(name: "rawType", type: .integer16AttributeType, defaultValue: Int16(0))
-                ]
-        ),
+            .entity(name: "CRObjectOp",
+                    managedObjectClass: CRObjectOp.self,
+                    parentEntity: "CRAbstractOp",
+                    attributes: [
+                        .attribute(name: "rawType", type: .integer32AttributeType, defaultValue: Int32(0))
+                    ]
+                   ),
         // attribute parent is an object attribute is nested within
         .entity(name: "CRAttributeOp",
                 managedObjectClass: CRAttributeOp.self,
                 parentEntity: "CRAbstractOp",
                 attributes: [
                     .attribute(name: "name", type: .stringAttributeType, defaultValue: "default"),
-                    .attribute(name: "rawType", type: .integer16AttributeType, defaultValue: Int16(0))
+                    .attribute(name: "rawType", type: .integer32AttributeType, defaultValue: Int32(0))
                 ],
                 relationships: [
                     .relationship(name: "attributeOperations", destination: "CRAbstractOp", toMany: true, inverse: "attribute"),
                     // we may need the head attribute operation or a quick query to find it - e.g. all operations pointint to this attribute but without parent - shoub be good enough
                 ]
-        ),
-        .entity(
-            name: "CRLWWOp",
-            managedObjectClass: CRLWWOp.self,
-            parentEntity: "CRAbstractOp",
-            attributes: [
-                .attribute(name: "int", type: .integer64AttributeType, isOptional: true),
-                .attribute(name: "float", type: .floatAttributeType, isOptional: true),
-                .attribute(name: "date", type: .dateAttributeType, isOptional: true),
-                .attribute(name: "boolean", type: .booleanAttributeType, isOptional: true),
-                .attribute(name: "string", type: .stringAttributeType, isOptional: true)
-            ]
-        ),
+               ),
+        .entity(name: "CRLWWOp",
+                managedObjectClass: CRLWWOp.self,
+                parentEntity: "CRAbstractOp",
+                attributes: [
+                    .attribute(name: "int", type: .integer64AttributeType, isOptional: true),
+                    .attribute(name: "float", type: .floatAttributeType, isOptional: true),
+                    .attribute(name: "date", type: .dateAttributeType, isOptional: true),
+                    .attribute(name: "boolean", type: .booleanAttributeType, isOptional: true),
+                    .attribute(name: "string", type: .stringAttributeType, isOptional: true)
+                ]
+               ),
         // parent is what was deleted
-        .entity(
-            name: "CRDeleteOp",
-            managedObjectClass: CRDeleteOp.self,
-            parentEntity: "CRAbstractOp"
-        ),
-        .entity(
-            name: "RenderedString",
-            managedObjectClass: RenderedString.self,
-            attributes: [
-                .attribute(name: "string", type: .binaryDataAttributeType)
-            ]
-        ),
-        .entity(
-            name: "CRStringInsertOp",
-            managedObjectClass: CRStringInsertOp.self,
-            parentEntity: "CRAbstractOp",
-            attributes: [
-                .attribute(name: "contribution", type: .stringAttributeType),
-            ],
-            relationships: [
-                .relationship(name: "next", destination: "CRStringInsertOp", toMany: false, inverse: "prev"),
-                .relationship(name: "prev", destination: "CRStringInsertOp", toMany: false, inverse: "next"),
-            ]
-        ),
-        .entity(
-            name: "CRQueue",
-            managedObjectClass: CRQueue.self,
-            attributes: [
-                .attribute(name: "rawType", type: .integer64AttributeType),
-                .attribute(name: "lamport", type: .integer64AttributeType),
-                .attribute(name: "peerID", type: .integer64AttributeType),
-            ],
-            relationships: [
-                .relationship(name: "operation", destination: "CRAbstractOp", optional: false, toMany: false)
-            ]
-        )
+        .entity(name: "CRDeleteOp",
+                managedObjectClass: CRDeleteOp.self,
+                parentEntity: "CRAbstractOp"
+               ),
+        .entity(name: "RenderedString",
+                managedObjectClass: RenderedString.self,
+                attributes: [
+                    .attribute(name: "string", type: .binaryDataAttributeType)
+                ]
+               ),
+        .entity(name: "CRStringInsertOp",
+                managedObjectClass: CRStringInsertOp.self,
+                parentEntity: "CRAbstractOp",
+                attributes: [
+                    .attribute(name: "contribution", type: .stringAttributeType),
+                ],
+                relationships: [
+                    .relationship(name: "next", destination: "CRStringInsertOp", toMany: false, inverse: "prev"),
+                    .relationship(name: "prev", destination: "CRStringInsertOp", toMany: false, inverse: "next"),
+                ]
+               ),
+        .entity(name: "CRQueue",
+                managedObjectClass: CRQueue.self,
+                attributes: [
+                    .attribute(name: "rawType", type: .integer64AttributeType),
+                    .attribute(name: "lamport", type: .integer64AttributeType),
+                    .attribute(name: "peerID", type: .integer64AttributeType),
+                ],
+                relationships: [
+                    .relationship(name: "operation", destination: "CRAbstractOp", optional: false, toMany: false)
+                ]
+               )
     ]
 )
 
@@ -118,17 +113,16 @@ let localModelDescription = CoreDataModelDescription(
 let replicatedModelDescription = CoreDataModelDescription(
     entities: [
         .entity(name: "OperationsBundle",
-                managedObjectClass: ReplicatedOperationPack.self,
+                managedObjectClass: OperationsBundle.self,
                 attributes: [
-                    .attribute(name: "version", type: .integer16AttributeType, defaultValue: Int16(0)),
-                    .attribute(name: "attributeLamport", type: .integer64AttributeType),
-                    .attribute(name: "attributePeerID", type: .UUIDAttributeType),
-                    .attribute(name: "rawPack", type: .binaryDataAttributeType),
+                    .attribute(name: "version", type: .integer32AttributeType, defaultValue: Int32(0)),
+                    .attribute(name: "peerID", type: .UUIDAttributeType, defaultValue: localPeerID),
+                    .attribute(name: "data", type: .binaryDataAttributeType),
                 ]
-        )
+               )
     ]
 )
-        
+
 
 // global variables are lazy
 public let CRLocalModel = localModelDescription.makeModel()
@@ -137,36 +131,36 @@ public let CRReplicatedModel = replicatedModelDescription.makeModel()
 
 //TODO: follow iwht https://developer.apple.com/documentation/coredata/consuming_relevant_store_changes
 public struct CRStorageController {
-
+    
     static let shared = CRStorageController()
-
+    
     static var preview: CRStorageController = {
         let result = CRStorageController(inMemory: true)
-//        let viewContext = result.container.viewContext
-//        for _ in 0..<10 {
-//            let newItem = Note(context: viewContext)
-//        }
-//        do {
-//            try viewContext.save()
-//        } catch {
-//            let nsError = error as NSError
-//            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-//        }
+        //        let viewContext = result.container.viewContext
+        //        for _ in 0..<10 {
+        //            let newItem = Note(context: viewContext)
+        //        }
+        //        do {
+        //            try viewContext.save()
+        //        } catch {
+        //            let nsError = error as NSError
+        //            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+        //        }
         return result
     }()
-
+    
     let localContainer: NSPersistentContainer
     let replicatedContainer: NSPersistentContainer
-
+    
     init(inMemory: Bool = true) {
         localContainer = NSPersistentContainer(name: "CRLocalModel", managedObjectModel: CRLocalModel)
         replicatedContainer = NSPersistentCloudKitContainer(name: "CRReplicatedModel", managedObjectModel: CRReplicatedModel)
-
+        
         if inMemory {
             localContainer.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
             replicatedContainer.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
         }
-
+        
         localContainer.loadPersistentStores(completionHandler: { (_, error) in
             if let error = error as NSError? {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
@@ -174,7 +168,7 @@ public struct CRStorageController {
         })
         localContainer.viewContext.automaticallyMergesChangesFromParent = true
         localContainer.viewContext.mergePolicy = NSMergePolicy(merge: .overwriteMergePolicyType)
-
+        
         
         replicatedContainer.loadPersistentStores(completionHandler: { (_, error) in
             if let error = error as NSError? {
@@ -184,5 +178,41 @@ public struct CRStorageController {
         let replicatedDescription  = replicatedContainer.persistentStoreDescriptions.first
         replicatedDescription?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         replicatedDescription?.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+    }
+    
+    static func protoOperationsBundle() -> ProtoOperationsBundle {
+        //TODO: (high) put a limit on the size of the Bundle
+        // CloudKit sync operation limit is 400 records or 2 MB
+        let operations = CRAbstractOp.upstreamWaitingOperations()
+        var bundle = ProtoOperationsBundle()
+        for operation in operations {
+            switch operation {
+            case let op as CRObjectOp:
+                bundle.objectOperations.append(op.protoOperation())
+            case let op as CRAttributeOp:
+                bundle.attributeOperations.append(op.protoOperation())
+            case let op as CRDeleteOp:
+                bundle.deleteOperations.append(op.protoOperation())
+            case let op as CRLWWOp:
+                bundle.lwwOperations.append(op.protoOperation())
+            case let op as CRStringInsertOp:
+                bundle.stringInsertOperations.append(op.protoOperation())
+            default:
+                fatalNotImplemented()
+            }
+        }
+        return bundle
+    }
+    
+    static func uploadOperations() {
+        let context = CRStorageController.shared.replicatedContainer.newBackgroundContext()
+        let cdBundle = OperationsBundle(context: context)
+        cdBundle.version = 0
+        cdBundle.data = try? protoOperationsBundle().serializedData()
+        try? context.save()
+    }
+    
+    static func downloadOperations() {
+        
     }
 }

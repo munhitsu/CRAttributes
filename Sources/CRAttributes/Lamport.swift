@@ -95,3 +95,11 @@ extension UUID {
         // as its a comparision of 2 int128 or 2 vectors
     }
 }
+
+public extension UUID {
+
+    var data: Data {
+        return withUnsafeBytes(of: self.uuid, { Data($0) })
+    }
+
+}

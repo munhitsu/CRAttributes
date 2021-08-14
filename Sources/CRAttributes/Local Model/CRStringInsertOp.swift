@@ -37,4 +37,11 @@ extension CRStringInsertOp {
         self.contribution = NSString(characters: &uc, length: 1) as String
         //TODO: migrate to init(utf16CodeUnits: UnsafePointer<unichar>, count: Int)
     }
+
+    func protoOperation() -> ProtoStringInsertOperation {
+        return ProtoStringInsertOperation.with {
+            $0.base = super.protoOperation()
+            $0.contribution = contribution
+        }
+    }
 }

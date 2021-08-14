@@ -19,5 +19,9 @@ extension CRDeleteOp {
         return NSFetchRequest<CRDeleteOp>(entityName: "CRDeleteOp")
     }
 
-
+    func protoOperation() -> ProtoDeleteOperation {
+        return ProtoDeleteOperation.with {
+            $0.base = super.protoOperation()
+        }
+    }
 }

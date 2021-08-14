@@ -98,7 +98,7 @@ class CRAttributeInt: CRAttribute {
                 let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
                 request.returnsObjectsAsFaults = false
                 request.fetchLimit = 1
-                request.predicate = NSPredicate(format: "attribute == %@", context.object(with:operationObjectID!))
+                request.predicate = NSPredicate(format: "parent == %@", context.object(with:operationObjectID!))
                 request.sortDescriptors = [NSSortDescriptor(keyPath: \CRLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRLWWOp.peerID, ascending: false)]
 
                 let operations:[CRLWWOp] = try! context.fetch(request)
@@ -137,7 +137,7 @@ class CRAttributeFloat: CRAttribute {
                 let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
                 request.returnsObjectsAsFaults = false
                 request.fetchLimit = 1
-                request.predicate = NSPredicate(format: "attribute == %@", context.object(with:operationObjectID!))
+                request.predicate = NSPredicate(format: "parent == %@", context.object(with:operationObjectID!))
                 request.sortDescriptors = [NSSortDescriptor(keyPath: \CRLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRLWWOp.peerID, ascending: false)]
 
                 let operations:[CRLWWOp] = try! context.fetch(request)
@@ -176,7 +176,7 @@ class CRAttributeDate: CRAttribute {
                 let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
                 request.returnsObjectsAsFaults = false
                 request.fetchLimit = 1
-                request.predicate = NSPredicate(format: "attribute == %@", context.object(with:operationObjectID!))
+                request.predicate = NSPredicate(format: "parent == %@", context.object(with:operationObjectID!))
                 request.sortDescriptors = [NSSortDescriptor(keyPath: \CRLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRLWWOp.peerID, ascending: false)]
 
                 let operations:[CRLWWOp] = try! context.fetch(request)
@@ -215,7 +215,7 @@ class CRAttributeBool: CRAttribute {
                 let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
                 request.returnsObjectsAsFaults = false
                 request.fetchLimit = 1
-                request.predicate = NSPredicate(format: "attribute == %@", context.object(with:operationObjectID!))
+                request.predicate = NSPredicate(format: "parent == %@", context.object(with:operationObjectID!))
                 request.sortDescriptors = [NSSortDescriptor(keyPath: \CRLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRLWWOp.peerID, ascending: false)]
 
                 let operations:[CRLWWOp] = try! context.fetch(request)
@@ -254,7 +254,7 @@ class CRAttributeString: CRAttribute {
                 let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
                 request.returnsObjectsAsFaults = false
                 request.fetchLimit = 1
-                request.predicate = NSPredicate(format: "attribute == %@", context.object(with:operationObjectID!))
+                request.predicate = NSPredicate(format: "parent == %@", context.object(with:operationObjectID!))
                 request.sortDescriptors = [NSSortDescriptor(keyPath: \CRLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRLWWOp.peerID, ascending: false)]
 
                 let operations:[CRLWWOp] = try! context.fetch(request)

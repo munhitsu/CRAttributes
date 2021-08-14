@@ -48,17 +48,18 @@ extension CRObjectType {
 }
 
 
-final class CRMutableStringTests: XCTestCase {
+final class CRLocalOperationsTests: XCTestCase {
 
     override func setUpWithError() throws {
         super.setUp()
         // Put setup code here. This method is called before the invocation of each test method in the class.
-        print("setUpWithError")
+        print("setUpWithError()")
         flushAllCoreData(CRStorageController.shared.localContainer)
     }
 
     override func tearDownWithError() throws {
         super.tearDown()
+        print("tearDownWithError()")
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
     
@@ -244,7 +245,11 @@ final class CRMutableStringTests: XCTestCase {
         XCTAssertEqual(a1.operationsCount(), 1)
         a1.value = 2
         XCTAssertEqual(a1.operationsCount(), 2)
-        XCTAssertEqual(a1.value, 2)
+        a1.value = 3
+        XCTAssertEqual(a1.operationsCount(), 3)
+        a1.value = 4
+        XCTAssertEqual(a1.operationsCount(), 4)
+        XCTAssertEqual(a1.value, 4)
         let a1b:CRAttributeInt = n1.attribute(name: "count", type: .int) as! CRAttributeInt
         XCTAssertEqual(a1.value, a1b.value)
         XCTAssertEqual(a1.operationObjectID, a1b.operationObjectID)
@@ -301,7 +306,7 @@ final class CRMutableStringTests: XCTestCase {
         
         let b_a1:CRAttributeInt = b_n1.attribute(name: "count", type: .int) as! CRAttributeInt
         XCTAssertEqual(b_a1.operationObjectID, a1.operationObjectID)
-        XCTAssertEqual(b_a1.value, 2)
+        XCTAssertEqual(b_a1.value, 4)
 
         let b_a2:CRAttributeFloat = b_n1.attribute(name: "weight", type: .float) as! CRAttributeFloat
         XCTAssertGreaterThan(Double(b_a2.value!), 0.19)

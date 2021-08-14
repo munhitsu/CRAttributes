@@ -54,3 +54,9 @@ public struct Stack<Element> {
         return items.removeLast()
     }
 }
+
+
+
+extension Data {
+    func object<T>() -> T { withUnsafeBytes { $0.load(as: T.self) } }
+}

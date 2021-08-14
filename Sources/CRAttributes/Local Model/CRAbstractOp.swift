@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreData
+import SwiftProtobuf
 
 @objc(CRAbstractOp)
 public class CRAbstractOp: NSManagedObject {
@@ -19,13 +20,15 @@ extension CRAbstractOp {
         return NSFetchRequest<CRAbstractOp>(entityName: "CRAbstractOp")
     }
 
-    @NSManaged public var version: Int16
+    @NSManaged public var version: Int32
     @NSManaged public var lamport: Int64
     @NSManaged public var peerID: UUID
     @NSManaged public var hasTombstone: Bool
     @NSManaged public var parent: CRAbstractOp?
-    @NSManaged public var attribute: CRAttributeOp?
+    @NSManaged public var attribute: CRAttributeOp? // primary use to prefetch all string operations, secondary to get counts of operations per attribute
     @NSManaged public var subOperations: NSSet?
+
+    @NSManaged public var upstreamQueue: Bool
     // TODO: add boolean attributes that it's waiting in pecific queues
 
 }
@@ -62,7 +65,44 @@ extension CRAbstractOp {
         self.hasTombstone = false
     }
     
+    convenience init(context: NSManagedObjectContext, proto:ProtoBaseOperation) {
+        self.init(context:context)
+        self.version = proto.version
+        self.lamport = proto.id.lamport
+        self.peerID = proto.id.peerID.object()
+        self.parent
+        self.attribute
+    }
+    
     func operationID() -> CROperationID {
         return CROperationID(lamport: lamport, peerID: peerID)
+    }
+    
+    func protoOperationID() -> ProtoOperationID {
+        return ProtoOperationID.with {
+            $0.lamport = lamport
+            $0.peerID = peerID.data
+        }
+    }
+    
+    static func upstreamWaitingOperations() -> [CRAbstractOp] {
+        let context = CRStorageController.shared.localContainer.viewContext
+        let request:NSFetchRequest<CRAbstractOp> = CRAbstractOp.fetchRequest()
+        request.returnsObjectsAsFaults = false
+        request.predicate = NSPredicate(format: "upstreamQueue == true")
+        return try! context.fetch(request)
+    }
+    
+    func protoOperation() -> ProtoBaseOperation {
+        return ProtoBaseOperation.with {
+            $0.version = version
+            $0.id = protoOperationID()
+            if let parent = parent { //TODO: implementation of null for message is language specific
+                $0.parentID = parent.protoOperationID()
+            }
+            if let attribute = attribute { //TODO: implementation of null for message is language specific
+                $0.attributeID = attribute.protoOperationID()
+            }
+        }
     }
 }

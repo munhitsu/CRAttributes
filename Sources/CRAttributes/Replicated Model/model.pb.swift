@@ -20,7 +20,7 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
-struct OperationID {
+struct ProtoOperationID {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
@@ -35,15 +35,15 @@ struct OperationID {
   init() {}
 }
 
-struct BaseOperation {
+struct ProtoBaseOperation {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var version: Int64 = 0
+  var version: Int32 = 0
 
-  var id: OperationID {
-    get {return _id ?? OperationID()}
+  var id: ProtoOperationID {
+    get {return _id ?? ProtoOperationID()}
     set {_id = newValue}
   }
   /// Returns true if `id` has been explicitly set.
@@ -51,8 +51,8 @@ struct BaseOperation {
   /// Clears the value of `id`. Subsequent reads from it will return its default value.
   mutating func clearID() {self._id = nil}
 
-  var parentID: OperationID {
-    get {return _parentID ?? OperationID()}
+  var parentID: ProtoOperationID {
+    get {return _parentID ?? ProtoOperationID()}
     set {_parentID = newValue}
   }
   /// Returns true if `parentID` has been explicitly set.
@@ -61,8 +61,8 @@ struct BaseOperation {
   mutating func clearParentID() {self._parentID = nil}
 
   /// TODO: it's not always needed so maybe handcraft the objects
-  var attributeID: OperationID {
-    get {return _attributeID ?? OperationID()}
+  var attributeID: ProtoOperationID {
+    get {return _attributeID ?? ProtoOperationID()}
     set {_attributeID = newValue}
   }
   /// Returns true if `attributeID` has been explicitly set.
@@ -74,18 +74,18 @@ struct BaseOperation {
 
   init() {}
 
-  fileprivate var _id: OperationID? = nil
-  fileprivate var _parentID: OperationID? = nil
-  fileprivate var _attributeID: OperationID? = nil
+  fileprivate var _id: ProtoOperationID? = nil
+  fileprivate var _parentID: ProtoOperationID? = nil
+  fileprivate var _attributeID: ProtoOperationID? = nil
 }
 
-struct ObjectOperation {
+struct ProtoObjectOperation {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var base: BaseOperation {
-    get {return _base ?? BaseOperation()}
+  var base: ProtoBaseOperation {
+    get {return _base ?? ProtoBaseOperation()}
     set {_base = newValue}
   }
   /// Returns true if `base` has been explicitly set.
@@ -93,22 +93,22 @@ struct ObjectOperation {
   /// Clears the value of `base`. Subsequent reads from it will return its default value.
   mutating func clearBase() {self._base = nil}
 
-  var rawType: Int64 = 0
+  var rawType: Int32 = 0
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
-  fileprivate var _base: BaseOperation? = nil
+  fileprivate var _base: ProtoBaseOperation? = nil
 }
 
-struct AttributeOperation {
+struct ProtoAttributeOperation {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var base: BaseOperation {
-    get {return _base ?? BaseOperation()}
+  var base: ProtoBaseOperation {
+    get {return _base ?? ProtoBaseOperation()}
     set {_base = newValue}
   }
   /// Returns true if `base` has been explicitly set.
@@ -118,22 +118,22 @@ struct AttributeOperation {
 
   var name: String = String()
 
-  var rawType: Int64 = 0
+  var rawType: Int32 = 0
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
-  fileprivate var _base: BaseOperation? = nil
+  fileprivate var _base: ProtoBaseOperation? = nil
 }
 
-struct DeleteOperation {
+struct ProtoDeleteOperation {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var base: BaseOperation {
-    get {return _base ?? BaseOperation()}
+  var base: ProtoBaseOperation {
+    get {return _base ?? ProtoBaseOperation()}
     set {_base = newValue}
   }
   /// Returns true if `base` has been explicitly set.
@@ -145,36 +145,118 @@ struct DeleteOperation {
 
   init() {}
 
-  fileprivate var _base: BaseOperation? = nil
+  fileprivate var _base: ProtoBaseOperation? = nil
 }
 
-struct LLWOperation {
+struct ProtoLWWOperation {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var int: Int64 = 0
+  var base: ProtoBaseOperation {
+    get {return _base ?? ProtoBaseOperation()}
+    set {_base = newValue}
+  }
+  /// Returns true if `base` has been explicitly set.
+  var hasBase: Bool {return self._base != nil}
+  /// Clears the value of `base`. Subsequent reads from it will return its default value.
+  mutating func clearBase() {self._base = nil}
 
-  var float: Float = 0
+  var value: ProtoLWWOperation.OneOf_Value? = nil
 
-  var date: Double = 0
+  var int: Int64 {
+    get {
+      if case .int(let v)? = value {return v}
+      return 0
+    }
+    set {value = .int(newValue)}
+  }
 
-  var boolean: Bool = false
+  var float: Float {
+    get {
+      if case .float(let v)? = value {return v}
+      return 0
+    }
+    set {value = .float(newValue)}
+  }
 
-  var string: String = String()
+  var date: Double {
+    get {
+      if case .date(let v)? = value {return v}
+      return 0
+    }
+    set {value = .date(newValue)}
+  }
+
+  var boolean: Bool {
+    get {
+      if case .boolean(let v)? = value {return v}
+      return false
+    }
+    set {value = .boolean(newValue)}
+  }
+
+  var string: String {
+    get {
+      if case .string(let v)? = value {return v}
+      return String()
+    }
+    set {value = .string(newValue)}
+  }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
+  enum OneOf_Value: Equatable {
+    case int(Int64)
+    case float(Float)
+    case date(Double)
+    case boolean(Bool)
+    case string(String)
+
+  #if !swift(>=4.1)
+    static func ==(lhs: ProtoLWWOperation.OneOf_Value, rhs: ProtoLWWOperation.OneOf_Value) -> Bool {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch (lhs, rhs) {
+      case (.int, .int): return {
+        guard case .int(let l) = lhs, case .int(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.float, .float): return {
+        guard case .float(let l) = lhs, case .float(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.date, .date): return {
+        guard case .date(let l) = lhs, case .date(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.boolean, .boolean): return {
+        guard case .boolean(let l) = lhs, case .boolean(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.string, .string): return {
+        guard case .string(let l) = lhs, case .string(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      default: return false
+      }
+    }
+  #endif
+  }
+
   init() {}
+
+  fileprivate var _base: ProtoBaseOperation? = nil
 }
 
-struct StringInsertOperation {
+struct ProtoStringInsertOperation {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var base: BaseOperation {
-    get {return _base ?? BaseOperation()}
+  var base: ProtoBaseOperation {
+    get {return _base ?? ProtoBaseOperation()}
     set {_base = newValue}
   }
   /// Returns true if `base` has been explicitly set.
@@ -188,18 +270,18 @@ struct StringInsertOperation {
 
   init() {}
 
-  fileprivate var _base: BaseOperation? = nil
+  fileprivate var _base: ProtoBaseOperation? = nil
 }
 
-struct OperationsBundle {
+struct ProtoOperationsBundle {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var version: Int64 = 0
+  var version: Int32 = 0
 
-  var attributeID: OperationID {
-    get {return _attributeID ?? OperationID()}
+  var attributeID: ProtoOperationID {
+    get {return _attributeID ?? ProtoOperationID()}
     set {_attributeID = newValue}
   }
   /// Returns true if `attributeID` has been explicitly set.
@@ -207,26 +289,26 @@ struct OperationsBundle {
   /// Clears the value of `attributeID`. Subsequent reads from it will return its default value.
   mutating func clearAttributeID() {self._attributeID = nil}
 
-  var objectOperations: [ObjectOperation] = []
+  var objectOperations: [ProtoObjectOperation] = []
 
-  var attributeOperations: [AttributeOperation] = []
+  var attributeOperations: [ProtoAttributeOperation] = []
 
-  var deleteOperations: [DeleteOperation] = []
+  var deleteOperations: [ProtoDeleteOperation] = []
 
-  var llwOperations: [LLWOperation] = []
+  var lwwOperations: [ProtoLWWOperation] = []
 
-  var stringInsertOperations: [StringInsertOperation] = []
+  var stringInsertOperations: [ProtoStringInsertOperation] = []
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
-  fileprivate var _attributeID: OperationID? = nil
+  fileprivate var _attributeID: ProtoOperationID? = nil
 }
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
-extension OperationID: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension ProtoOperationID: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "OperationID"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "lamport"),
@@ -256,7 +338,7 @@ extension OperationID: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: OperationID, rhs: OperationID) -> Bool {
+  static func ==(lhs: ProtoOperationID, rhs: ProtoOperationID) -> Bool {
     if lhs.lamport != rhs.lamport {return false}
     if lhs.peerID != rhs.peerID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -264,7 +346,7 @@ extension OperationID: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementati
   }
 }
 
-extension BaseOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension ProtoBaseOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "BaseOperation"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "version"),
@@ -279,7 +361,7 @@ extension BaseOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularInt64Field(value: &self.version) }()
+      case 1: try { try decoder.decodeSingularInt32Field(value: &self.version) }()
       case 2: try { try decoder.decodeSingularMessageField(value: &self._id) }()
       case 3: try { try decoder.decodeSingularMessageField(value: &self._parentID) }()
       case 4: try { try decoder.decodeSingularMessageField(value: &self._attributeID) }()
@@ -290,7 +372,7 @@ extension BaseOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.version != 0 {
-      try visitor.visitSingularInt64Field(value: self.version, fieldNumber: 1)
+      try visitor.visitSingularInt32Field(value: self.version, fieldNumber: 1)
     }
     if let v = self._id {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
@@ -304,7 +386,7 @@ extension BaseOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: BaseOperation, rhs: BaseOperation) -> Bool {
+  static func ==(lhs: ProtoBaseOperation, rhs: ProtoBaseOperation) -> Bool {
     if lhs.version != rhs.version {return false}
     if lhs._id != rhs._id {return false}
     if lhs._parentID != rhs._parentID {return false}
@@ -314,7 +396,7 @@ extension BaseOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementa
   }
 }
 
-extension ObjectOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension ProtoObjectOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "ObjectOperation"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "base"),
@@ -328,7 +410,7 @@ extension ObjectOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularMessageField(value: &self._base) }()
-      case 2: try { try decoder.decodeSingularInt64Field(value: &self.rawType) }()
+      case 2: try { try decoder.decodeSingularInt32Field(value: &self.rawType) }()
       default: break
       }
     }
@@ -339,12 +421,12 @@ extension ObjectOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
     }
     if self.rawType != 0 {
-      try visitor.visitSingularInt64Field(value: self.rawType, fieldNumber: 2)
+      try visitor.visitSingularInt32Field(value: self.rawType, fieldNumber: 2)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ObjectOperation, rhs: ObjectOperation) -> Bool {
+  static func ==(lhs: ProtoObjectOperation, rhs: ProtoObjectOperation) -> Bool {
     if lhs._base != rhs._base {return false}
     if lhs.rawType != rhs.rawType {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -352,7 +434,7 @@ extension ObjectOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
   }
 }
 
-extension AttributeOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension ProtoAttributeOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "AttributeOperation"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "base"),
@@ -368,7 +450,7 @@ extension AttributeOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularMessageField(value: &self._base) }()
       case 2: try { try decoder.decodeSingularStringField(value: &self.name) }()
-      case 3: try { try decoder.decodeSingularInt64Field(value: &self.rawType) }()
+      case 3: try { try decoder.decodeSingularInt32Field(value: &self.rawType) }()
       default: break
       }
     }
@@ -382,12 +464,12 @@ extension AttributeOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
       try visitor.visitSingularStringField(value: self.name, fieldNumber: 2)
     }
     if self.rawType != 0 {
-      try visitor.visitSingularInt64Field(value: self.rawType, fieldNumber: 3)
+      try visitor.visitSingularInt32Field(value: self.rawType, fieldNumber: 3)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: AttributeOperation, rhs: AttributeOperation) -> Bool {
+  static func ==(lhs: ProtoAttributeOperation, rhs: ProtoAttributeOperation) -> Bool {
     if lhs._base != rhs._base {return false}
     if lhs.name != rhs.name {return false}
     if lhs.rawType != rhs.rawType {return false}
@@ -396,7 +478,7 @@ extension AttributeOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImple
   }
 }
 
-extension DeleteOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension ProtoDeleteOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "DeleteOperation"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "base"),
@@ -421,21 +503,22 @@ extension DeleteOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplemen
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: DeleteOperation, rhs: DeleteOperation) -> Bool {
+  static func ==(lhs: ProtoDeleteOperation, rhs: ProtoDeleteOperation) -> Bool {
     if lhs._base != rhs._base {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension LLWOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "LLWOperation"
+extension ProtoLWWOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "LWWOperation"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "int"),
-    2: .same(proto: "float"),
-    3: .same(proto: "date"),
-    4: .same(proto: "boolean"),
-    5: .same(proto: "string"),
+    1: .same(proto: "base"),
+    2: .same(proto: "int"),
+    3: .same(proto: "float"),
+    4: .same(proto: "date"),
+    5: .same(proto: "boolean"),
+    6: .same(proto: "string"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -444,47 +527,94 @@ extension LLWOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementat
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularInt64Field(value: &self.int) }()
-      case 2: try { try decoder.decodeSingularFloatField(value: &self.float) }()
-      case 3: try { try decoder.decodeSingularDoubleField(value: &self.date) }()
-      case 4: try { try decoder.decodeSingularBoolField(value: &self.boolean) }()
-      case 5: try { try decoder.decodeSingularStringField(value: &self.string) }()
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._base) }()
+      case 2: try {
+        var v: Int64?
+        try decoder.decodeSingularInt64Field(value: &v)
+        if let v = v {
+          if self.value != nil {try decoder.handleConflictingOneOf()}
+          self.value = .int(v)
+        }
+      }()
+      case 3: try {
+        var v: Float?
+        try decoder.decodeSingularFloatField(value: &v)
+        if let v = v {
+          if self.value != nil {try decoder.handleConflictingOneOf()}
+          self.value = .float(v)
+        }
+      }()
+      case 4: try {
+        var v: Double?
+        try decoder.decodeSingularDoubleField(value: &v)
+        if let v = v {
+          if self.value != nil {try decoder.handleConflictingOneOf()}
+          self.value = .date(v)
+        }
+      }()
+      case 5: try {
+        var v: Bool?
+        try decoder.decodeSingularBoolField(value: &v)
+        if let v = v {
+          if self.value != nil {try decoder.handleConflictingOneOf()}
+          self.value = .boolean(v)
+        }
+      }()
+      case 6: try {
+        var v: String?
+        try decoder.decodeSingularStringField(value: &v)
+        if let v = v {
+          if self.value != nil {try decoder.handleConflictingOneOf()}
+          self.value = .string(v)
+        }
+      }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if self.int != 0 {
-      try visitor.visitSingularInt64Field(value: self.int, fieldNumber: 1)
+    if let v = self._base {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
     }
-    if self.float != 0 {
-      try visitor.visitSingularFloatField(value: self.float, fieldNumber: 2)
-    }
-    if self.date != 0 {
-      try visitor.visitSingularDoubleField(value: self.date, fieldNumber: 3)
-    }
-    if self.boolean != false {
-      try visitor.visitSingularBoolField(value: self.boolean, fieldNumber: 4)
-    }
-    if !self.string.isEmpty {
-      try visitor.visitSingularStringField(value: self.string, fieldNumber: 5)
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every case branch when no optimizations are
+    // enabled. https://github.com/apple/swift-protobuf/issues/1034
+    switch self.value {
+    case .int?: try {
+      guard case .int(let v)? = self.value else { preconditionFailure() }
+      try visitor.visitSingularInt64Field(value: v, fieldNumber: 2)
+    }()
+    case .float?: try {
+      guard case .float(let v)? = self.value else { preconditionFailure() }
+      try visitor.visitSingularFloatField(value: v, fieldNumber: 3)
+    }()
+    case .date?: try {
+      guard case .date(let v)? = self.value else { preconditionFailure() }
+      try visitor.visitSingularDoubleField(value: v, fieldNumber: 4)
+    }()
+    case .boolean?: try {
+      guard case .boolean(let v)? = self.value else { preconditionFailure() }
+      try visitor.visitSingularBoolField(value: v, fieldNumber: 5)
+    }()
+    case .string?: try {
+      guard case .string(let v)? = self.value else { preconditionFailure() }
+      try visitor.visitSingularStringField(value: v, fieldNumber: 6)
+    }()
+    case nil: break
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: LLWOperation, rhs: LLWOperation) -> Bool {
-    if lhs.int != rhs.int {return false}
-    if lhs.float != rhs.float {return false}
-    if lhs.date != rhs.date {return false}
-    if lhs.boolean != rhs.boolean {return false}
-    if lhs.string != rhs.string {return false}
+  static func ==(lhs: ProtoLWWOperation, rhs: ProtoLWWOperation) -> Bool {
+    if lhs._base != rhs._base {return false}
+    if lhs.value != rhs.value {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
 }
 
-extension StringInsertOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension ProtoStringInsertOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "StringInsertOperation"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "base"),
@@ -514,7 +644,7 @@ extension StringInsertOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: StringInsertOperation, rhs: StringInsertOperation) -> Bool {
+  static func ==(lhs: ProtoStringInsertOperation, rhs: ProtoStringInsertOperation) -> Bool {
     if lhs._base != rhs._base {return false}
     if lhs.contribution != rhs.contribution {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -522,7 +652,7 @@ extension StringInsertOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
   }
 }
 
-extension OperationsBundle: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+extension ProtoOperationsBundle: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "OperationsBundle"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "version"),
@@ -530,7 +660,7 @@ extension OperationsBundle: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     3: .same(proto: "objectOperations"),
     4: .same(proto: "attributeOperations"),
     5: .same(proto: "deleteOperations"),
-    6: .same(proto: "llwOperations"),
+    6: .same(proto: "lwwOperations"),
     7: .same(proto: "stringInsertOperations"),
   ]
 
@@ -540,12 +670,12 @@ extension OperationsBundle: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularInt64Field(value: &self.version) }()
+      case 1: try { try decoder.decodeSingularInt32Field(value: &self.version) }()
       case 2: try { try decoder.decodeSingularMessageField(value: &self._attributeID) }()
       case 3: try { try decoder.decodeRepeatedMessageField(value: &self.objectOperations) }()
       case 4: try { try decoder.decodeRepeatedMessageField(value: &self.attributeOperations) }()
       case 5: try { try decoder.decodeRepeatedMessageField(value: &self.deleteOperations) }()
-      case 6: try { try decoder.decodeRepeatedMessageField(value: &self.llwOperations) }()
+      case 6: try { try decoder.decodeRepeatedMessageField(value: &self.lwwOperations) }()
       case 7: try { try decoder.decodeRepeatedMessageField(value: &self.stringInsertOperations) }()
       default: break
       }
@@ -554,7 +684,7 @@ extension OperationsBundle: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.version != 0 {
-      try visitor.visitSingularInt64Field(value: self.version, fieldNumber: 1)
+      try visitor.visitSingularInt32Field(value: self.version, fieldNumber: 1)
     }
     if let v = self._attributeID {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
@@ -568,8 +698,8 @@ extension OperationsBundle: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     if !self.deleteOperations.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.deleteOperations, fieldNumber: 5)
     }
-    if !self.llwOperations.isEmpty {
-      try visitor.visitRepeatedMessageField(value: self.llwOperations, fieldNumber: 6)
+    if !self.lwwOperations.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.lwwOperations, fieldNumber: 6)
     }
     if !self.stringInsertOperations.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.stringInsertOperations, fieldNumber: 7)
@@ -577,13 +707,13 @@ extension OperationsBundle: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: OperationsBundle, rhs: OperationsBundle) -> Bool {
+  static func ==(lhs: ProtoOperationsBundle, rhs: ProtoOperationsBundle) -> Bool {
     if lhs.version != rhs.version {return false}
     if lhs._attributeID != rhs._attributeID {return false}
     if lhs.objectOperations != rhs.objectOperations {return false}
     if lhs.attributeOperations != rhs.attributeOperations {return false}
     if lhs.deleteOperations != rhs.deleteOperations {return false}
-    if lhs.llwOperations != rhs.llwOperations {return false}
+    if lhs.lwwOperations != rhs.lwwOperations {return false}
     if lhs.stringInsertOperations != rhs.stringInsertOperations {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

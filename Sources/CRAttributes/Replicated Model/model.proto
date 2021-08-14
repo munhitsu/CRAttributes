@@ -1,4 +1,5 @@
 syntax = "proto3";
+option swift_prefix="Proto";
 
 
 message OperationID {
@@ -9,7 +10,7 @@ message OperationID {
 
 
 message BaseOperation {
-    int64 version = 1;
+    int32 version = 1;
     OperationID id = 2;
     OperationID parentID = 3;
     OperationID attributeID = 4; // TODO: it's not always needed so maybe handcraft the objects
@@ -17,25 +18,28 @@ message BaseOperation {
 
 message ObjectOperation {
     BaseOperation base = 1;
-    int64 rawType = 2;
+    int32 rawType = 2;
 }
 
 message AttributeOperation {
     BaseOperation base = 1;
     string name = 2;
-    int64 rawType = 3;
+    int32 rawType = 3;
 }
 
 message DeleteOperation {
     BaseOperation base = 1;
 }
 
-message LLWOperation {
-    int64 int = 1;
-    float float = 2;
-    double date = 3;
-    bool boolean = 4;
-    string string = 5;
+message LWWOperation {
+    BaseOperation base = 1;
+    oneof value {
+        int64 int = 2;
+        float float = 3;
+        double date = 4;
+        bool boolean = 5;
+        string string = 6;
+    }
 }
 
 message StringInsertOperation {
@@ -44,11 +48,11 @@ message StringInsertOperation {
 }
 
 message OperationsBundle {
-    int64 version = 1;
-    OperationID attributeID = 2;
+    int32 version = 1;
+    bytes peerID = 2; //UUID to 16 bytes
     repeated ObjectOperation objectOperations = 3;
     repeated AttributeOperation attributeOperations = 4;
     repeated DeleteOperation deleteOperations = 5;
-    repeated LLWOperation llwOperations = 6;
+    repeated LWWOperation lwwOperations = 6;
     repeated StringInsertOperation stringInsertOperations = 7;
 }

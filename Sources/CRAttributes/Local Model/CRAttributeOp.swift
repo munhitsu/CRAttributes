@@ -13,7 +13,7 @@ public class CRAttributeOp: CRAbstractOp {
 
 }
 
-enum CRAttributeType: Int16 {
+enum CRAttributeType: Int32 {
     case int = 0
     case float = 1
     case date = 2
@@ -29,7 +29,7 @@ extension CRAttributeOp {
     }
 
     @NSManaged public var name: String?
-    @NSManaged public var rawType: Int16
+    @NSManaged public var rawType: Int32
     @NSManaged public var attributeOperations: NSSet?
 }
 
@@ -74,5 +74,13 @@ extension CRAttributeOp {
         let request:NSFetchRequest<CRAttributeOp> = CRAttributeOp.fetchRequest()
         request.returnsObjectsAsFaults = false
         return try! context.fetch(request)
+    }
+
+    func protoOperation() -> ProtoAttributeOperation {
+        return ProtoAttributeOperation.with {
+            $0.base = super.protoOperation()
+            $0.name = name!
+            $0.rawType = rawType
+        }
     }
 }

@@ -36,20 +36,17 @@ class CRAttributeMutableString: CRAttribute {
 }
 
 
-
-
 extension NSAttributedString.Key {
     static let opObjectID = NSAttributedString.Key("CRObjectID")
 }
  
-
 
 class CRTextStorage: NSTextStorage {
 //    let container: CRObject
 //    let attributeName: String
     var attributeObjectID: NSManagedObjectID
     var attributedString: NSMutableAttributedString? = nil
-    // TODO: later use the internal storage
+    // TODO: try later to use the self=NSTextStorage internal storage
 
 //    override init() {
 ////        self.container = container
@@ -69,8 +66,6 @@ class CRTextStorage: NSTextStorage {
 
     required init?(coder aDecoder: NSCoder) {
         fatalNotImplemented()
-//        self.container = CRObject()
-//        self.attributeName = ""
         attributedString = NSMutableAttributedString(string:"")
         attributeObjectID = NSManagedObjectID()
         super.init(coder: aDecoder)

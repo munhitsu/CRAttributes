@@ -15,9 +15,9 @@ public class CRObjectOp: CRAbstractOp {
 
 
 struct CRObjectType: RawRepresentable, Equatable, Hashable, Comparable {
-    typealias RawValue = Int16
+    typealias RawValue = Int32
     
-    var rawValue: Int16
+    var rawValue: Int32
     
     static let unknown = CRObjectType(rawValue: 0)
     
@@ -36,7 +36,7 @@ extension CRObjectOp {
         return NSFetchRequest<CRObjectOp>(entityName: "CRObjectOp")
     }
 
-    @NSManaged public var rawType: Int16
+    @NSManaged public var rawType: Int32
 
 }
  
@@ -63,6 +63,13 @@ extension CRObjectOp {
         let request:NSFetchRequest<CRObjectOp> = CRObjectOp.fetchRequest()
         request.returnsObjectsAsFaults = false
         return try! context.fetch(request)
+    }
+
+    func protoOperation() -> ProtoObjectOperation {
+        return ProtoObjectOperation.with {
+            $0.base = super.protoOperation()
+            $0.rawType = rawType
+        }
     }
 }
 

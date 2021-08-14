@@ -7,15 +7,12 @@
 - [] attributedstring persistence (to speed up note opening)
 - [] coursor for remote editors (as we have O(1) for local but O(n) for remote)
 - [] I think I'm saving to often
-- [] cleanup package dependencies in the project
-
-
+- [x] cleanup package dependencies in the project
 - [] check for memory leaks
-
-
 - [] cope with eventuall ObjectID change
-
-
+- [] optimise UUID comparision
+- [] optimise UUID store and restore in protobuf
+- [] instrument and optimise
 
 
 ## ObjectID can change

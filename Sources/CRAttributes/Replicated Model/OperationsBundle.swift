@@ -8,22 +8,30 @@
 import Foundation
 import CoreData
 
-@objc(ReplicatedOperationPack)
-public class ReplicatedOperationPack: NSManagedObject {
+@objc(OperationsBundle)
+public class OperationsBundle: NSManagedObject {
     
 }
 
-extension ReplicatedOperationPack {
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<ReplicatedOperationPack> {
-        return NSFetchRequest<ReplicatedOperationPack>(entityName: "ReplicatedOperationPack")
+extension OperationsBundle {
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<OperationsBundle> {
+        return NSFetchRequest<OperationsBundle>(entityName: "OperationsBundle")
     }
     
-    @NSManaged public var version: Int16
-    @NSManaged public var attributeLamport: Int64 // 0 means null
-    @NSManaged public var attributePeerID: UUID // 0 means null
-    @NSManaged public var rawPack: Data?
+    @NSManaged public var version: Int32
+    @NSManaged public var peerID: UUID
+    @NSManaged public var data: Data?
 }
 
-extension ReplicatedOperationPack : Identifiable {
+extension OperationsBundle : Identifiable {
 
+    func protoStructure() -> ProtoOperationsBundle {
+        return try! ProtoOperationsBundle.init(serializedData: self.data!)
+    }
+    
+    static func allObjects(context: NSManagedObjectContext) -> [OperationsBundle] {
+        let request:NSFetchRequest<OperationsBundle> = OperationsBundle.fetchRequest()
+        return try! context.fetch(request)
+    }
 }
+
