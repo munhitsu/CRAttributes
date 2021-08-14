@@ -90,9 +90,9 @@ class CRTextStorage: NSTextStorage {
         let attributeOp:CRAttributeOp = (context.object(with: attributeObjectID) as? CRAttributeOp)!
 
         // insertion address
-        var parentOp:CRStringInsertOp? = nil
+        var parentOp:CRAbstractOp? = attributeOp
         if range.location > 0 {
-            parentOp = operationForPosition(range.location - 1)
+            parentOp = operationForPosition(range.location - 1) as CRAbstractOp?
         }
 
         // deleting operations
@@ -106,8 +106,12 @@ class CRTextStorage: NSTextStorage {
         var prevOp = parentOp
         for position in 0..<strAttributed.length {
             let newOp:CRStringInsertOp = CRStringInsertOp(context: context, parent: prevOp, attribute: attributeOp, contribution: strAttributed.mutableString.character(at: position))
-            prevOp?.next = newOp
-            newOp.prev = prevOp
+            if let prevOp = prevOp as? CRStringInsertOp {
+                prevOp.next = newOp
+                newOp.prev = prevOp
+            } else {
+                newOp.prev = nil
+            }
             try! context.save()
             strAttributed.setAttributes([.opObjectID: newOp.objectID], range: NSRange(location: position, length: 1))
             prevOp = newOp
@@ -118,8 +122,12 @@ class CRTextStorage: NSTextStorage {
         let tailPosition = range.location + strAttributed.length + 1
         if tailPosition <= attributedString!.length {
             let tailOp = operationForPosition(tailPosition)
-            tailOp.prev = prevOp
-            prevOp?.next = tailOp
+            if let prevOp = prevOp as? CRStringInsertOp {
+                tailOp.prev = prevOp
+                prevOp.next = tailOp
+            } else {
+                fatalError()
+            }
         }
         try! context.save()
 
@@ -161,12 +169,19 @@ class CRTextStorage: NSTextStorage {
         let request:NSFetchRequest<CRStringInsertOp> = CRStringInsertOp.fetchRequest()
         request.returnsObjectsAsFaults = false
         request.predicate = NSPredicate(format: "attribute == %@", attributeOp)
-        request.sortDescriptors = [NSSortDescriptor(keyPath: \CRStringInsertOp.parent, ascending: true)]
+//        request.sortDescriptors = [NSSortDescriptor(keyPath: \CRStringInsertOp.parent, ascending: true)]
 
         let context = CRStorageController.shared.localContainer.viewContext
 
-        let cdOps:[CRStringInsertOp] = try! context.fetch(request)
-        let head = cdOps.first
+        let _ = try! context.fetch(request)
+        
+        
+        let attributeOp:CRAttributeOp = context.object(with: attributeObjectID) as! CRAttributeOp
+        
+        let head:CRStringInsertOp? = attributeOp.subOperations?.anyObject() as? CRStringInsertOp
+        assert((attributeOp.subOperations?.count as! Int) <= 1)
+        
+//        let head = cdOps.first
         
         attributedString = NSMutableAttributedString("")
         var node:CRStringInsertOp? = head
