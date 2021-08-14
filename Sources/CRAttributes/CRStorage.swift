@@ -112,8 +112,8 @@ let localModelDescription = CoreDataModelDescription(
 
 let replicatedModelDescription = CoreDataModelDescription(
     entities: [
-        .entity(name: "OperationsBundle",
-                managedObjectClass: OperationsBundle.self,
+        .entity(name: "OperationsForest",
+                managedObjectClass: OperationsForest.self,
                 attributes: [
                     .attribute(name: "version", type: .integer32AttributeType, defaultValue: Int32(0)),
                     .attribute(name: "peerID", type: .UUIDAttributeType, defaultValue: localPeerID),
@@ -180,39 +180,225 @@ public struct CRStorageController {
         replicatedDescription?.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
     }
     
-    static func protoOperationsBundle() -> ProtoOperationsBundle {
-        //TODO: (high) put a limit on the size of the Bundle
-        // CloudKit sync operation limit is 400 records or 2 MB
-        let operations = CRAbstractOp.upstreamWaitingOperations()
-        var bundle = ProtoOperationsBundle()
-        for operation in operations {
-            switch operation {
-            case let op as CRObjectOp:
-                bundle.objectOperations.append(op.protoOperation())
-            case let op as CRAttributeOp:
-                bundle.attributeOperations.append(op.protoOperation())
-            case let op as CRDeleteOp:
-                bundle.deleteOperations.append(op.protoOperation())
-            case let op as CRLWWOp:
-                bundle.lwwOperations.append(op.protoOperation())
-            case let op as CRStringInsertOp:
-                bundle.stringInsertOperations.append(op.protoOperation())
-            default:
+    
+
+}
+
+
+extension CRStorageController {
+    static func processUpsteamQueue() {
+        let contextLocal = CRStorageController.shared.localContainer.newBackgroundContext()
+        let contextRemote = CRStorageController.shared.replicatedContainer.newBackgroundContext()
+        
+        let forests = protoOperationsForests(context: contextLocal)
+        
+        for protoForest in forests {
+            let _ = OperationsForest(context: contextRemote, from:protoForest)
+        }
+        try? contextRemote.save()
+    }
+    
+    static func protoOperationsForests(context: NSManagedObjectContext) -> [ProtoOperationsForest] {
+        let request:NSFetchRequest<CRAbstractOp> = CRAbstractOp.fetchRequest()
+        request.returnsObjectsAsFaults = false
+        request.predicate = NSPredicate(format: "upstreamQueue == true")
+        let queuedOperations:[CRAbstractOp] = try! context.fetch(request)
+        
+        var forests:[ProtoOperationsForest] = []
+        var forest = ProtoOperationsForest()
+        
+        
+        for queuedOperation in queuedOperations {
+            // as we progress operations will be removed
+            if queuedOperation.upstreamQueue {
+                var tree = ProtoOperationsTree()
+                if let id = queuedOperation.parent?.protoOperationID() {
+                    tree.parentID = id //TODO: what with the null?
+                }
+                switch queuedOperation {
+                case let op as CRObjectOp:
+                    tree.objectOperation = protoObjectOperationRecurse(op)
+                case let op as CRAttributeOp:
+                    tree.attributeOperation = protoAttributeOperationRecurse(op)
+                case let op as CRDeleteOp:
+                    tree.deleteOperation = protoDeleteOperationRecurse(op)
+                case let op as CRLWWOp:
+                    tree.lwwOperation = protoLWWOperationRecurse(op)
+                case let op as CRStringInsertOp:
+                    tree.stringInsertOperation = protoStringInsertOperationRecurse(op)
+                default:
+                    fatalNotImplemented()
+                }
+                forest.trees.append(tree)
+            }
+        }
+        forest.version = 0
+        forest.peerID = localPeerID.data
+        forests.append(forest)
+        return forests
+    }
+    
+//    static func protoOperationsForests() -> [ProtoOperationsForest] {
+//        //TODO: (high) put a limit on the size of the Bundle
+//        // CloudKit sync operation limit is 400 records or 2 MB
+//        let operations = CRAbstractOp.upstreamWaitingOperations()
+//        var bundle = ProtoOperationsBundle()
+//        for operation in operations {
+//            switch operation {
+//            case let op as CRObjectOp:
+//                bundle.objectOperations.append(op.protoOperation())
+//            case let op as CRAttributeOp:
+//                bundle.attributeOperations.append(op.protoOperation())
+//            case let op as CRDeleteOp:
+//                bundle.deleteOperations.append(op.protoOperation())
+//            case let op as CRLWWOp:
+//                bundle.lwwOperations.append(op.protoOperation())
+//            case let op as CRStringInsertOp:
+//                bundle.stringInsertOperations.append(op.protoOperation())
+//            default:
+//                fatalNotImplemented()
+//            }
+//        }
+//        return bundle
+//    }
+//
+//    static func uploadOperations() {
+//        let context = CRStorageController.shared.replicatedContainer.newBackgroundContext()
+//        let cdBundle = OperationsBundle(context: context)
+//        cdBundle.version = 0
+//        cdBundle.data = try? protoOperationsBundle().serializedData()
+//        try? context.save()
+//    }
+//
+//    static func downloadOperations() {
+//
+//    }
+
+    static func protoObjectOperationRecurse(_ operation: CRObjectOp) -> ProtoObjectOperation {
+        var proto = ProtoObjectOperation.with {
+            $0.version = operation.version
+            $0.lamport = operation.lamport
+            $0.rawType = operation.rawType
+        }
+        
+        for operation in operation.subOperations!.allObjects {
+            if let operation = operation as? CRAbstractOp {
+                if operation.upstreamQueue {
+                    switch operation {
+                    case let op as CRDeleteOp:
+                        proto.deleteOperations.append(protoDeleteOperationRecurse(op))
+                    case let op as CRAttributeOp:
+                        proto.attributeOperations.append(protoAttributeOperationRecurse(op))
+                    case let op as CRObjectOp:
+                        proto.objectOperations.append(protoObjectOperationRecurse(op))
+                    default:
+                        fatalError("unsupported subOperation")
+                    }
+                }
+            }
+        }
+        operation.upstreamQueue = false
+        return proto
+    }
+
+    static func protoDeleteOperationRecurse(_ operation: CRDeleteOp) -> ProtoDeleteOperation {
+        let proto = ProtoDeleteOperation.with {
+            $0.version = operation.version
+            $0.lamport = operation.lamport
+        }
+        operation.upstreamQueue = false
+        return proto
+    }
+
+    static func protoAttributeOperationRecurse(_ operation: CRAttributeOp) -> ProtoAttributeOperation {
+        var proto = ProtoAttributeOperation.with {
+            $0.version = operation.version
+            $0.lamport = operation.lamport
+            $0.name = operation.name!
+            $0.rawType = operation.rawType
+        }
+        
+        for operation in operation.subOperations!.allObjects {
+            if let operation = operation as? CRAbstractOp {
+                if operation.upstreamQueue {
+                    switch operation {
+                    case let op as CRDeleteOp:
+                        proto.deleteOperations.append(protoDeleteOperationRecurse(op))
+                    case let op as CRLWWOp:
+                        proto.lwwOperations.append(protoLWWOperationRecurse(op))
+                    case let op as CRStringInsertOp:
+                        proto.stringInsertOperations.append(protoStringInsertOperationRecurse(op))
+                    default:
+                        fatalError("unsupported subOperation")
+                    }
+                }
+            }
+        }
+        operation.upstreamQueue = false
+        return proto
+    }
+    
+    static func protoLWWOperationRecurse(_ operation: CRLWWOp) -> ProtoLWWOperation {
+        var proto = ProtoLWWOperation.with {
+            $0.version = operation.version
+            $0.lamport = operation.lamport
+            switch (operation.parent as! CRAttributeOp).type {
+            case .int:
+                $0.int = operation.int
+            case .float:
+                $0.float = operation.float
+            case .date:
+                fatalNotImplemented() //TODO: implement Date
+            case .boolean:
+                $0.boolean = operation.boolean
+            case .string:
+                $0.string = operation.string!
+            case .mutableString:
                 fatalNotImplemented()
             }
         }
-        return bundle
-    }
-    
-    static func uploadOperations() {
-        let context = CRStorageController.shared.replicatedContainer.newBackgroundContext()
-        let cdBundle = OperationsBundle(context: context)
-        cdBundle.version = 0
-        cdBundle.data = try? protoOperationsBundle().serializedData()
-        try? context.save()
-    }
-    
-    static func downloadOperations() {
         
+        for operation in operation.subOperations!.allObjects {
+            if let operation = operation as? CRAbstractOp {
+                if operation.upstreamQueue {
+                    switch operation {
+                    case let op as CRDeleteOp:
+                        proto.deleteOperations.append(protoDeleteOperationRecurse(op))
+                    default:
+                        fatalError("unsupported subOperation")
+                    }
+                }
+            }
+        }
+        operation.upstreamQueue = false
+        return proto
     }
+    
+    static func protoStringInsertOperationRecurse(_ operation: CRStringInsertOp) -> ProtoStringInsertOperation {
+        var proto = ProtoStringInsertOperation.with {
+            $0.version = operation.version
+            $0.lamport = operation.lamport
+            $0.contribution = operation.contribution
+        }
+        
+        for operation in operation.subOperations!.allObjects {
+            if let operation = operation as? CRAbstractOp {
+                if operation.upstreamQueue {
+                    switch operation {
+                    case let op as CRDeleteOp:
+                        proto.deleteOperations.append(protoDeleteOperationRecurse(op))
+                    case let op as CRStringInsertOp:
+                        proto.stringInsertOperations.append(protoStringInsertOperationRecurse(op))
+                    default:
+                        fatalError("unsupported subOperation")
+                    }
+                }
+            }
+        }
+        operation.upstreamQueue = false
+        return proto
+    }
+
+
+
 }

@@ -39,7 +39,7 @@
 		OBJ_163 /* CRStringInsertOld.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_24 /* CRStringInsertOld.swift */; };
 		OBJ_164 /* CRStringInsertOp.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_25 /* CRStringInsertOp.swift */; };
 		OBJ_165 /* RenderedString.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_26 /* RenderedString.swift */; };
-		OBJ_166 /* OperationsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_28 /* OperationsBundle.swift */; };
+		OBJ_166 /* OperationsForest.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_28 /* OperationsForest.swift */; };
 		OBJ_167 /* model.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_29 /* model.pb.swift */; };
 		OBJ_168 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_30 /* Utils.swift */; };
 		OBJ_170 /* SwiftProtobuf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "SwiftProtobuf::SwiftProtobuf::Product" /* SwiftProtobuf.framework */; };
@@ -262,7 +262,7 @@
 		OBJ_24 /* CRStringInsertOld.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRStringInsertOld.swift; sourceTree = "<group>"; };
 		OBJ_25 /* CRStringInsertOp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRStringInsertOp.swift; sourceTree = "<group>"; };
 		OBJ_26 /* RenderedString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderedString.swift; sourceTree = "<group>"; };
-		OBJ_28 /* OperationsBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationsBundle.swift; sourceTree = "<group>"; };
+		OBJ_28 /* OperationsForest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationsForest.swift; sourceTree = "<group>"; };
 		OBJ_29 /* model.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = model.pb.swift; sourceTree = "<group>"; };
 		OBJ_30 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		OBJ_33 /* CRLocalOperationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRLocalOperationsTests.swift; sourceTree = "<group>"; };
@@ -442,7 +442,7 @@
 			name = Products;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		OBJ_17 /* Local Model */ = {
+		OBJ_17 /* LocalModel */ = {
 			isa = PBXGroup;
 			children = (
 				OBJ_18 /* CRAbstractOp.swift */,
@@ -454,17 +454,17 @@
 				OBJ_25 /* CRStringInsertOp.swift */,
 				OBJ_26 /* RenderedString.swift */,
 			);
-			path = "Local Model";
+			path = LocalModel;
 			sourceTree = "<group>";
 		};
-		OBJ_27 /* Replicated Model */ = {
+		OBJ_27 /* ReplicatedModel */ = {
 			isa = PBXGroup;
 			children = (
-				OBJ_28 /* OperationsBundle.swift */,
+				OBJ_28 /* OperationsForest.swift */,
 				BBA81EBD26C5ACE70015981B /* model.proto */,
 				OBJ_29 /* model.pb.swift */,
 			);
-			path = "Replicated Model";
+			path = ReplicatedModel;
 			sourceTree = "<group>";
 		};
 		OBJ_31 /* Tests */ = {
@@ -630,8 +630,8 @@
 				OBJ_9 /* CRStorage.swift */,
 				OBJ_12 /* Interfaces */,
 				OBJ_16 /* Lamport.swift */,
-				OBJ_17 /* Local Model */,
-				OBJ_27 /* Replicated Model */,
+				OBJ_17 /* LocalModel */,
+				OBJ_27 /* ReplicatedModel */,
 				OBJ_30 /* Utils.swift */,
 			);
 			name = CRAttributes;
@@ -848,7 +848,7 @@
 				OBJ_163 /* CRStringInsertOld.swift in Sources */,
 				OBJ_164 /* CRStringInsertOp.swift in Sources */,
 				OBJ_165 /* RenderedString.swift in Sources */,
-				OBJ_166 /* OperationsBundle.swift in Sources */,
+				OBJ_166 /* OperationsForest.swift in Sources */,
 				OBJ_167 /* model.pb.swift in Sources */,
 				OBJ_168 /* Utils.swift in Sources */,
 			);

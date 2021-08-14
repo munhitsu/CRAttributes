@@ -28,6 +28,7 @@ struct CRObjectType: RawRepresentable, Equatable, Hashable, Comparable {
     public static func <(lhs: CRObjectType, rhs: CRObjectType) -> Bool {
         return lhs.rawValue < rhs.rawValue
     }
+
 }
 
 extension CRObjectOp {
@@ -65,12 +66,14 @@ extension CRObjectOp {
         return try! context.fetch(request)
     }
 
-    func protoOperation() -> ProtoObjectOperation {
-        return ProtoObjectOperation.with {
-            $0.base = super.protoOperation()
-            $0.rawType = rawType
-        }
-    }
+//    func protoOperation() -> ProtoObjectOperation {
+//        return ProtoObjectOperation.with {
+//            $0.base = super.protoOperation()
+//            $0.rawType = rawType
+//        }
+//    }
+ 
+    
 }
 
 
