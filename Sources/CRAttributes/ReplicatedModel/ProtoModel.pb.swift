@@ -227,14 +227,14 @@ struct ProtoOperationsTree {
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var parentID: ProtoOperationID {
-    get {return _parentID ?? ProtoOperationID()}
-    set {_parentID = newValue}
+  var containerID: ProtoOperationID {
+    get {return _containerID ?? ProtoOperationID()}
+    set {_containerID = newValue}
   }
-  /// Returns true if `parentID` has been explicitly set.
-  var hasParentID: Bool {return self._parentID != nil}
-  /// Clears the value of `parentID`. Subsequent reads from it will return its default value.
-  mutating func clearParentID() {self._parentID = nil}
+  /// Returns true if `containerID` has been explicitly set.
+  var hasContainerID: Bool {return self._containerID != nil}
+  /// Clears the value of `containerID`. Subsequent reads from it will return its default value.
+  mutating func clearContainerID() {self._containerID = nil}
 
   var value: ProtoOperationsTree.OneOf_Value? = nil
 
@@ -321,7 +321,7 @@ struct ProtoOperationsTree {
 
   init() {}
 
-  fileprivate var _parentID: ProtoOperationID? = nil
+  fileprivate var _containerID: ProtoOperationID? = nil
 }
 
 /// tree of operations
@@ -756,7 +756,7 @@ extension ProtoStringInsertOperation: SwiftProtobuf.Message, SwiftProtobuf._Mess
 extension ProtoOperationsTree: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "OperationsTree"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
-    1: .same(proto: "parentID"),
+    1: .same(proto: "containerID"),
     2: .same(proto: "objectOperation"),
     3: .same(proto: "attributeOperation"),
     4: .same(proto: "deleteOperation"),
@@ -770,7 +770,7 @@ extension ProtoOperationsTree: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
-      case 1: try { try decoder.decodeSingularMessageField(value: &self._parentID) }()
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._containerID) }()
       case 2: try {
         var v: ProtoObjectOperation?
         var hadOneofValue = false
@@ -842,7 +842,7 @@ extension ProtoOperationsTree: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if let v = self._parentID {
+    if let v = self._containerID {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
     }
     // The use of inline closures is to circumvent an issue where the compiler
@@ -875,7 +875,7 @@ extension ProtoOperationsTree: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
   }
 
   static func ==(lhs: ProtoOperationsTree, rhs: ProtoOperationsTree) -> Bool {
-    if lhs._parentID != rhs._parentID {return false}
+    if lhs._containerID != rhs._containerID {return false}
     if lhs.value != rhs.value {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true

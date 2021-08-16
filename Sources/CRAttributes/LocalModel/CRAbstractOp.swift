@@ -24,12 +24,12 @@ extension CRAbstractOp {
     @NSManaged public var peerID: UUID
     @NSManaged public var hasTombstone: Bool
     
-    @NSManaged public var parent: CRAbstractOp?
-    @NSManaged public var parentLamport: Int64
-    @NSManaged public var parentPeerID: UUID
+    @NSManaged public var container: CRAbstractOp?
+    @NSManaged public var containedOperations: NSSet?
 
-    @NSManaged public var attribute: CRAttributeOp? // primary use to prefetch all string operations, secondary to get counts of operations per attribute
-    @NSManaged public var subOperations: NSSet?
+    @NSManaged public var containerLamport: Int64
+    @NSManaged public var containerPeerID: UUID
+
 
     @NSManaged public var upstreamQueueOperation: Bool
     @NSManaged public var downstreamQueueHeadOperation: Bool
@@ -41,16 +41,16 @@ extension CRAbstractOp {
 extension CRAbstractOp {
 
     @objc(addSubOperationsObject:)
-    @NSManaged public func addToSubOperations(_ value: CRAbstractOp)
+    @NSManaged public func addToContainedOperations(_ value: CRAbstractOp)
 
     @objc(removeSubOperationsObject:)
-    @NSManaged public func removeFromSubOperations(_ value: CRAbstractOp)
+    @NSManaged public func removeFromContainedOperations(_ value: CRAbstractOp)
 
     @objc(addSubOperations:)
-    @NSManaged public func addToSubOperations(_ values: NSSet)
+    @NSManaged public func addToContainedOperations(_ values: NSSet)
 
     @objc(removeSubOperations:)
-    @NSManaged public func removeFromSubOperations(_ values: NSSet)
+    @NSManaged public func removeFromContainedOperations(_ values: NSSet)
 
 }
 
@@ -59,20 +59,18 @@ extension CRAbstractOp : Identifiable {
 }
 
 extension CRAbstractOp {
-    convenience init(context: NSManagedObjectContext, parent: CRAbstractOp?, attribute: CRAttributeOp?) {
+    convenience init(context: NSManagedObjectContext, container: CRAbstractOp?) {
         self.init(context:context)
-        self.version = 0
         self.lamport = getLamport()
         self.peerID = localPeerID
-        self.parent = parent
-        if parent == nil {
-            self.parentLamport = 0
-            self.parentPeerID = UUID.zero
+        self.container = container
+        if container == nil {
+            self.containerLamport = 0
+            self.containerPeerID = UUID.zero
         } else {
-            self.parentLamport = parent!.lamport
-            self.parentPeerID = parent!.peerID
+            self.containerLamport = container!.lamport
+            self.containerPeerID = container!.peerID
         }
-        self.attribute = attribute
         self.hasTombstone = false
     }
     

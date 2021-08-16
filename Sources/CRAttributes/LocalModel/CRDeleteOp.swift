@@ -27,16 +27,16 @@ extension CRDeleteOp {
 }
 
 extension CRDeleteOp {
-    convenience init(context: NSManagedObjectContext, from protoForm: ProtoDeleteOperation, parent: CRAbstractOp?) {
+    convenience init(context: NSManagedObjectContext, from protoForm: ProtoDeleteOperation, container: CRAbstractOp?) {
         self.init(context: context)
         self.version = protoForm.version
         self.peerID = protoForm.peerID.object()
         self.lamport = protoForm.lamport
-        self.parent = parent
-        self.parent?.hasTombstone = true
-        if parent != nil {
-            self.parentLamport = parent!.lamport
-            self.parentPeerID = parent!.peerID
+        self.container = container
+        self.container?.hasTombstone = true
+        if container != nil {
+            self.containerLamport = container!.lamport
+            self.containerPeerID = container!.peerID
         }
     }
 }

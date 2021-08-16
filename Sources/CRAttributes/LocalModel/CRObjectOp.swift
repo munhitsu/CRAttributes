@@ -55,33 +55,33 @@ extension CRObjectOp {
 extension CRObjectOp {
 
     convenience init(context: NSManagedObjectContext, container: CRAbstractOp?, type: CRObjectType) {
-        self.init(context:context, parent: container, attribute: nil)
+        self.init(context:context, container: container)
         self.type = type
     }
     
-    convenience init(context: NSManagedObjectContext, from protoForm: ProtoObjectOperation, parent: CRAbstractOp?) {
+    convenience init(context: NSManagedObjectContext, from protoForm: ProtoObjectOperation, container: CRAbstractOp?) {
         self.init(context: context)
         self.version = protoForm.version
         self.peerID = protoForm.peerID.object()
         self.lamport = protoForm.lamport
         self.rawType = protoForm.rawType
-        self.parent = parent
-        if parent != nil {
-            self.parentLamport = parent!.lamport
-            self.parentPeerID = parent!.peerID
+        self.container = container
+        if container != nil {
+            self.containerLamport = container!.lamport
+            self.containerPeerID = container!.peerID
         }
 
         
         for protoItem in protoForm.deleteOperations {
-            _ = CRDeleteOp(context: context, from: protoItem, parent: self)
+            _ = CRDeleteOp(context: context, from: protoItem, container: self)
         }
         
         for protoItem in protoForm.attributeOperations {
-            _ = CRAttributeOp(context: context, from: protoItem, parent: self)
+            _ = CRAttributeOp(context: context, from: protoItem, container: self)
         }
         
         for protoItem in protoForm.objectOperations {
-            _ = CRObjectOp(context: context, from: protoItem, parent: self)
+            _ = CRObjectOp(context: context, from: protoItem, container: self)
         }
     }
     

@@ -13,15 +13,6 @@ public class CRAttributeOp: CRAbstractOp {
 
 }
 
-enum CRAttributeType: Int32 {
-    case int = 0
-    case float = 1
-    case date = 2
-    case boolean = 3
-    case string = 4
-    case mutableString = 5
-}
-
 extension CRAttributeOp {
 
     @nonobjc public class func fetchRequest() -> NSFetchRequest<CRAttributeOp> {
@@ -30,24 +21,16 @@ extension CRAttributeOp {
 
     @NSManaged public var name: String?
     @NSManaged public var rawType: Int32
-    @NSManaged public var attributeOperations: NSSet?
 }
 
-// MARK: Generated accessors for attributeOperations
-extension CRAttributeOp {
 
-@objc(addAttributeOperationsObject:)
-@NSManaged public func addToAttributeOperations(_ value: CRAbstractOp)
-
-@objc(removeAttributeOperationsObject:)
-@NSManaged public func removeFromAttributeOperations(_ value: CRAbstractOp)
-
-@objc(addAttributeOperations:)
-@NSManaged public func addToAttributeOperations(_ values: NSSet)
-
-@objc(removeAttributeOperations:)
-@NSManaged public func removeFromAttributeOperations(_ values: NSSet)
-
+enum CRAttributeType: Int32 {
+    case int = 0
+    case float = 1
+    case date = 2
+    case boolean = 3
+    case string = 4
+    case mutableString = 5
 }
 
 
@@ -62,33 +45,34 @@ extension CRAttributeOp {
     }
 }
 
+
 extension CRAttributeOp {
     convenience init(context: NSManagedObjectContext, container: CRObjectOp?, type: CRAttributeType, name: String) {
-        self.init(context: context, parent: container, attribute: nil)
+        self.init(context: context, container: container)
         self.type = type
         self.name = name
     }
 
-    convenience init(context: NSManagedObjectContext, from protoForm: ProtoAttributeOperation, parent: CRAbstractOp?) {
+    convenience init(context: NSManagedObjectContext, from protoForm: ProtoAttributeOperation, container: CRAbstractOp?) {
         self.init(context: context)
         self.version = protoForm.version
         self.peerID = protoForm.peerID.object()
         self.lamport = protoForm.lamport
         self.name = protoForm.name
         self.rawType = protoForm.rawType
-        self.parent = parent
-        if parent != nil {
-            self.parentLamport = parent!.lamport
-            self.parentPeerID = parent!.peerID
+        self.container = container
+        if container != nil {
+            self.containerLamport = container!.lamport
+            self.containerPeerID = container!.peerID
         }
 
         
         for protoItem in protoForm.deleteOperations {
-            _ = CRDeleteOp(context: context, from: protoItem, parent: self)
+            _ = CRDeleteOp(context: context, from: protoItem, container: self)
         }
         
         for protoItem in protoForm.lwwOperations {
-            _ = CRLWWOp(context: context, from: protoItem, parent: self)
+            _ = CRLWWOp(context: context, from: protoItem, container: self)
         }
 
         //TODO: (high) this is hard
@@ -113,3 +97,4 @@ extension CRAttributeOp {
 //        }
 //    }
 }
+

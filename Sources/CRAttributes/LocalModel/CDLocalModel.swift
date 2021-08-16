@@ -23,16 +23,15 @@ let localModelDescription = CoreDataModelDescription(
                     .attribute(name: "version", type: .integer32AttributeType, defaultValue: Int32(0)),
                     .attribute(name: "lamport", type: .integer64AttributeType),
                     .attribute(name: "peerID", type: .UUIDAttributeType),
-                    .attribute(name: "parentLamport", type: .integer64AttributeType),
-                    .attribute(name: "parentPeerID", type: .UUIDAttributeType),
+                    .attribute(name: "containerLamport", type: .integer64AttributeType),
+                    .attribute(name: "containerPeerID", type: .UUIDAttributeType),
                     .attribute(name: "hasTombstone", type: .booleanAttributeType),
                     .attribute(name: "upstreamQueueOperation", type: .booleanAttributeType, defaultValue: true), //TODO: remove default as it's implicit
                     .attribute(name: "downstreamQueueHeadOperation", type: .booleanAttributeType, defaultValue: false)
                 ],
                 relationships: [
-                    .relationship(name: "parent", destination: "CRAbstractOp", optional: true, toMany: false, inverse: "subOperations"),  // insertion point
-                    .relationship(name: "attribute", destination: "CRAttributeOp", optional: true, toMany: false),  // insertion point
-                    .relationship(name: "subOperations", destination: "CRAbstractOp", optional: true, toMany: true, inverse: "parent"),  // insertion point
+                    .relationship(name: "container", destination: "CRAbstractOp", optional: true, toMany: false),  // insertion point
+                    .relationship(name: "containedOperations", destination: "CRAbstractOp", optional: true, toMany: true, inverse: "container"),  // insertion point
                 ],
                 indexes: [
                     .index(name: "lamport", elements: [.property(name: "lamport")]),
@@ -58,10 +57,6 @@ let localModelDescription = CoreDataModelDescription(
                 attributes: [
                     .attribute(name: "name", type: .stringAttributeType, defaultValue: "default"),
                     .attribute(name: "rawType", type: .integer32AttributeType, defaultValue: Int32(0))
-                ],
-                relationships: [
-                    .relationship(name: "attributeOperations", destination: "CRAbstractOp", toMany: true, inverse: "attribute"),
-                    // we may need the head attribute operation or a quick query to find it - e.g. all operations pointint to this attribute but without parent - shoub be good enough
                 ]
                ),
         .entity(name: "CRLWWOp",
@@ -93,19 +88,10 @@ let localModelDescription = CoreDataModelDescription(
                     .attribute(name: "contribution", type: .stringAttributeType),
                 ],
                 relationships: [
+                    .relationship(name: "parent", destination: "CRStringInsertOp", optional: true, toMany: false, inverse: "childOperations"),  // insertion point
+                    .relationship(name: "childOperations", destination: "CRStringInsertOp", optional: true, toMany: true, inverse: "parent"),  // insertion point
                     .relationship(name: "next", destination: "CRStringInsertOp", toMany: false, inverse: "prev"),
                     .relationship(name: "prev", destination: "CRStringInsertOp", toMany: false, inverse: "next"),
-                ]
-               ),
-        .entity(name: "CRQueue",
-                managedObjectClass: CRQueue.self,
-                attributes: [
-                    .attribute(name: "rawType", type: .integer64AttributeType),
-                    .attribute(name: "lamport", type: .integer64AttributeType),
-                    .attribute(name: "peerID", type: .integer64AttributeType),
-                ],
-                relationships: [
-                    .relationship(name: "operation", destination: "CRAbstractOp", optional: false, toMany: false)
                 ]
                )
     ]

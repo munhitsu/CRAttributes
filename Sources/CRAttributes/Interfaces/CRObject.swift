@@ -55,7 +55,7 @@ class CRObject {
         context.performAndWait {
             let request:NSFetchRequest<CRAttributeOp> = CRAttributeOp.fetchRequest()
             request.returnsObjectsAsFaults = false
-            let predicate = NSPredicate(format: "parent == %@ AND name == %@", context.object(with: operationObjectID!), name)
+            let predicate = NSPredicate(format: "container == %@ AND name == %@", context.object(with: operationObjectID!), name)
             request.predicate = predicate
 
             let cdResults:[CRAttributeOp] = try! context.fetch(request)
@@ -96,7 +96,7 @@ class CRObject {
 //        context.performAndWait {
             let request:NSFetchRequest<CRAttributeOp> = CRAttributeOp.fetchRequest()
             request.returnsObjectsAsFaults = false
-            request.predicate = NSPredicate(format: "parent == %@", context.object(with: operationObjectID!))
+            request.predicate = NSPredicate(format: "container == %@", context.object(with: operationObjectID!))
 
     
             let cdResults:[CRAttributeOp] = try! context.fetch(request)
@@ -107,6 +107,7 @@ class CRObject {
                 }
             }
 //        }
+        //TODO: prefetch string sub deletes
     }
         
     func subObjects() -> [CRObject] {
@@ -116,7 +117,7 @@ class CRObject {
         context.performAndWait {
             let request:NSFetchRequest<CRObjectOp> = CRObjectOp.fetchRequest()
             request.returnsObjectsAsFaults = false
-            request.predicate = NSPredicate(format: "parent == %@", context.object(with: operationObjectID!))
+            request.predicate = NSPredicate(format: "container == %@", context.object(with: operationObjectID!))
 
             let cdResults:[CRObjectOp] = try! context.fetch(request)
             

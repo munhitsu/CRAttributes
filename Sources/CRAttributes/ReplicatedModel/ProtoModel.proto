@@ -65,7 +65,7 @@ message StringInsertOperation {
 }
 
 message OperationsTree {
-    OperationID parentID = 1;
+    OperationID containerID = 1;
     oneof value {
         ObjectOperation objectOperation = 2;
         AttributeOperation attributeOperation = 3;

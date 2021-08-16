@@ -28,42 +28,41 @@ extension CRLWWOp {
 }
 
 extension CRLWWOp {
-    convenience init(context: NSManagedObjectContext, attribute: CRAttributeOp?, value: Int) {
-        self.init(context:context, parent: attribute, attribute: attribute)
+    convenience init(context: NSManagedObjectContext, container: CRAttributeOp?, value: Int) {
+        self.init(context:context, container: container)
         self.int = Int64(value)
         try! context.save()
     }
-    convenience init(context: NSManagedObjectContext, attribute: CRAttributeOp?, value: Float) {
-        self.init(context:context, parent: attribute, attribute: attribute)
+    convenience init(context: NSManagedObjectContext, container: CRAttributeOp?, value: Float) {
+        self.init(context:context, container: container)
         self.float = value
         try! context.save()
     }
-    convenience init(context: NSManagedObjectContext, attribute: CRAttributeOp?, value: Date) {
-        self.init(context:context, parent: attribute, attribute: attribute)
+    convenience init(context: NSManagedObjectContext, container: CRAttributeOp?, value: Date) {
+        self.init(context:context, container: container)
         self.date = value
         try! context.save()
     }
-    convenience init(context: NSManagedObjectContext, attribute: CRAttributeOp?, value: Bool) {
-        self.init(context:context, parent: attribute, attribute: attribute)
+    convenience init(context: NSManagedObjectContext, container: CRAttributeOp?, value: Bool) {
+        self.init(context:context, container: container)
         self.boolean = value
         try! context.save()
     }
-    convenience init(context: NSManagedObjectContext, attribute: CRAttributeOp?, value: String) {
-        self.init(context:context, parent: attribute, attribute: attribute)
+    convenience init(context: NSManagedObjectContext, container: CRAttributeOp?, value: String) {
+        self.init(context:context, container: container)
         self.string = value
         try! context.save()
     }
 
-    convenience init(context: NSManagedObjectContext, from protoForm: ProtoLWWOperation, parent: CRAbstractOp?) {
+    convenience init(context: NSManagedObjectContext, from protoForm: ProtoLWWOperation, container: CRAbstractOp?) {
         self.init(context: context)
         self.version = protoForm.version
         self.peerID = protoForm.peerID.object()
         self.lamport = protoForm.lamport
-        self.parent = parent
-        if parent != nil {
-            self.parentLamport = parent!.lamport
-            self.parentPeerID = parent!.peerID
-            self.attribute = parent as? CRAttributeOp
+        self.container = container
+        if container != nil {
+            self.containerLamport = container!.lamport
+            self.containerPeerID = container!.peerID
         }
 
         switch protoForm.value {
@@ -85,7 +84,7 @@ extension CRLWWOp {
         
         
         for protoItem in protoForm.deleteOperations {
-            _ = CRDeleteOp(context: context, from: protoItem, parent: self)
+            _ = CRDeleteOp(context: context, from: protoItem, container: self)
         }
     }
     

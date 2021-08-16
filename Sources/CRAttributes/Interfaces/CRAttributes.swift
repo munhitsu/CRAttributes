@@ -81,7 +81,7 @@ class CRAttribute {
         var count = 0
         context.performAndWait {
             let request:NSFetchRequest<CRAbstractOp> = CRAbstractOp.fetchRequest()
-            request.predicate = NSPredicate(format: "attribute == %@", context.object(with: operationObjectID!))
+            request.predicate = NSPredicate(format: "container == %@", context.object(with: operationObjectID!))
             count = try! context.count(for: request)
         }
         return count
@@ -98,7 +98,7 @@ class CRAttributeInt: CRAttribute {
                 let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
                 request.returnsObjectsAsFaults = false
                 request.fetchLimit = 1
-                request.predicate = NSPredicate(format: "parent == %@", context.object(with:operationObjectID!))
+                request.predicate = NSPredicate(format: "container == %@", context.object(with:operationObjectID!))
                 request.sortDescriptors = [NSSortDescriptor(keyPath: \CRLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRLWWOp.peerID, ascending: false)]
 
                 let operations:[CRLWWOp] = try! context.fetch(request)
@@ -113,7 +113,7 @@ class CRAttributeInt: CRAttribute {
         set {
             let context = CRStorageController.shared.localContainer.viewContext
             context.performAndWait {
-                _ = CRLWWOp(context: context, attribute: context.object(with:operationObjectID!) as? CRAttributeOp, value: newValue!)
+                _ = CRLWWOp(context: context, container: context.object(with:operationObjectID!) as? CRAttributeOp, value: newValue!)
             }
         }
     }
@@ -137,7 +137,7 @@ class CRAttributeFloat: CRAttribute {
                 let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
                 request.returnsObjectsAsFaults = false
                 request.fetchLimit = 1
-                request.predicate = NSPredicate(format: "parent == %@", context.object(with:operationObjectID!))
+                request.predicate = NSPredicate(format: "container == %@", context.object(with:operationObjectID!))
                 request.sortDescriptors = [NSSortDescriptor(keyPath: \CRLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRLWWOp.peerID, ascending: false)]
 
                 let operations:[CRLWWOp] = try! context.fetch(request)
@@ -152,7 +152,7 @@ class CRAttributeFloat: CRAttribute {
         set {
             let context = CRStorageController.shared.localContainer.viewContext
             context.performAndWait {
-                _ = CRLWWOp(context: context, attribute: context.object(with: operationObjectID!) as? CRAttributeOp, value: newValue!)
+                _ = CRLWWOp(context: context, container: context.object(with: operationObjectID!) as? CRAttributeOp, value: newValue!)
             }
         }
     }
@@ -176,7 +176,7 @@ class CRAttributeDate: CRAttribute {
                 let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
                 request.returnsObjectsAsFaults = false
                 request.fetchLimit = 1
-                request.predicate = NSPredicate(format: "parent == %@", context.object(with:operationObjectID!))
+                request.predicate = NSPredicate(format: "container == %@", context.object(with:operationObjectID!))
                 request.sortDescriptors = [NSSortDescriptor(keyPath: \CRLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRLWWOp.peerID, ascending: false)]
 
                 let operations:[CRLWWOp] = try! context.fetch(request)
@@ -191,7 +191,7 @@ class CRAttributeDate: CRAttribute {
         set {
             let context = CRStorageController.shared.localContainer.viewContext
             context.performAndWait {
-                _ = CRLWWOp(context: context, attribute: context.object(with: operationObjectID!) as? CRAttributeOp, value: newValue!)
+                _ = CRLWWOp(context: context, container: context.object(with: operationObjectID!) as? CRAttributeOp, value: newValue!)
             }
         }
     }
@@ -215,7 +215,7 @@ class CRAttributeBool: CRAttribute {
                 let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
                 request.returnsObjectsAsFaults = false
                 request.fetchLimit = 1
-                request.predicate = NSPredicate(format: "parent == %@", context.object(with:operationObjectID!))
+                request.predicate = NSPredicate(format: "container == %@", context.object(with:operationObjectID!))
                 request.sortDescriptors = [NSSortDescriptor(keyPath: \CRLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRLWWOp.peerID, ascending: false)]
 
                 let operations:[CRLWWOp] = try! context.fetch(request)
@@ -230,7 +230,7 @@ class CRAttributeBool: CRAttribute {
         set {
             let context = CRStorageController.shared.localContainer.viewContext
             context.performAndWait {
-                _ = CRLWWOp(context: context, attribute: context.object(with: operationObjectID!) as? CRAttributeOp, value: newValue!)
+                _ = CRLWWOp(context: context, container: context.object(with: operationObjectID!) as? CRAttributeOp, value: newValue!)
             }
         }
     }
@@ -254,7 +254,7 @@ class CRAttributeString: CRAttribute {
                 let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
                 request.returnsObjectsAsFaults = false
                 request.fetchLimit = 1
-                request.predicate = NSPredicate(format: "parent == %@", context.object(with:operationObjectID!))
+                request.predicate = NSPredicate(format: "container == %@", context.object(with:operationObjectID!))
                 request.sortDescriptors = [NSSortDescriptor(keyPath: \CRLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRLWWOp.peerID, ascending: false)]
 
                 let operations:[CRLWWOp] = try! context.fetch(request)
@@ -269,7 +269,7 @@ class CRAttributeString: CRAttribute {
         set {
             let context = CRStorageController.shared.localContainer.viewContext
             context.performAndWait {
-                _ = CRLWWOp(context: context, attribute: context.object(with: operationObjectID!) as? CRAttributeOp, value: newValue!)
+                _ = CRLWWOp(context: context, container: context.object(with: operationObjectID!) as? CRAttributeOp, value: newValue!)
             }
         }
     }

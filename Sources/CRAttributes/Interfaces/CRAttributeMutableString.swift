@@ -105,7 +105,7 @@ class CRTextStorage: NSTextStorage {
         
         var prevOp = parentOp
         for position in 0..<strAttributed.length {
-            let newOp:CRStringInsertOp = CRStringInsertOp(context: context, parent: prevOp, attribute: attributeOp, contribution: strAttributed.mutableString.character(at: position))
+            let newOp:CRStringInsertOp = CRStringInsertOp(context: context, parent: prevOp, container: attributeOp, contribution: strAttributed.mutableString.character(at: position))
             if let prevOp = prevOp as? CRStringInsertOp {
                 prevOp.next = newOp
                 newOp.prev = prevOp
@@ -152,7 +152,7 @@ class CRTextStorage: NSTextStorage {
     
     func markDeleted(_ operation: CRAbstractOp) {
         let context = CRStorageController.shared.localContainer.viewContext
-        let _ = CRDeleteOp(context: context, parent: operation, attribute: operation.attribute)
+        let _ = CRDeleteOp(context: context, container: operation)
         operation.hasTombstone = true
     }
     
@@ -168,7 +168,7 @@ class CRTextStorage: NSTextStorage {
     func prebuildAttributedStringFromOperations(attributeOp: CRAttributeOp) {
         let request:NSFetchRequest<CRStringInsertOp> = CRStringInsertOp.fetchRequest()
         request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "attribute == %@", attributeOp)
+        request.predicate = NSPredicate(format: "container == %@", attributeOp)
 //        request.sortDescriptors = [NSSortDescriptor(keyPath: \CRStringInsertOp.parent, ascending: true)]
 
         let context = CRStorageController.shared.localContainer.viewContext
@@ -178,8 +178,9 @@ class CRTextStorage: NSTextStorage {
         
         let attributeOp:CRAttributeOp = context.object(with: attributeObjectID) as! CRAttributeOp
         
-        let head:CRStringInsertOp? = attributeOp.subOperations?.anyObject() as? CRStringInsertOp
-        assert((attributeOp.subOperations?.count ?? Int.max) <= 1)
+        let head:CRStringInsertOp? = attributeOp.containedOperations?.anyObject() as? CRStringInsertOp
+        let containedOperationsCount = attributeOp.containedOperations?.count
+        assert((containedOperationsCount ?? Int.max) <= 1)
         
 //        let head = cdOps.first
         

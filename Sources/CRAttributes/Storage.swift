@@ -77,8 +77,8 @@ extension CRStorageController {
         localContext.performAndWait { //TODO: do I really need to wait here?
             let protoForest = cdForest.protoStructure()
             for tree in protoForest.trees {
-                let protoParentID:ProtoOperationID = tree.parentID
-                let parentID = CROperationID(from: protoParentID)
+                let protoContainerID:ProtoOperationID = tree.containerID
+                let parentID = CROperationID(from: protoContainerID)
                 if parentID.isZero() {
                     // this means independent tree
                     // just load me
@@ -112,16 +112,16 @@ extension CRStorageController {
         
         switch protoTree.value {
         case .some(.objectOperation):
-            root = CRObjectOp(context: context, from: protoTree.objectOperation, parent: nil)
+            root = CRObjectOp(context: context, from: protoTree.objectOperation, container: nil)
             print("Object!")
         case .some(.attributeOperation):
-            root = CRAttributeOp(context: context, from: protoTree.attributeOperation, parent: nil)
+            root = CRAttributeOp(context: context, from: protoTree.attributeOperation, container: nil)
             print("Attribute!")
         case .some(.deleteOperation):
-            root = CRDeleteOp(context: context, from: protoTree.deleteOperation, parent: nil)
+            root = CRDeleteOp(context: context, from: protoTree.deleteOperation, container: nil)
             print("Delete!")
         case .some(.lwwOperation):
-            root = CRLWWOp(context: context, from: protoTree.lwwOperation, parent: nil)
+            root = CRLWWOp(context: context, from: protoTree.lwwOperation, container: nil)
             print("LWW!")
         case .some(.stringInsertOperation):
             print("StringInsert!")
@@ -171,10 +171,10 @@ extension CRStorageController {
             // as we progress operations will be removed
             if queuedOperation.upstreamQueueOperation {
                 var tree = ProtoOperationsTree()
-                if let id = queuedOperation.parent?.protoOperationID() {
-                    tree.parentID = id //TODO: what with the null?
+                if let id = queuedOperation.container?.protoOperationID() {
+                    tree.containerID = id //TODO: what with the null?
                 } else {
-                    tree.parentID = CROperationID.zero.protoForm()
+                    tree.containerID = CROperationID.zero.protoForm()
                 }
                 switch queuedOperation {
                 case let op as CRObjectOp:
@@ -245,7 +245,7 @@ extension CRStorageController {
             $0.rawType = operation.rawType
         }
         
-        for operation in operation.subOperations!.allObjects {
+        for operation in operation.containedOperations!.allObjects {
             if let operation = operation as? CRAbstractOp {
                 if operation.upstreamQueueOperation {
                     switch operation {
@@ -284,7 +284,7 @@ extension CRStorageController {
             $0.rawType = operation.rawType
         }
         
-        for operation in operation.subOperations!.allObjects {
+        for operation in operation.containedOperations!.allObjects {
             if let operation = operation as? CRAbstractOp {
                 if operation.upstreamQueueOperation {
                     switch operation {
@@ -309,7 +309,7 @@ extension CRStorageController {
             $0.version = operation.version
             $0.lamport = operation.lamport
             $0.peerID  = operation.peerID.data
-            switch (operation.parent as! CRAttributeOp).type {
+            switch (operation.container as! CRAttributeOp).type {
             case .int:
                 $0.int = operation.int
             case .float:
@@ -325,7 +325,7 @@ extension CRStorageController {
             }
         }
         
-        for operation in operation.subOperations!.allObjects {
+        for operation in operation.containedOperations!.allObjects {
             if let operation = operation as? CRAbstractOp {
                 if operation.upstreamQueueOperation {
                     switch operation {
@@ -349,14 +349,12 @@ extension CRStorageController {
             $0.contribution = operation.contribution
         }
         
-        for operation in operation.subOperations!.allObjects {
+        for operation in operation.containedOperations!.allObjects {
             if let operation = operation as? CRAbstractOp {
                 if operation.upstreamQueueOperation {
                     switch operation {
                     case let op as CRDeleteOp:
                         proto.deleteOperations.append(protoDeleteOperationRecurse(op))
-                    case let op as CRStringInsertOp:
-                        proto.stringInsertOperations.append(protoStringInsertOperationRecurse(op))
                     default:
                         fatalError("unsupported subOperation")
                     }

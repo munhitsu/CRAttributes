@@ -127,5 +127,5 @@ average: 0.073, relative standard deviation: 10.412%, values: [0.094805, 0.07371
 rebuilding model
 ```
 cd Sources/CRAttributes/ReplicatedModel
-protoc --swift_out=. model.proto
+protoc --swift_out=. ProtoModel.proto
 ```
