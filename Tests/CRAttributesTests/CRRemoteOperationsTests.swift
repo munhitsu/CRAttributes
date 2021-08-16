@@ -129,6 +129,14 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(cdForests.count, 1)
         flushAllCoreData(CRStorageController.shared.localContainer)
         CRStorageController.processDownstreamForest(forest: cdForests[0].objectID)
+        
+        let localContext = CRStorageController.shared.localContainer.viewContext
+        let request:NSFetchRequest<CRAttributeOp> = CRAttributeOp.fetchRequest()
+        
+        let localCount = try! localContext.count(for: request)
+        
+        print(localCount)
+        XCTAssertGreaterThan(localCount, 10) // there should eb some operations
         //TODO: test that string was properly restored
     }
 

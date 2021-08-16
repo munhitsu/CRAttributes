@@ -23,7 +23,9 @@
 /* Begin PBXBuildFile section */
 		BB7BD5D526C4732500ADEDD4 /* test-mk-editing-trace.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = BB7BD5D426C4732500ADEDD4 /* test-mk-editing-trace.json */; };
 		BBA81EBF26C64F430015981B /* CRRemoteOperationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBA81EBE26C64F430015981B /* CRRemoteOperationsTests.swift */; };
-		BBFF6B3926C9818E005A6182 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBFF6B3826C9818E005A6182 /* Model.swift */; };
+		BBFF6B3926C9818E005A6182 /* CDModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBFF6B3826C9818E005A6182 /* CDModel.swift */; };
+		BBFF6B3B26CA7330005A6182 /* ProtoModel.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBFF6B3A26CA7330005A6182 /* ProtoModel.pb.swift */; };
+		BBFF6B3D26CA7DD4005A6182 /* CDModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBFF6B3C26CA7DD4005A6182 /* CDModel.swift */; };
 		OBJ_150 /* Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* Storage.swift */; };
 		OBJ_151 /* CoOpMutableStringOperationDelete.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_10 /* CoOpMutableStringOperationDelete.swift */; };
 		OBJ_152 /* CoOpMutableStringOperationInsert.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* CoOpMutableStringOperationInsert.swift */; };
@@ -41,7 +43,6 @@
 		OBJ_164 /* CRStringInsertOp.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_25 /* CRStringInsertOp.swift */; };
 		OBJ_165 /* RenderedString.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_26 /* RenderedString.swift */; };
 		OBJ_166 /* CDOperationsForest.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_28 /* CDOperationsForest.swift */; };
-		OBJ_167 /* model.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_29 /* model.pb.swift */; };
 		OBJ_168 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_30 /* Utils.swift */; };
 		OBJ_170 /* SwiftProtobuf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "SwiftProtobuf::SwiftProtobuf::Product" /* SwiftProtobuf.framework */; };
 		OBJ_171 /* CoreDataModelDescription.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "CoreDataModelDescription::CoreDataModelDescription::Product" /* CoreDataModelDescription.framework */; };
@@ -207,9 +208,11 @@
 
 /* Begin PBXFileReference section */
 		BB7BD5D426C4732500ADEDD4 /* test-mk-editing-trace.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = "test-mk-editing-trace.json"; path = "Data Assets/test-mk-editing-trace.json"; sourceTree = "<group>"; };
-		BBA81EBD26C5ACE70015981B /* model.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = model.proto; sourceTree = "<group>"; };
+		BBA81EBD26C5ACE70015981B /* ProtoModel.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = ProtoModel.proto; sourceTree = "<group>"; };
 		BBA81EBE26C64F430015981B /* CRRemoteOperationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRRemoteOperationsTests.swift; sourceTree = "<group>"; };
-		BBFF6B3826C9818E005A6182 /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
+		BBFF6B3826C9818E005A6182 /* CDModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDModel.swift; sourceTree = "<group>"; };
+		BBFF6B3A26CA7330005A6182 /* ProtoModel.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProtoModel.pb.swift; sourceTree = "<group>"; };
+		BBFF6B3C26CA7DD4005A6182 /* CDModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDModel.swift; sourceTree = "<group>"; };
 		"CRAttributes::CRAttributes::Product" /* CRAttributes.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CRAttributes.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"CRAttributes::CRAttributesTests::Product" /* CRAttributesTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = CRAttributesTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		"CoreDataModelDescription::CoreDataModelDescription::Product" /* CoreDataModelDescription.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CoreDataModelDescription.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -265,7 +268,6 @@
 		OBJ_25 /* CRStringInsertOp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRStringInsertOp.swift; sourceTree = "<group>"; };
 		OBJ_26 /* RenderedString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderedString.swift; sourceTree = "<group>"; };
 		OBJ_28 /* CDOperationsForest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDOperationsForest.swift; sourceTree = "<group>"; };
-		OBJ_29 /* model.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = model.pb.swift; sourceTree = "<group>"; };
 		OBJ_30 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		OBJ_33 /* CRLocalOperationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRLocalOperationsTests.swift; sourceTree = "<group>"; };
 		OBJ_34 /* PropagationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropagationTests.swift; sourceTree = "<group>"; };
@@ -447,6 +449,7 @@
 		OBJ_17 /* LocalModel */ = {
 			isa = PBXGroup;
 			children = (
+				BBFF6B3826C9818E005A6182 /* CDModel.swift */,
 				OBJ_18 /* CRAbstractOp.swift */,
 				OBJ_19 /* CRAttributeOp.swift */,
 				OBJ_20 /* CRDeleteOp.swift */,
@@ -463,8 +466,9 @@
 			isa = PBXGroup;
 			children = (
 				OBJ_28 /* CDOperationsForest.swift */,
-				BBA81EBD26C5ACE70015981B /* model.proto */,
-				OBJ_29 /* model.pb.swift */,
+				BBA81EBD26C5ACE70015981B /* ProtoModel.proto */,
+				BBFF6B3A26CA7330005A6182 /* ProtoModel.pb.swift */,
+				BBFF6B3C26CA7DD4005A6182 /* CDModel.swift */,
 			);
 			path = ReplicatedModel;
 			sourceTree = "<group>";
@@ -630,7 +634,6 @@
 			children = (
 				BBFF6B3726C7CC60005A6182 /* legacy */,
 				OBJ_9 /* Storage.swift */,
-				BBFF6B3826C9818E005A6182 /* Model.swift */,
 				OBJ_16 /* Lamport.swift */,
 				OBJ_30 /* Utils.swift */,
 				OBJ_12 /* Interfaces */,
@@ -837,14 +840,16 @@
 			files = (
 				OBJ_150 /* Storage.swift in Sources */,
 				OBJ_151 /* CoOpMutableStringOperationDelete.swift in Sources */,
-				BBFF6B3926C9818E005A6182 /* Model.swift in Sources */,
+				BBFF6B3926C9818E005A6182 /* CDModel.swift in Sources */,
 				OBJ_152 /* CoOpMutableStringOperationInsert.swift in Sources */,
 				OBJ_153 /* CRAttributes.swift in Sources */,
 				OBJ_154 /* CRAttributeMutableString.swift in Sources */,
 				OBJ_155 /* CRObject.swift in Sources */,
+				BBFF6B3B26CA7330005A6182 /* ProtoModel.pb.swift in Sources */,
 				OBJ_156 /* Lamport.swift in Sources */,
 				OBJ_157 /* CRAbstractOp.swift in Sources */,
 				OBJ_158 /* CRAttributeOp.swift in Sources */,
+				BBFF6B3D26CA7DD4005A6182 /* CDModel.swift in Sources */,
 				OBJ_159 /* CRDeleteOp.swift in Sources */,
 				OBJ_160 /* CRLWWOp.swift in Sources */,
 				OBJ_161 /* CRObjectOp.swift in Sources */,
@@ -853,7 +858,6 @@
 				OBJ_164 /* CRStringInsertOp.swift in Sources */,
 				OBJ_165 /* RenderedString.swift in Sources */,
 				OBJ_166 /* CDOperationsForest.swift in Sources */,
-				OBJ_167 /* model.pb.swift in Sources */,
 				OBJ_168 /* Utils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

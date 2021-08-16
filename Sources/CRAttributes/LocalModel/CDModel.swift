@@ -110,23 +110,6 @@ let localModelDescription = CoreDataModelDescription(
                )
     ]
 )
-
-
-let replicatedModelDescription = CoreDataModelDescription(
-    entities: [
-        .entity(name: "CDOperationsForest",
-                managedObjectClass: CDOperationsForest.self,
-                attributes: [
-                    .attribute(name: "version", type: .integer32AttributeType, defaultValue: Int32(0)),
-                    .attribute(name: "peerID", type: .UUIDAttributeType, defaultValue: localPeerID),
-                    .attribute(name: "data", type: .binaryDataAttributeType),
-                ]
-               )
-    ]
-)
-
-
-// global variables are lazy
 public let CRLocalModel = localModelDescription.makeModel()
-public let CRReplicatedModel = replicatedModelDescription.makeModel()
+
 
