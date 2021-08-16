@@ -23,11 +23,16 @@ extension CRAbstractOp {
     @NSManaged public var lamport: Int64
     @NSManaged public var peerID: UUID
     @NSManaged public var hasTombstone: Bool
+    
     @NSManaged public var parent: CRAbstractOp?
+    @NSManaged public var parentLamport: Int64
+    @NSManaged public var parentPeerID: UUID
+
     @NSManaged public var attribute: CRAttributeOp? // primary use to prefetch all string operations, secondary to get counts of operations per attribute
     @NSManaged public var subOperations: NSSet?
 
-    @NSManaged public var upstreamQueue: Bool
+    @NSManaged public var upstreamQueueOperation: Bool
+    @NSManaged public var downstreamQueueHeadOperation: Bool
     // TODO: add boolean attributes that it's waiting in pecific queues
 
 }
@@ -60,6 +65,13 @@ extension CRAbstractOp {
         self.lamport = getLamport()
         self.peerID = localPeerID
         self.parent = parent
+        if parent == nil {
+            self.parentLamport = 0
+            self.parentPeerID = UUID.zero
+        } else {
+            self.parentLamport = parent!.lamport
+            self.parentPeerID = parent!.peerID
+        }
         self.attribute = attribute
         self.hasTombstone = false
     }
@@ -91,7 +103,22 @@ extension CRAbstractOp {
         request.predicate = NSPredicate(format: "upstreamQueue == true")
         return try! context.fetch(request)
     }
+
+    static func operation(fromLamport:Int64, fromPeerID:UUID, in context: NSManagedObjectContext) -> CRAbstractOp? {
+        let request:NSFetchRequest<CRAbstractOp> = CRAbstractOp.fetchRequest()
+        request.predicate = NSPredicate(format: "lamport = %@ and peerID = %@", argumentArray: [fromLamport, fromPeerID])
+        return try? context.fetch(request)[0]
+    }
+
     
+    static func operation(from protoID:ProtoOperationID, in context: NSManagedObjectContext) -> CRAbstractOp? {
+        return operation(fromLamport: protoID.lamport, fromPeerID: protoID.peerID.object(), in: context)
+    }
+
+    static func operation(from operationID:CROperationID, in context: NSManagedObjectContext) -> CRAbstractOp? {
+        return operation(fromLamport: operationID.lamport, fromPeerID: operationID.peerID, in: context)
+    }
+
 //    func protoOperation() -> ProtoBaseOperation {
 //        return ProtoBaseOperation.with {
 //            $0.version = version

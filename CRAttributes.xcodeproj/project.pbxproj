@@ -23,7 +23,8 @@
 /* Begin PBXBuildFile section */
 		BB7BD5D526C4732500ADEDD4 /* test-mk-editing-trace.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = BB7BD5D426C4732500ADEDD4 /* test-mk-editing-trace.json */; };
 		BBA81EBF26C64F430015981B /* CRRemoteOperationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBA81EBE26C64F430015981B /* CRRemoteOperationsTests.swift */; };
-		OBJ_150 /* CRStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* CRStorage.swift */; };
+		BBFF6B3926C9818E005A6182 /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBFF6B3826C9818E005A6182 /* Model.swift */; };
+		OBJ_150 /* Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* Storage.swift */; };
 		OBJ_151 /* CoOpMutableStringOperationDelete.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_10 /* CoOpMutableStringOperationDelete.swift */; };
 		OBJ_152 /* CoOpMutableStringOperationInsert.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* CoOpMutableStringOperationInsert.swift */; };
 		OBJ_153 /* CRAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_13 /* CRAttributes.swift */; };
@@ -39,7 +40,7 @@
 		OBJ_163 /* CRStringInsertOld.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_24 /* CRStringInsertOld.swift */; };
 		OBJ_164 /* CRStringInsertOp.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_25 /* CRStringInsertOp.swift */; };
 		OBJ_165 /* RenderedString.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_26 /* RenderedString.swift */; };
-		OBJ_166 /* OperationsForest.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_28 /* OperationsForest.swift */; };
+		OBJ_166 /* CDOperationsForest.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_28 /* CDOperationsForest.swift */; };
 		OBJ_167 /* model.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_29 /* model.pb.swift */; };
 		OBJ_168 /* Utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_30 /* Utils.swift */; };
 		OBJ_170 /* SwiftProtobuf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = "SwiftProtobuf::SwiftProtobuf::Product" /* SwiftProtobuf.framework */; };
@@ -208,6 +209,7 @@
 		BB7BD5D426C4732500ADEDD4 /* test-mk-editing-trace.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = "test-mk-editing-trace.json"; path = "Data Assets/test-mk-editing-trace.json"; sourceTree = "<group>"; };
 		BBA81EBD26C5ACE70015981B /* model.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = model.proto; sourceTree = "<group>"; };
 		BBA81EBE26C64F430015981B /* CRRemoteOperationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRRemoteOperationsTests.swift; sourceTree = "<group>"; };
+		BBFF6B3826C9818E005A6182 /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		"CRAttributes::CRAttributes::Product" /* CRAttributes.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CRAttributes.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"CRAttributes::CRAttributesTests::Product" /* CRAttributesTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = CRAttributesTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		"CoreDataModelDescription::CoreDataModelDescription::Product" /* CoreDataModelDescription.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CoreDataModelDescription.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -262,7 +264,7 @@
 		OBJ_24 /* CRStringInsertOld.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRStringInsertOld.swift; sourceTree = "<group>"; };
 		OBJ_25 /* CRStringInsertOp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRStringInsertOp.swift; sourceTree = "<group>"; };
 		OBJ_26 /* RenderedString.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderedString.swift; sourceTree = "<group>"; };
-		OBJ_28 /* OperationsForest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationsForest.swift; sourceTree = "<group>"; };
+		OBJ_28 /* CDOperationsForest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDOperationsForest.swift; sourceTree = "<group>"; };
 		OBJ_29 /* model.pb.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = model.pb.swift; sourceTree = "<group>"; };
 		OBJ_30 /* Utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Utils.swift; sourceTree = "<group>"; };
 		OBJ_33 /* CRLocalOperationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRLocalOperationsTests.swift; sourceTree = "<group>"; };
@@ -320,7 +322,7 @@
 		OBJ_87 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		OBJ_88 /* MessageExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageExtension.swift; sourceTree = "<group>"; };
 		OBJ_89 /* NameMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NameMap.swift; sourceTree = "<group>"; };
-		OBJ_9 /* CRStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRStorage.swift; sourceTree = "<group>"; };
+		OBJ_9 /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
 		OBJ_90 /* ProtoNameProviding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoNameProviding.swift; sourceTree = "<group>"; };
 		OBJ_91 /* ProtobufAPIVersionCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtobufAPIVersionCheck.swift; sourceTree = "<group>"; };
 		OBJ_92 /* ProtobufMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtobufMap.swift; sourceTree = "<group>"; };
@@ -460,7 +462,7 @@
 		OBJ_27 /* ReplicatedModel */ = {
 			isa = PBXGroup;
 			children = (
-				OBJ_28 /* OperationsForest.swift */,
+				OBJ_28 /* CDOperationsForest.swift */,
 				BBA81EBD26C5ACE70015981B /* model.proto */,
 				OBJ_29 /* model.pb.swift */,
 			);
@@ -479,9 +481,9 @@
 			isa = PBXGroup;
 			children = (
 				OBJ_33 /* CRLocalOperationsTests.swift */,
+				BBA81EBE26C64F430015981B /* CRRemoteOperationsTests.swift */,
 				OBJ_34 /* PropagationTests.swift */,
 				OBJ_35 /* XCTestManifests.swift */,
-				BBA81EBE26C64F430015981B /* CRRemoteOperationsTests.swift */,
 			);
 			name = CRAttributesTests;
 			path = Tests/CRAttributesTests;
@@ -627,12 +629,13 @@
 			isa = PBXGroup;
 			children = (
 				BBFF6B3726C7CC60005A6182 /* legacy */,
-				OBJ_9 /* CRStorage.swift */,
-				OBJ_12 /* Interfaces */,
+				OBJ_9 /* Storage.swift */,
+				BBFF6B3826C9818E005A6182 /* Model.swift */,
 				OBJ_16 /* Lamport.swift */,
+				OBJ_30 /* Utils.swift */,
+				OBJ_12 /* Interfaces */,
 				OBJ_17 /* LocalModel */,
 				OBJ_27 /* ReplicatedModel */,
-				OBJ_30 /* Utils.swift */,
 			);
 			name = CRAttributes;
 			path = Sources/CRAttributes;
@@ -832,8 +835,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
-				OBJ_150 /* CRStorage.swift in Sources */,
+				OBJ_150 /* Storage.swift in Sources */,
 				OBJ_151 /* CoOpMutableStringOperationDelete.swift in Sources */,
+				BBFF6B3926C9818E005A6182 /* Model.swift in Sources */,
 				OBJ_152 /* CoOpMutableStringOperationInsert.swift in Sources */,
 				OBJ_153 /* CRAttributes.swift in Sources */,
 				OBJ_154 /* CRAttributeMutableString.swift in Sources */,
@@ -848,7 +852,7 @@
 				OBJ_163 /* CRStringInsertOld.swift in Sources */,
 				OBJ_164 /* CRStringInsertOp.swift in Sources */,
 				OBJ_165 /* RenderedString.swift in Sources */,
-				OBJ_166 /* OperationsForest.swift in Sources */,
+				OBJ_166 /* CDOperationsForest.swift in Sources */,
 				OBJ_167 /* model.pb.swift in Sources */,
 				OBJ_168 /* Utils.swift in Sources */,
 			);

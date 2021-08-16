@@ -13,6 +13,7 @@
 - [] optimise UUID comparision
 - [] optimise UUID store and restore in protobuf
 - [] instrument and optimise
+- [] revert to storing peerID with every message in the protobuf / there might be edge cases when user moves between devices
 
 
 ## ObjectID can change

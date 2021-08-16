@@ -68,7 +68,36 @@ extension CRAttributeOp {
         self.type = type
         self.name = name
     }
-    
+
+    convenience init(context: NSManagedObjectContext, from protoForm: ProtoAttributeOperation, parent: CRAbstractOp?) {
+        self.init(context: context)
+        self.version = protoForm.version
+        self.peerID = protoForm.peerID.object()
+        self.lamport = protoForm.lamport
+        self.name = protoForm.name
+        self.rawType = protoForm.rawType
+        self.parent = parent
+        if parent != nil {
+            self.parentLamport = parent!.lamport
+            self.parentPeerID = parent!.peerID
+        }
+
+        
+        for protoItem in protoForm.deleteOperations {
+            _ = CRDeleteOp(context: context, from: protoItem, parent: self)
+        }
+        
+        for protoItem in protoForm.lwwOperations {
+            _ = CRLWWOp(context: context, from: protoItem, parent: self)
+        }
+
+        //TODO: (high) this is hard
+//        for protoItem in protoForm.stringInsertOperations {
+//            _ = CRStringInsertOp(context: context, from: protoItem, parent: self)
+//        }
+
+    }
+
     static func allObjects() -> [CRAttributeOp]{
         let context = CRStorageController.shared.localContainer.viewContext
         let request:NSFetchRequest<CRAttributeOp> = CRAttributeOp.fetchRequest()
@@ -76,11 +105,11 @@ extension CRAttributeOp {
         return try! context.fetch(request)
     }
 
-    func protoOperation() -> ProtoAttributeOperation {
-        return ProtoAttributeOperation.with {
-            $0.base = super.protoOperation()
-            $0.name = name!
-            $0.rawType = rawType
-        }
-    }
+//    func protoOperation() -> ProtoAttributeOperation {
+//        return ProtoAttributeOperation.with {
+//            $0.base = super.protoOperation()
+//            $0.name = name!
+//            $0.rawType = rawType
+//        }
+//    }
 }

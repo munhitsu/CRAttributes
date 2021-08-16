@@ -38,10 +38,10 @@ extension CRStringInsertOp {
         //TODO: migrate to init(utf16CodeUnits: UnsafePointer<unichar>, count: Int)
     }
 
-    func protoOperation() -> ProtoStringInsertOperation {
-        return ProtoStringInsertOperation.with {
-            $0.base = super.protoOperation()
-            $0.contribution = contribution
-        }
-    }
+//    func protoOperation() -> ProtoStringInsertOperation {
+//        return ProtoStringInsertOperation.with {
+//            $0.base = super.protoOperation()
+//            $0.contribution = contribution
+//        }
+//    }
 }

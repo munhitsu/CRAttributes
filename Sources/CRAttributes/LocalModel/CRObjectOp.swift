@@ -59,6 +59,32 @@ extension CRObjectOp {
         self.type = type
     }
     
+    convenience init(context: NSManagedObjectContext, from protoForm: ProtoObjectOperation, parent: CRAbstractOp?) {
+        self.init(context: context)
+        self.version = protoForm.version
+        self.peerID = protoForm.peerID.object()
+        self.lamport = protoForm.lamport
+        self.rawType = protoForm.rawType
+        self.parent = parent
+        if parent != nil {
+            self.parentLamport = parent!.lamport
+            self.parentPeerID = parent!.peerID
+        }
+
+        
+        for protoItem in protoForm.deleteOperations {
+            _ = CRDeleteOp(context: context, from: protoItem, parent: self)
+        }
+        
+        for protoItem in protoForm.attributeOperations {
+            _ = CRAttributeOp(context: context, from: protoItem, parent: self)
+        }
+        
+        for protoItem in protoForm.objectOperations {
+            _ = CRObjectOp(context: context, from: protoItem, parent: self)
+        }
+    }
+    
     static func allObjects() -> [CRObjectOp]{
         let context = CRStorageController.shared.localContainer.viewContext
         let request:NSFetchRequest<CRObjectOp> = CRObjectOp.fetchRequest()

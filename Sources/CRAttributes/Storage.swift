@@ -7,127 +7,6 @@
 
 import Foundation
 import CoreData
-import CoreDataModelDescription
-
-
-// use case
-// list of all top level folders
-// list of all folders and notes within a folder
-// list of all attributes within a note
-
-let localModelDescription = CoreDataModelDescription(
-    entities: [
-        .entity(name: "CRAbstractOp",
-                managedObjectClass: CRAbstractOp.self,
-                isAbstract: true,
-                attributes: [
-                    .attribute(name: "version", type: .integer32AttributeType, defaultValue: Int32(0)),
-                    .attribute(name: "lamport", type: .integer64AttributeType),
-                    .attribute(name: "peerID", type: .UUIDAttributeType),
-                    .attribute(name: "hasTombstone", type: .booleanAttributeType),
-                    .attribute(name: "upstreamQueue", type: .booleanAttributeType, defaultValue: true) //TODO: remove default
-                ],
-                relationships: [
-                    .relationship(name: "parent", destination: "CRAbstractOp", optional: true, toMany: false, inverse: "subOperations"),  // insertion point
-                    .relationship(name: "attribute", destination: "CRAttributeOp", optional: true, toMany: false),  // insertion point
-                    .relationship(name: "subOperations", destination: "CRAbstractOp", optional: true, toMany: true, inverse: "parent"),  // insertion point
-                ],
-                indexes: [
-                    .index(name: "lamport", elements: [.property(name: "lamport")]),
-                    .index(name: "lamportPeerID", elements: [.property(name: "lamport"),.property(name: "peerID")])
-                ],
-                constraints: ["lamport", "peerID"]
-               ),
-        // object parent is an object it is nested within
-        // null parent means it's a top level object
-        // if you are a folder then set yourself a CRAttributeOp "name"
-        // subOperations will be either sub attributes or sub objects
-            .entity(name: "CRObjectOp",
-                    managedObjectClass: CRObjectOp.self,
-                    parentEntity: "CRAbstractOp",
-                    attributes: [
-                        .attribute(name: "rawType", type: .integer32AttributeType, defaultValue: Int32(0))
-                    ]
-                   ),
-        // attribute parent is an object attribute is nested within
-        .entity(name: "CRAttributeOp",
-                managedObjectClass: CRAttributeOp.self,
-                parentEntity: "CRAbstractOp",
-                attributes: [
-                    .attribute(name: "name", type: .stringAttributeType, defaultValue: "default"),
-                    .attribute(name: "rawType", type: .integer32AttributeType, defaultValue: Int32(0))
-                ],
-                relationships: [
-                    .relationship(name: "attributeOperations", destination: "CRAbstractOp", toMany: true, inverse: "attribute"),
-                    // we may need the head attribute operation or a quick query to find it - e.g. all operations pointint to this attribute but without parent - shoub be good enough
-                ]
-               ),
-        .entity(name: "CRLWWOp",
-                managedObjectClass: CRLWWOp.self,
-                parentEntity: "CRAbstractOp",
-                attributes: [
-                    .attribute(name: "int", type: .integer64AttributeType, isOptional: true),
-                    .attribute(name: "float", type: .floatAttributeType, isOptional: true),
-                    .attribute(name: "date", type: .dateAttributeType, isOptional: true),
-                    .attribute(name: "boolean", type: .booleanAttributeType, isOptional: true),
-                    .attribute(name: "string", type: .stringAttributeType, isOptional: true)
-                ]
-               ),
-        // parent is what was deleted
-        .entity(name: "CRDeleteOp",
-                managedObjectClass: CRDeleteOp.self,
-                parentEntity: "CRAbstractOp"
-               ),
-        .entity(name: "RenderedString",
-                managedObjectClass: RenderedString.self,
-                attributes: [
-                    .attribute(name: "string", type: .binaryDataAttributeType)
-                ]
-               ),
-        .entity(name: "CRStringInsertOp",
-                managedObjectClass: CRStringInsertOp.self,
-                parentEntity: "CRAbstractOp",
-                attributes: [
-                    .attribute(name: "contribution", type: .stringAttributeType),
-                ],
-                relationships: [
-                    .relationship(name: "next", destination: "CRStringInsertOp", toMany: false, inverse: "prev"),
-                    .relationship(name: "prev", destination: "CRStringInsertOp", toMany: false, inverse: "next"),
-                ]
-               ),
-        .entity(name: "CRQueue",
-                managedObjectClass: CRQueue.self,
-                attributes: [
-                    .attribute(name: "rawType", type: .integer64AttributeType),
-                    .attribute(name: "lamport", type: .integer64AttributeType),
-                    .attribute(name: "peerID", type: .integer64AttributeType),
-                ],
-                relationships: [
-                    .relationship(name: "operation", destination: "CRAbstractOp", optional: false, toMany: false)
-                ]
-               )
-    ]
-)
-
-
-let replicatedModelDescription = CoreDataModelDescription(
-    entities: [
-        .entity(name: "OperationsForest",
-                managedObjectClass: OperationsForest.self,
-                attributes: [
-                    .attribute(name: "version", type: .integer32AttributeType, defaultValue: Int32(0)),
-                    .attribute(name: "peerID", type: .UUIDAttributeType, defaultValue: localPeerID),
-                    .attribute(name: "data", type: .binaryDataAttributeType),
-                ]
-               )
-    ]
-)
-
-
-// global variables are lazy
-public let CRLocalModel = localModelDescription.makeModel()
-public let CRReplicatedModel = replicatedModelDescription.makeModel()
-
 
 //TODO: follow iwht https://developer.apple.com/documentation/coredata/consuming_relevant_store_changes
 public struct CRStorageController {
@@ -185,23 +64,103 @@ public struct CRStorageController {
 }
 
 
+// Downstream
 extension CRStorageController {
-    static func processUpsteamQueue() {
+    // TODO: (later) introduce RGA Split and consolidate operations here, this will solve the recursion risk
+    
+    static func processDownstreamForest(forest cdForestObjectID: NSManagedObjectID) {
+        let remoteContext = CRStorageController.shared.replicatedContainer.newBackgroundContext()
+        let localContext = CRStorageController.shared.localContainer.newBackgroundContext()
+
+        let cdForest = remoteContext.object(with: cdForestObjectID) as! CDOperationsForest
+        
+        localContext.performAndWait { //TODO: do I really need to wait here?
+            let protoForest = cdForest.protoStructure()
+            for tree in protoForest.trees {
+                let protoParentID:ProtoOperationID = tree.parentID
+                let parentID = CROperationID(from: protoParentID)
+                if parentID.isZero() {
+                    // this means independent tree
+                    // just load me
+                    _ = CRStorageController.rootAfterTreeToOperations(context: localContext, tree: tree, parent: nil)
+                    try? localContext.save()
+                } else {
+                    if let parentOp = CRAbstractOp.operation(from: parentID, in: localContext) {
+                        // just load me
+                        // but link root op with the correct parent
+                        _ = CRStorageController.rootAfterTreeToOperations(context: localContext, tree: tree, parent: parentOp)
+                        try? localContext.save()
+                    } else {
+                        // just load me
+                        // but mark root op as in the downstream queue
+                        let root = CRStorageController.rootAfterTreeToOperations(context: localContext, tree: tree, parent: nil)
+                        root?.downstreamQueueHeadOperation = true
+                        //record somewhere the parentID
+                        root?.peerID = parentID.peerID
+                        root?.lamport = parentID.lamport
+                        try? localContext.save()
+                    }
+                }
+            }
+        }
+    }
+    
+    // creates operations
+    // returns root CDOperation
+    static func rootAfterTreeToOperations(context: NSManagedObjectContext, tree protoTree: ProtoOperationsTree, parent: CRAbstractOp?) -> CRAbstractOp? {
+        var root:CRAbstractOp?=nil
+        
+        switch protoTree.value {
+        case .some(.objectOperation):
+            root = CRObjectOp(context: context, from: protoTree.objectOperation, parent: nil)
+            print("Object!")
+        case .some(.attributeOperation):
+            root = CRAttributeOp(context: context, from: protoTree.attributeOperation, parent: nil)
+            print("Attribute!")
+        case .some(.deleteOperation):
+            root = CRDeleteOp(context: context, from: protoTree.deleteOperation, parent: nil)
+            print("Delete!")
+        case .some(.lwwOperation):
+            root = CRLWWOp(context: context, from: protoTree.lwwOperation, parent: nil)
+            print("LWW!")
+        case .some(.stringInsertOperation):
+            print("StringInsert!")
+        case .none:
+            fatalNotImplemented()
+        case .some(_):
+            fatalNotImplemented()
+        }
+        return root
+    }
+    
+    
+}
+ 
+
+// Upstream
+extension CRStorageController {
+    static func processUpsteamOperationsQueue() {
+        //TODO: how to convert it to context.perform ?
         let contextLocal = CRStorageController.shared.localContainer.newBackgroundContext()
         let contextRemote = CRStorageController.shared.replicatedContainer.newBackgroundContext()
         
         let forests = protoOperationsForests(context: contextLocal)
         
         for protoForest in forests {
-            let _ = OperationsForest(context: contextRemote, from:protoForest)
+            let _ = CDOperationsForest(context: contextRemote, from:protoForest)
         }
-        try? contextRemote.save()
+        do {
+            try contextRemote.save()
+            try contextLocal.save()
+        } catch {
+            fatalError("couldn't save")
+        }
     }
     
     static func protoOperationsForests(context: NSManagedObjectContext) -> [ProtoOperationsForest] {
         let request:NSFetchRequest<CRAbstractOp> = CRAbstractOp.fetchRequest()
         request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "upstreamQueue == true")
+        request.predicate = NSPredicate(format: "upstreamQueueOperation == true")
         let queuedOperations:[CRAbstractOp] = try! context.fetch(request)
         
         var forests:[ProtoOperationsForest] = []
@@ -210,10 +169,12 @@ extension CRStorageController {
         
         for queuedOperation in queuedOperations {
             // as we progress operations will be removed
-            if queuedOperation.upstreamQueue {
+            if queuedOperation.upstreamQueueOperation {
                 var tree = ProtoOperationsTree()
                 if let id = queuedOperation.parent?.protoOperationID() {
                     tree.parentID = id //TODO: what with the null?
+                } else {
+                    tree.parentID = CROperationID.zero.protoForm()
                 }
                 switch queuedOperation {
                 case let op as CRObjectOp:
@@ -232,9 +193,11 @@ extension CRStorageController {
                 forest.trees.append(tree)
             }
         }
-        forest.version = 0
-        forest.peerID = localPeerID.data
-        forests.append(forest)
+        if forest.trees.isEmpty == false {
+            forest.version = 0
+            forest.peerID = localPeerID.data
+            forests.append(forest)
+        }
         return forests
     }
     
@@ -278,12 +241,13 @@ extension CRStorageController {
         var proto = ProtoObjectOperation.with {
             $0.version = operation.version
             $0.lamport = operation.lamport
+            $0.peerID  = operation.peerID.data
             $0.rawType = operation.rawType
         }
         
         for operation in operation.subOperations!.allObjects {
             if let operation = operation as? CRAbstractOp {
-                if operation.upstreamQueue {
+                if operation.upstreamQueueOperation {
                     switch operation {
                     case let op as CRDeleteOp:
                         proto.deleteOperations.append(protoDeleteOperationRecurse(op))
@@ -297,7 +261,7 @@ extension CRStorageController {
                 }
             }
         }
-        operation.upstreamQueue = false
+        operation.upstreamQueueOperation = false
         return proto
     }
 
@@ -305,8 +269,9 @@ extension CRStorageController {
         let proto = ProtoDeleteOperation.with {
             $0.version = operation.version
             $0.lamport = operation.lamport
+            $0.peerID  = operation.peerID.data
         }
-        operation.upstreamQueue = false
+        operation.upstreamQueueOperation = false
         return proto
     }
 
@@ -314,13 +279,14 @@ extension CRStorageController {
         var proto = ProtoAttributeOperation.with {
             $0.version = operation.version
             $0.lamport = operation.lamport
+            $0.peerID  = operation.peerID.data
             $0.name = operation.name!
             $0.rawType = operation.rawType
         }
         
         for operation in operation.subOperations!.allObjects {
             if let operation = operation as? CRAbstractOp {
-                if operation.upstreamQueue {
+                if operation.upstreamQueueOperation {
                     switch operation {
                     case let op as CRDeleteOp:
                         proto.deleteOperations.append(protoDeleteOperationRecurse(op))
@@ -334,7 +300,7 @@ extension CRStorageController {
                 }
             }
         }
-        operation.upstreamQueue = false
+        operation.upstreamQueueOperation = false
         return proto
     }
     
@@ -342,6 +308,7 @@ extension CRStorageController {
         var proto = ProtoLWWOperation.with {
             $0.version = operation.version
             $0.lamport = operation.lamport
+            $0.peerID  = operation.peerID.data
             switch (operation.parent as! CRAttributeOp).type {
             case .int:
                 $0.int = operation.int
@@ -360,7 +327,7 @@ extension CRStorageController {
         
         for operation in operation.subOperations!.allObjects {
             if let operation = operation as? CRAbstractOp {
-                if operation.upstreamQueue {
+                if operation.upstreamQueueOperation {
                     switch operation {
                     case let op as CRDeleteOp:
                         proto.deleteOperations.append(protoDeleteOperationRecurse(op))
@@ -370,7 +337,7 @@ extension CRStorageController {
                 }
             }
         }
-        operation.upstreamQueue = false
+        operation.upstreamQueueOperation = false
         return proto
     }
     
@@ -378,12 +345,13 @@ extension CRStorageController {
         var proto = ProtoStringInsertOperation.with {
             $0.version = operation.version
             $0.lamport = operation.lamport
+            $0.peerID  = operation.peerID.data
             $0.contribution = operation.contribution
         }
         
         for operation in operation.subOperations!.allObjects {
             if let operation = operation as? CRAbstractOp {
-                if operation.upstreamQueue {
+                if operation.upstreamQueueOperation {
                     switch operation {
                     case let op as CRDeleteOp:
                         proto.deleteOperations.append(protoDeleteOperationRecurse(op))
@@ -395,7 +363,7 @@ extension CRStorageController {
                 }
             }
         }
-        operation.upstreamQueue = false
+        operation.upstreamQueueOperation = false
         return proto
     }
 

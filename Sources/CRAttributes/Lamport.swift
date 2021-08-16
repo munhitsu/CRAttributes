@@ -8,7 +8,7 @@ import AppKit
 #endif
 
 
-public var lastLamport: Int64 = 0
+public var lastLamport: lamportType = 0
 private let lastLamportQueue = DispatchQueue(label: "io.cr3.lastLamport")
 
 
@@ -20,9 +20,10 @@ public let localPeerID: UUID = UUID()
 //FIX me - we need macOS implementation (apparently GUID https://developer.apple.com/library/archive/releasenotes/General/ValidateAppStoreReceipt/Chapters/ValidateLocally.html#//apple_ref/doc/uid/TP40010573-CH1-SW14)
 #endif
 
+public typealias lamportType = Int64
 
 //TODO: make me atomic
-func getLamport() -> Int64 {
+func getLamport() -> lamportType {
     return lastLamportQueue.sync {
         lastLamport += 1
         return lastLamport
@@ -32,7 +33,7 @@ func getLamport() -> Int64 {
 /**
  exeute on every incoming message unless you create an Id object
 */
-public func newLamportSeen(_ seenLamport: Int64) {
+public func newLamportSeen(_ seenLamport: lamportType) {
     lastLamport = max(lastLamport, seenLamport)
 }
 
@@ -60,7 +61,7 @@ public func updateLastLamportFromCoOpLog(in context: NSManagedObjectContext) {
 
 
 struct CROperationID: Comparable {
-    var lamport: Int64
+    var lamport: lamportType
     var peerID: UUID
     
     init() {
@@ -68,7 +69,12 @@ struct CROperationID: Comparable {
         self.lamport = getLamport()
     }
     
-    init(lamport: Int64, peerID: UUID) {
+    init(from protoForm:ProtoOperationID) {
+        self.lamport = protoForm.lamport
+        self.peerID = protoForm.peerID.object()
+    }
+    
+    init(lamport: lamportType, peerID: UUID) {
         self.lamport = lamport
         self.peerID = peerID
         newLamportSeen(lamport)
@@ -79,6 +85,23 @@ struct CROperationID: Comparable {
             return lhs.peerID < rhs.peerID
         } else {
             return lhs.lamport < rhs.lamport
+        }
+    }
+    
+    func protoForm() -> ProtoOperationID {
+        return ProtoOperationID.with() {
+            $0.lamport = self.lamport
+            $0.peerID = self.peerID.data
+        }
+    }
+    
+    func isZero() -> Bool {
+        return lamport == 0 && peerID == UUID.zero
+    }
+    
+    static var zero:CROperationID {
+        get {
+            return CROperationID(lamport: 0, peerID: UUID.zero)
         }
     }
 }
@@ -101,5 +124,10 @@ public extension UUID {
     var data: Data {
         return withUnsafeBytes(of: self.uuid, { Data($0) })
     }
-
+    
+    static var zero:UUID {
+        get {
+            return UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
+        }
+    }
 }

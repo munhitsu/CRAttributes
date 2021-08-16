@@ -17,46 +17,51 @@ message OperationID {
 message ObjectOperation {
     int32 version = 1;
     int64 lamport = 2;
-    int32 rawType = 3;
-    repeated DeleteOperation deleteOperations = 4;
-    repeated AttributeOperation attributeOperations = 5;
-    repeated ObjectOperation objectOperations = 6;
+    bytes peerID = 3;
+    int32 rawType = 4;
+    repeated DeleteOperation deleteOperations = 5;
+    repeated AttributeOperation attributeOperations = 6;
+    repeated ObjectOperation objectOperations = 7;
 }
 
 message AttributeOperation {
     int32 version = 1;
     int64 lamport = 2;
-    string name = 3;
-    int32 rawType = 4;
-    repeated DeleteOperation deleteOperations = 5;
-    repeated LWWOperation lwwOperations = 6;
-    repeated StringInsertOperation stringInsertOperations = 7;
+    bytes peerID = 3;
+    string name = 4;
+    int32 rawType = 5;
+    repeated DeleteOperation deleteOperations = 6;
+    repeated LWWOperation lwwOperations = 7;
+    repeated StringInsertOperation stringInsertOperations = 8;
 }
 
 message DeleteOperation {
     int32 version = 1;
     int64 lamport = 2;
+    bytes peerID = 3;
 }
 
 message LWWOperation {
     int32 version = 1;
     int64 lamport = 2;
+    bytes peerID = 3;
     oneof value {
-        int64 int = 3;
-        float float = 4;
-        double date = 5;
-        bool boolean = 6;
-        string string = 7;
+        int64 int = 4;
+        float float = 5;
+        double date = 6;
+        bool boolean = 7;
+        string string = 8;
     }
-    repeated DeleteOperation deleteOperations = 8;
+    repeated DeleteOperation deleteOperations = 9;
 }
 
 message StringInsertOperation {
     int32 version = 1;
     int64 lamport = 2;
-    string contribution = 3;
-    repeated DeleteOperation deleteOperations = 4;
-    repeated StringInsertOperation stringInsertOperations = 5;
+    bytes peerID = 3;
+    string contribution = 4;
+    repeated DeleteOperation deleteOperations = 5;
+    repeated StringInsertOperation stringInsertOperations = 6;
 }
 
 message OperationsTree {
@@ -71,6 +76,7 @@ message OperationsTree {
 }
 
 // tree of operations
+// a tree will contain all operations in the upstream queue, if device change the peerID or repllicated through backup then it may contain a mix
 message OperationsForest {
     int32 version = 1;
     bytes peerID = 2; //it's a sender device ID

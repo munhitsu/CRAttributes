@@ -179,7 +179,7 @@ class CRTextStorage: NSTextStorage {
         let attributeOp:CRAttributeOp = context.object(with: attributeObjectID) as! CRAttributeOp
         
         let head:CRStringInsertOp? = attributeOp.subOperations?.anyObject() as? CRStringInsertOp
-        assert((attributeOp.subOperations?.count as! Int) <= 1)
+        assert((attributeOp.subOperations?.count ?? Int.max) <= 1)
         
 //        let head = cdOps.first
         

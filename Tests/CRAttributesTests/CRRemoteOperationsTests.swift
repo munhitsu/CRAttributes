@@ -69,7 +69,7 @@ class CRRemoteOperationsTests: XCTestCase {
         a6.textStorage!.replaceCharacters(in: NSRange.init(location: 3, length: 3), with: "def")
         XCTAssertEqual(a6.textStorage!.string, "ABCdef")
 
-        let operationsLimit = 10
+        let operationsLimit = 1000
         let string = NSMutableAttributedString()
         string.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: Self.self))
         
@@ -81,7 +81,35 @@ class CRRemoteOperationsTests: XCTestCase {
 
     func testBundleCreation() throws {
         dummyLocalData()
-        CRStorageController.processUpsteamQueue()
+        
+        let context = CRStorageController.shared.localContainer.viewContext
+        let forests = CRStorageController.protoOperationsForests(context: context)
+        XCTAssertEqual(forests.count, 1) //for now that's truth, will change
+        
+        let forest = forests[0]
+//        print(try! forest.jsonString())
+  
+        XCTAssertEqual(forest.peerID.object(), localPeerID)
+        XCTAssertGreaterThan(try! forest.serializedData().count, 8000)
+
+        // testing in second run returns empty bundle
+        let forests2 = CRStorageController.protoOperationsForests(context: context)
+        XCTAssertEqual(forests2.count,0)
+        
+        context.reset()
+        
+        let forests3 = CRStorageController.protoOperationsForests(context: context)
+        XCTAssertGreaterThan(try! forests3[0].serializedData().count, 8000)
+
+        context.reset()
+        
+
+        CRStorageController.processUpsteamOperationsQueue()
+        
+        let remoteContext = CRStorageController.shared.replicatedContainer.newBackgroundContext()
+        let cdForests = CDOperationsForest.allObjects(context: remoteContext)
+        XCTAssertEqual(cdForests.count, 1)
+        
         
         //TODO: count objects in the replicated / scan proto form of the forest
 
@@ -92,10 +120,16 @@ class CRRemoteOperationsTests: XCTestCase {
 //        XCTAssertGreaterThan(protoBundle.stringInsertOperations.count, 0)
 //        XCTAssertGreaterThan(protoBundle.deleteOperations.count, 0)
     }
-    
-    func testBundleSave() throws {
+
+    func testBundleRestore() throws {
         dummyLocalData()
-        CRStorageController.uploadOperations()
+        CRStorageController.processUpsteamOperationsQueue()
+        let remoteContext = CRStorageController.shared.replicatedContainer.newBackgroundContext()
+        let cdForests = CDOperationsForest.allObjects(context: remoteContext)
+        XCTAssertEqual(cdForests.count, 1)
+        flushAllCoreData(CRStorageController.shared.localContainer)
+        CRStorageController.processDownstreamForest(forest: cdForests[0].objectID)
+        //TODO: test that string was properly restored
     }
 
 }
