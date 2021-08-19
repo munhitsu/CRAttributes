@@ -83,6 +83,24 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(a7.operationsCount(), 982) // we don't count deletes any more 
     }
     
+    func appendToDummyLocalData() {
+        let note = CRObject.allObjects(type: .testNote)[0]
+        
+        let text:CRAttributeMutableString = note.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
+        XCTAssertEqual(text.textStorage!.string, "ABCdef")
+        
+        text.textStorage!.replaceCharacters(in: NSRange.init(location: 0, length: 3), with: "123")
+        XCTAssertEqual(text.textStorage!.string, "123def")
+
+        text.textStorage!.replaceCharacters(in: NSRange.init(location: 6, length: 0), with: "###")
+        XCTAssertEqual(text.textStorage!.string, "123def###")
+
+        let context = CRStorageController.shared.localContainer.viewContext
+        let textOp:CRAttributeOp = context.object(with: text.operationObjectID!) as! CRAttributeOp
+        checkStringOperationsCorrectness(textOp)
+    }
+    
+    
     func checkStringOperationsCorrectness(_ cdAttribute: CRAttributeOp) {
         var nodesSeen = Set<lamportType>()
 
@@ -91,10 +109,10 @@ class CRRemoteOperationsTests: XCTestCase {
             if let operation = operation as? CRAbstractOp {
                 if operation.upstreamQueueOperation {
                     switch operation {
-                    case let op as CRDeleteOp:
+                    case _ as CRDeleteOp:
                         print("ignoring Delete")
                     case let op as CRStringInsertOp:
-                        print("op(\(op.lamport))=\(op.contribution) prev(\(op.prev?.lamport))")
+//                        print("op(\(op.lamport))=\(op.contribution) prev(\(String(describing: op.prev?.lamport)))")
                         if op.prev == nil { // it will be only a new string in a new attribute in this scenario
                             assert(headStringOperation == nil)
                             headStringOperation = op
@@ -117,7 +135,7 @@ class CRRemoteOperationsTests: XCTestCase {
         dummyLocalData()
         
         let context = CRStorageController.shared.localContainer.viewContext
-        let forests = CRStorageController.protoOperationsForests(context: context)
+        var forests = CRStorageController.protoOperationsForests(context: context)
         XCTAssertEqual(forests.count, 1) //for now that's truth, will change
         
         let forest = forests[0]
@@ -141,10 +159,29 @@ class CRRemoteOperationsTests: XCTestCase {
         CRStorageController.processUpsteamOperationsQueue()
         
         let remoteContext = CRStorageController.shared.replicatedContainer.newBackgroundContext()
-        let cdForests = CDOperationsForest.allObjects(context: remoteContext)
+        var cdForests = CDOperationsForest.allObjects(context: remoteContext)
         XCTAssertEqual(cdForests.count, 1)
+
         
+        appendToDummyLocalData()
+
+        //let's preview
+        forests = CRStorageController.protoOperationsForests(context: context)
+        XCTAssertEqual(forests.count, 1)
+        XCTAssertEqual(forests[0].trees.count, 5)
+//        print(try! forests[0].jsonString())
+        context.reset()
+
+        //formal upload
+        CRStorageController.processUpsteamOperationsQueue()
+
+        cdForests = CDOperationsForest.allObjects(context: remoteContext)
+        XCTAssertEqual(cdForests.count, 2)
+        //TODO: count
+        // count trees in the 1nd forest = 1
+        // count trees in the 2nd forest = 2
         
+
         //TODO: count objects in the replicated / scan proto form of the forest
 
 //        let protoBundle = CRStorageController.protoOperationsBundle()

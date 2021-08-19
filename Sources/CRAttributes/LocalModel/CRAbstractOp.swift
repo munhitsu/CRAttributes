@@ -108,7 +108,6 @@ extension CRAbstractOp {
         return try? context.fetch(request)[0]
     }
 
-    
     static func operation(from protoID:ProtoOperationID, in context: NSManagedObjectContext) -> CRAbstractOp? {
         return operation(fromLamport: protoID.lamport, fromPeerID: protoID.peerID.object(), in: context)
     }

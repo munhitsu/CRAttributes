@@ -267,6 +267,19 @@ struct ProtoStringInsertOperation {
   fileprivate var _parentID: ProtoOperationID? = nil
 }
 
+/// because you can't have repeated within oneof
+struct ProtoStringInsertOperationLinkedList {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  var stringInsertOperations: [ProtoStringInsertOperation] = []
+
+  var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  init() {}
+}
+
 struct ProtoOperationsTree {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -315,12 +328,12 @@ struct ProtoOperationsTree {
     set {value = .lwwOperation(newValue)}
   }
 
-  var stringInsertOperation: ProtoStringInsertOperation {
+  var stringInsertOperations: ProtoStringInsertOperationLinkedList {
     get {
-      if case .stringInsertOperation(let v)? = value {return v}
-      return ProtoStringInsertOperation()
+      if case .stringInsertOperations(let v)? = value {return v}
+      return ProtoStringInsertOperationLinkedList()
     }
-    set {value = .stringInsertOperation(newValue)}
+    set {value = .stringInsertOperations(newValue)}
   }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -330,7 +343,7 @@ struct ProtoOperationsTree {
     case attributeOperation(ProtoAttributeOperation)
     case deleteOperation(ProtoDeleteOperation)
     case lwwOperation(ProtoLWWOperation)
-    case stringInsertOperation(ProtoStringInsertOperation)
+    case stringInsertOperations(ProtoStringInsertOperationLinkedList)
 
   #if !swift(>=4.1)
     static func ==(lhs: ProtoOperationsTree.OneOf_Value, rhs: ProtoOperationsTree.OneOf_Value) -> Bool {
@@ -354,8 +367,8 @@ struct ProtoOperationsTree {
         guard case .lwwOperation(let l) = lhs, case .lwwOperation(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.stringInsertOperation, .stringInsertOperation): return {
-        guard case .stringInsertOperation(let l) = lhs, case .stringInsertOperation(let r) = rhs else { preconditionFailure() }
+      case (.stringInsertOperations, .stringInsertOperations): return {
+        guard case .stringInsertOperations(let l) = lhs, case .stringInsertOperations(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -774,6 +787,38 @@ extension ProtoStringInsertOperation: SwiftProtobuf.Message, SwiftProtobuf._Mess
   }
 }
 
+extension ProtoStringInsertOperationLinkedList: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  static let protoMessageName: String = "StringInsertOperationLinkedList"
+  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+    1: .same(proto: "stringInsertOperations"),
+  ]
+
+  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeRepeatedMessageField(value: &self.stringInsertOperations) }()
+      default: break
+      }
+    }
+  }
+
+  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.stringInsertOperations.isEmpty {
+      try visitor.visitRepeatedMessageField(value: self.stringInsertOperations, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  static func ==(lhs: ProtoStringInsertOperationLinkedList, rhs: ProtoStringInsertOperationLinkedList) -> Bool {
+    if lhs.stringInsertOperations != rhs.stringInsertOperations {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
 extension ProtoOperationsTree: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   static let protoMessageName: String = "OperationsTree"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
@@ -782,7 +827,7 @@ extension ProtoOperationsTree: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     3: .same(proto: "attributeOperation"),
     4: .same(proto: "deleteOperation"),
     5: .same(proto: "lwwOperation"),
-    6: .same(proto: "stringInsertOperation"),
+    6: .same(proto: "stringInsertOperations"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -845,16 +890,16 @@ extension ProtoOperationsTree: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
         }
       }()
       case 6: try {
-        var v: ProtoStringInsertOperation?
+        var v: ProtoStringInsertOperationLinkedList?
         var hadOneofValue = false
         if let current = self.value {
           hadOneofValue = true
-          if case .stringInsertOperation(let m) = current {v = m}
+          if case .stringInsertOperations(let m) = current {v = m}
         }
         try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.value = .stringInsertOperation(v)
+          self.value = .stringInsertOperations(v)
         }
       }()
       default: break
@@ -886,8 +931,8 @@ extension ProtoOperationsTree: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       guard case .lwwOperation(let v)? = self.value else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
     }()
-    case .stringInsertOperation?: try {
-      guard case .stringInsertOperation(let v)? = self.value else { preconditionFailure() }
+    case .stringInsertOperations?: try {
+      guard case .stringInsertOperations(let v)? = self.value else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
     }()
     case nil: break

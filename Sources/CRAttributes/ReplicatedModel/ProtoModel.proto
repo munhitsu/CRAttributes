@@ -60,6 +60,10 @@ message StringInsertOperation {
     repeated StringInsertOperation stringInsertOperations = 6;
 }
 
+message StringInsertOperationLinkedList { // because you can't have repeated within oneof
+    repeated StringInsertOperation stringInsertOperations = 1;
+}
+
 message OperationsTree {
     OperationID containerID = 1;
     oneof value {
@@ -67,7 +71,7 @@ message OperationsTree {
         AttributeOperation attributeOperation = 3;
         DeleteOperation deleteOperation = 4;
         LWWOperation lwwOperation = 5;
-        StringInsertOperation stringInsertOperation = 6;
+        StringInsertOperationLinkedList stringInsertOperations = 6;
     }
 }
 
