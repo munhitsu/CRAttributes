@@ -86,6 +86,8 @@ let localModelDescription = CoreDataModelDescription(
                 parentEntity: "CRAbstractOp",
                 attributes: [
                     .attribute(name: "contribution", type: .stringAttributeType),
+                    .attribute(name: "parentLamport", type: .integer64AttributeType),
+                    .attribute(name: "parentPeerID", type: .UUIDAttributeType),
                 ],
                 relationships: [
                     .relationship(name: "parent", destination: "CRStringInsertOp", optional: true, toMany: false, inverse: "childOperations"),  // insertion point

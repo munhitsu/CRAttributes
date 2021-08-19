@@ -30,8 +30,8 @@ extension CRDeleteOp {
     convenience init(context: NSManagedObjectContext, from protoForm: ProtoDeleteOperation, container: CRAbstractOp?) {
         self.init(context: context)
         self.version = protoForm.version
-        self.peerID = protoForm.peerID.object()
-        self.lamport = protoForm.lamport
+        self.peerID = protoForm.id.peerID.object()
+        self.lamport = protoForm.id.lamport
         self.container = container
         self.container?.hasTombstone = true
         if container != nil {

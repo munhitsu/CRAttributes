@@ -57,8 +57,8 @@ extension CRLWWOp {
     convenience init(context: NSManagedObjectContext, from protoForm: ProtoLWWOperation, container: CRAbstractOp?) {
         self.init(context: context)
         self.version = protoForm.version
-        self.peerID = protoForm.peerID.object()
-        self.lamport = protoForm.lamport
+        self.peerID = protoForm.id.peerID.object()
+        self.lamport = protoForm.id.lamport
         self.container = container
         if container != nil {
             self.containerLamport = container!.lamport

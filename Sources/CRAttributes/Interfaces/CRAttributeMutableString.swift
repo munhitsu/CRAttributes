@@ -85,50 +85,50 @@ class CRTextStorage: NSTextStorage {
 
     public override func replaceCharacters(in range: NSRange, with str: String) {
         let context = CRStorageController.shared.localContainer.viewContext
-        beginEditing()
-
         let attributeOp:CRAttributeOp = (context.object(with: attributeObjectID) as? CRAttributeOp)!
+        beginEditing()
+        //TODO: - we may need a hash to track deleted operations
 
-        // insertion address
-        var parentOp:CRAbstractOp? = attributeOp
-        if range.location > 0 {
-            parentOp = operationForPosition(range.location - 1) as CRAbstractOp?
+
+        
+        // identify the prev and next for the insertion point (link to deleted operations)
+        
+        let insertHeadOp:CRStringInsertOp?
+        let insertTailOp:CRStringInsertOp?
+        
+        if range.location == 0 {
+            insertHeadOp = nil
+            insertTailOp = firstOp(context: context, attributeOp: attributeOp)
+        } else {
+            insertHeadOp = operationForPosition(range.location - 1)
+            insertTailOp = insertHeadOp?.next
         }
-
+        
         // deleting operations
         for position in range.location..<(range.location + range.length) {
             let op = operationForPosition(position)
             markDeleted(op)
         }
-                
+
+        // create a string to insert with all linked operatations
         let strAttributed = NSMutableAttributedString(string: str)
         
-        var prevOp = parentOp
+        var prevOp = insertHeadOp
         for position in 0..<strAttributed.length {
             let newOp:CRStringInsertOp = CRStringInsertOp(context: context, parent: prevOp, container: attributeOp, contribution: strAttributed.mutableString.character(at: position))
-            if let prevOp = prevOp as? CRStringInsertOp {
-                prevOp.next = newOp
-                newOp.prev = prevOp
-            } else {
-                newOp.prev = nil
-            }
-            try! context.save()
+            prevOp?.next = newOp
+            newOp.prev = prevOp
+            try! context.save() // we need to save to obtain the objectID
             strAttributed.setAttributes([.opObjectID: newOp.objectID], range: NSRange(location: position, length: 1))
             prevOp = newOp
         }
+        let lastOp = prevOp
         
         attributedString!.replaceCharacters(in: range, with: strAttributed)
 
-        let tailPosition = range.location + strAttributed.length + 1
-        if tailPosition <= attributedString!.length {
-            let tailOp = operationForPosition(tailPosition)
-            if let prevOp = prevOp as? CRStringInsertOp {
-                tailOp.prev = prevOp
-                prevOp.next = tailOp
-            } else {
-                fatalError()
-            }
-        }
+        lastOp?.next = insertTailOp
+        insertTailOp?.prev = lastOp
+        
         try! context.save()
 
         edited(.editedCharacters,
@@ -136,8 +136,15 @@ class CRTextStorage: NSTextStorage {
                changeInLength: (str as NSString).length - range.length)
         endEditing()
         
-        // TODO: how to fire it on the last endEditing ?
+        // TODO: how to fire save() on the last endEditing? do we have to?
         // we could listen to: didProcessEditingNotification
+    }
+    
+    func firstOp(context: NSManagedObjectContext, attributeOp: CRAttributeOp) -> CRStringInsertOp? {
+        let request:NSFetchRequest<CRStringInsertOp> = CRStringInsertOp.fetchRequest()
+        request.returnsObjectsAsFaults = false
+        request.predicate = NSPredicate(format: "container == %@ and prev == nil", attributeOp)
+        return try? context.fetch(request).first
     }
     
     func operationForPosition(_ position: Int) -> CRStringInsertOp {
@@ -166,24 +173,22 @@ class CRTextStorage: NSTextStorage {
     }
 
     func prebuildAttributedStringFromOperations(attributeOp: CRAttributeOp) {
-        let request:NSFetchRequest<CRStringInsertOp> = CRStringInsertOp.fetchRequest()
-        request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "container == %@", attributeOp)
-//        request.sortDescriptors = [NSSortDescriptor(keyPath: \CRStringInsertOp.parent, ascending: true)]
-
         let context = CRStorageController.shared.localContainer.viewContext
 
+        // let's prefetch
+        // there is no need to prefetch delete operations as we have the hasTombstone attribute
+        var request:NSFetchRequest<CRStringInsertOp> = CRStringInsertOp.fetchRequest()
+        request.returnsObjectsAsFaults = false
+        request.predicate = NSPredicate(format: "container == %@", attributeOp)
         let _ = try! context.fetch(request)
         
+        // let's get the first operation
+        request = CRStringInsertOp.fetchRequest()
+        request.returnsObjectsAsFaults = false
+        request.predicate = NSPredicate(format: "container == %@ and prev == nil", attributeOp)
+        let head:CRStringInsertOp? = try? context.fetch(request).first
         
-        let attributeOp:CRAttributeOp = context.object(with: attributeObjectID) as! CRAttributeOp
-        
-        let head:CRStringInsertOp? = attributeOp.containedOperations?.anyObject() as? CRStringInsertOp
-        let containedOperationsCount = attributeOp.containedOperations?.count
-        assert((containedOperationsCount ?? Int.max) <= 1)
-        
-//        let head = cdOps.first
-        
+        // build the attributedString
         attributedString = NSMutableAttributedString("")
         var node:CRStringInsertOp? = head
         while node != nil {

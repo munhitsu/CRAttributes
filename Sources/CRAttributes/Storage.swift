@@ -185,7 +185,7 @@ extension CRStorageController {
                     tree.deleteOperation = protoDeleteOperationRecurse(op)
                 case let op as CRLWWOp:
                     tree.lwwOperation = protoLWWOperationRecurse(op)
-                case let op as CRStringInsertOp:
+                case let op as CRStringInsertOp: // TODO: (high) order me here - it's broken!!!
                     tree.stringInsertOperation = protoStringInsertOperationRecurse(op)
                 default:
                     fatalNotImplemented()
@@ -240,11 +240,12 @@ extension CRStorageController {
     static func protoObjectOperationRecurse(_ operation: CRObjectOp) -> ProtoObjectOperation {
         var proto = ProtoObjectOperation.with {
             $0.version = operation.version
-            $0.lamport = operation.lamport
-            $0.peerID  = operation.peerID.data
+            $0.id.lamport = operation.lamport
+            $0.id.peerID  = operation.peerID.data
             $0.rawType = operation.rawType
         }
-        
+        print("ObjectOperation \(proto.id.lamport)")
+
         for operation in operation.containedOperations!.allObjects {
             if let operation = operation as? CRAbstractOp {
                 if operation.upstreamQueueOperation {
@@ -268,9 +269,11 @@ extension CRStorageController {
     static func protoDeleteOperationRecurse(_ operation: CRDeleteOp) -> ProtoDeleteOperation {
         let proto = ProtoDeleteOperation.with {
             $0.version = operation.version
-            $0.lamport = operation.lamport
-            $0.peerID  = operation.peerID.data
+            $0.id.lamport = operation.lamport
+            $0.id.peerID  = operation.peerID.data
         }
+        print("DeleteOperation \(proto.id.lamport)")
+
         operation.upstreamQueueOperation = false
         return proto
     }
@@ -278,11 +281,14 @@ extension CRStorageController {
     static func protoAttributeOperationRecurse(_ operation: CRAttributeOp) -> ProtoAttributeOperation {
         var proto = ProtoAttributeOperation.with {
             $0.version = operation.version
-            $0.lamport = operation.lamport
-            $0.peerID  = operation.peerID.data
+            $0.id.lamport = operation.lamport
+            $0.id.peerID  = operation.peerID.data
             $0.name = operation.name!
             $0.rawType = operation.rawType
         }
+        print("AttributeOperation \(proto.id.lamport)")
+
+        var headStringOperation:CRStringInsertOp? = nil
         
         for operation in operation.containedOperations!.allObjects {
             if let operation = operation as? CRAbstractOp {
@@ -293,12 +299,20 @@ extension CRStorageController {
                     case let op as CRLWWOp:
                         proto.lwwOperations.append(protoLWWOperationRecurse(op))
                     case let op as CRStringInsertOp:
-                        proto.stringInsertOperations.append(protoStringInsertOperationRecurse(op))
+                        if op.prev == nil { // it will be only a new string in a new attribute in this scenario
+                            headStringOperation = op
+                        }
+//                        proto.stringInsertOperations.append(protoStringInsertOperationRecurse(op))
                     default:
                         fatalError("unsupported subOperation")
                     }
                 }
             }
+        }
+        var node = headStringOperation
+        while node != nil {
+            proto.stringInsertOperations.append(protoStringInsertOperationRecurse(node!))
+            node = node!.next
         }
         operation.upstreamQueueOperation = false
         return proto
@@ -307,8 +321,8 @@ extension CRStorageController {
     static func protoLWWOperationRecurse(_ operation: CRLWWOp) -> ProtoLWWOperation {
         var proto = ProtoLWWOperation.with {
             $0.version = operation.version
-            $0.lamport = operation.lamport
-            $0.peerID  = operation.peerID.data
+            $0.id.lamport = operation.lamport
+            $0.id.peerID  = operation.peerID.data
             switch (operation.container as! CRAttributeOp).type {
             case .int:
                 $0.int = operation.int
@@ -324,7 +338,8 @@ extension CRStorageController {
                 fatalNotImplemented()
             }
         }
-        
+        print("LWWOperation \(proto.id.lamport)")
+
         for operation in operation.containedOperations!.allObjects {
             if let operation = operation as? CRAbstractOp {
                 if operation.upstreamQueueOperation {
@@ -344,11 +359,14 @@ extension CRStorageController {
     static func protoStringInsertOperationRecurse(_ operation: CRStringInsertOp) -> ProtoStringInsertOperation {
         var proto = ProtoStringInsertOperation.with {
             $0.version = operation.version
-            $0.lamport = operation.lamport
-            $0.peerID  = operation.peerID.data
+            $0.id.lamport = operation.lamport
+            $0.id.peerID  = operation.peerID.data
             $0.contribution = operation.contribution
+            $0.parentID.lamport = operation.parentLamport
+            $0.parentID.peerID = operation.parentPeerID.data
         }
-        
+        print("StringInsertOperation \(proto.id.lamport)")
+        assert(operation.upstreamQueueOperation)
         for operation in operation.containedOperations!.allObjects {
             if let operation = operation as? CRAbstractOp {
                 if operation.upstreamQueueOperation {

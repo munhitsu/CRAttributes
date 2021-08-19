@@ -56,8 +56,8 @@ extension CRAttributeOp {
     convenience init(context: NSManagedObjectContext, from protoForm: ProtoAttributeOperation, container: CRAbstractOp?) {
         self.init(context: context)
         self.version = protoForm.version
-        self.peerID = protoForm.peerID.object()
-        self.lamport = protoForm.lamport
+        self.peerID = protoForm.id.peerID.object()
+        self.lamport = protoForm.id.lamport
         self.name = protoForm.name
         self.rawType = protoForm.rawType
         self.container = container

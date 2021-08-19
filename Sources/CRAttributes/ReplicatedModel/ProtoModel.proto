@@ -16,8 +16,7 @@ message OperationID {
 
 message ObjectOperation {
     int32 version = 1;
-    int64 lamport = 2;
-    bytes peerID = 3;
+    OperationID id = 2;
     int32 rawType = 4;
     repeated DeleteOperation deleteOperations = 5;
     repeated AttributeOperation attributeOperations = 6;
@@ -26,8 +25,7 @@ message ObjectOperation {
 
 message AttributeOperation {
     int32 version = 1;
-    int64 lamport = 2;
-    bytes peerID = 3;
+    OperationID id = 2;
     string name = 4;
     int32 rawType = 5;
     repeated DeleteOperation deleteOperations = 6;
@@ -37,14 +35,12 @@ message AttributeOperation {
 
 message DeleteOperation {
     int32 version = 1;
-    int64 lamport = 2;
-    bytes peerID = 3;
+    OperationID id = 2;
 }
 
 message LWWOperation {
     int32 version = 1;
-    int64 lamport = 2;
-    bytes peerID = 3;
+    OperationID id = 2;
     oneof value {
         int64 int = 4;
         float float = 5;
@@ -57,8 +53,8 @@ message LWWOperation {
 
 message StringInsertOperation {
     int32 version = 1;
-    int64 lamport = 2;
-    bytes peerID = 3;
+    OperationID id = 2;
+    OperationID parentID = 3;
     string contribution = 4;
     repeated DeleteOperation deleteOperations = 5;
     repeated StringInsertOperation stringInsertOperations = 6;

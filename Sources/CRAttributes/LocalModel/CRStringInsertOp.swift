@@ -22,6 +22,8 @@ extension CRStringInsertOp {
 
     @NSManaged public var contribution: String
     @NSManaged public var parent: CRStringInsertOp?
+    @NSManaged public var parentLamport: lamportType
+    @NSManaged public var parentPeerID: UUID
     @NSManaged public var childOperations: NSSet?
 
     @NSManaged public var next: CRStringInsertOp?
@@ -49,15 +51,30 @@ extension CRAttributeOp {
 
 
 extension CRStringInsertOp {
-    convenience init(context: NSManagedObjectContext, parent: CRAbstractOp?, container: CRAttributeOp?, contribution: String) {
+    convenience init(context: NSManagedObjectContext, parent: CRStringInsertOp?, container: CRAttributeOp?, contribution: String) {
         self.init(context:context, container: container)
         self.contribution = contribution
+        self.parent = parent
+        if parent == nil {
+            self.parentLamport = 0
+            self.parentPeerID = UUID.zero
+        } else {
+            self.parentPeerID = parent!.peerID
+            self.parentLamport = parent!.lamport
+        }
     }
-    convenience init(context: NSManagedObjectContext, parent: CRAbstractOp?, container: CRAttributeOp?, contribution: unichar) {
+    convenience init(context: NSManagedObjectContext, parent: CRStringInsertOp?, container: CRAttributeOp?, contribution: unichar) {
         self.init(context:context, container: container)
         var uc = contribution
-        self.contribution = NSString(characters: &uc, length: 1) as String
-        //TODO: migrate to init(utf16CodeUnits: UnsafePointer<unichar>, count: Int)
+        self.contribution = NSString(characters: &uc, length: 1) as String //TODO: migrate to init(utf16CodeUnits: UnsafePointer<unichar>, count: Int)
+        self.parent = parent
+        if parent == nil {
+            self.parentLamport = 0
+            self.parentPeerID = UUID.zero
+        } else {
+            self.parentPeerID = parent!.peerID
+            self.parentLamport = parent!.lamport
+        }
     }
 
 //    func protoOperation() -> ProtoStringInsertOperation {

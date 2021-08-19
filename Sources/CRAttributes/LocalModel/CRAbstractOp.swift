@@ -27,7 +27,7 @@ extension CRAbstractOp {
     @NSManaged public var container: CRAbstractOp?
     @NSManaged public var containedOperations: NSSet?
 
-    @NSManaged public var containerLamport: Int64
+    @NSManaged public var containerLamport: lamportType
     @NSManaged public var containerPeerID: UUID
 
 

@@ -68,6 +68,10 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(a6.textStorage!.string, "ABCDEF")
         a6.textStorage!.replaceCharacters(in: NSRange.init(location: 3, length: 3), with: "def")
         XCTAssertEqual(a6.textStorage!.string, "ABCdef")
+        
+        let context = CRStorageController.shared.localContainer.viewContext
+        let cdOp:CRAttributeOp = context.object(with: a6.operationObjectID!) as! CRAttributeOp
+        checkStringOperationsCorrectness(cdOp)
 
         let operationsLimit = 1000
         let string = NSMutableAttributedString()
@@ -76,7 +80,37 @@ class CRRemoteOperationsTests: XCTestCase {
         let a7:CRAttributeMutableString = n1.attribute(name: "note2", type: .mutableString) as! CRAttributeMutableString
         a7.textStorage!.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
         XCTAssertEqual(string.string, a7.textStorage!.string)
-        XCTAssertEqual(a7.operationsCount(), operationsLimit)
+        XCTAssertEqual(a7.operationsCount(), 982) // we don't count deletes any more 
+    }
+    
+    func checkStringOperationsCorrectness(_ cdAttribute: CRAttributeOp) {
+        var nodesSeen = Set<lamportType>()
+
+        var headStringOperation:CRStringInsertOp? = nil
+        for operation in cdAttribute.containedOperations!.allObjects {
+            if let operation = operation as? CRAbstractOp {
+                if operation.upstreamQueueOperation {
+                    switch operation {
+                    case let op as CRDeleteOp:
+                        print("ignoring Delete")
+                    case let op as CRStringInsertOp:
+                        print("op(\(op.lamport))=\(op.contribution) prev(\(op.prev?.lamport))")
+                        if op.prev == nil { // it will be only a new string in a new attribute in this scenario
+                            assert(headStringOperation == nil)
+                            headStringOperation = op
+                        }
+                    default:
+                        fatalError("unsupported subOperation")
+                    }
+                }
+            }
+        }
+        var node = headStringOperation
+        while node != nil {
+            assert(nodesSeen.contains(node!.lamport) == false)
+            nodesSeen.insert(node!.lamport)
+            node = node!.next
+        }
     }
 
     func testBundleCreation() throws {

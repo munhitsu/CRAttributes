@@ -42,9 +42,14 @@ struct ProtoObjectOperation {
 
   var version: Int32 = 0
 
-  var lamport: Int64 = 0
-
-  var peerID: Data = Data()
+  var id: ProtoOperationID {
+    get {return _id ?? ProtoOperationID()}
+    set {_id = newValue}
+  }
+  /// Returns true if `id` has been explicitly set.
+  var hasID: Bool {return self._id != nil}
+  /// Clears the value of `id`. Subsequent reads from it will return its default value.
+  mutating func clearID() {self._id = nil}
 
   var rawType: Int32 = 0
 
@@ -57,6 +62,8 @@ struct ProtoObjectOperation {
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
+
+  fileprivate var _id: ProtoOperationID? = nil
 }
 
 struct ProtoAttributeOperation {
@@ -66,9 +73,14 @@ struct ProtoAttributeOperation {
 
   var version: Int32 = 0
 
-  var lamport: Int64 = 0
-
-  var peerID: Data = Data()
+  var id: ProtoOperationID {
+    get {return _id ?? ProtoOperationID()}
+    set {_id = newValue}
+  }
+  /// Returns true if `id` has been explicitly set.
+  var hasID: Bool {return self._id != nil}
+  /// Clears the value of `id`. Subsequent reads from it will return its default value.
+  mutating func clearID() {self._id = nil}
 
   var name: String = String()
 
@@ -83,6 +95,8 @@ struct ProtoAttributeOperation {
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
+
+  fileprivate var _id: ProtoOperationID? = nil
 }
 
 struct ProtoDeleteOperation {
@@ -92,13 +106,20 @@ struct ProtoDeleteOperation {
 
   var version: Int32 = 0
 
-  var lamport: Int64 = 0
-
-  var peerID: Data = Data()
+  var id: ProtoOperationID {
+    get {return _id ?? ProtoOperationID()}
+    set {_id = newValue}
+  }
+  /// Returns true if `id` has been explicitly set.
+  var hasID: Bool {return self._id != nil}
+  /// Clears the value of `id`. Subsequent reads from it will return its default value.
+  mutating func clearID() {self._id = nil}
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
+
+  fileprivate var _id: ProtoOperationID? = nil
 }
 
 struct ProtoLWWOperation {
@@ -108,9 +129,14 @@ struct ProtoLWWOperation {
 
   var version: Int32 = 0
 
-  var lamport: Int64 = 0
-
-  var peerID: Data = Data()
+  var id: ProtoOperationID {
+    get {return _id ?? ProtoOperationID()}
+    set {_id = newValue}
+  }
+  /// Returns true if `id` has been explicitly set.
+  var hasID: Bool {return self._id != nil}
+  /// Clears the value of `id`. Subsequent reads from it will return its default value.
+  mutating func clearID() {self._id = nil}
 
   var value: ProtoLWWOperation.OneOf_Value? = nil
 
@@ -198,6 +224,8 @@ struct ProtoLWWOperation {
   }
 
   init() {}
+
+  fileprivate var _id: ProtoOperationID? = nil
 }
 
 struct ProtoStringInsertOperation {
@@ -207,9 +235,23 @@ struct ProtoStringInsertOperation {
 
   var version: Int32 = 0
 
-  var lamport: Int64 = 0
+  var id: ProtoOperationID {
+    get {return _id ?? ProtoOperationID()}
+    set {_id = newValue}
+  }
+  /// Returns true if `id` has been explicitly set.
+  var hasID: Bool {return self._id != nil}
+  /// Clears the value of `id`. Subsequent reads from it will return its default value.
+  mutating func clearID() {self._id = nil}
 
-  var peerID: Data = Data()
+  var parentID: ProtoOperationID {
+    get {return _parentID ?? ProtoOperationID()}
+    set {_parentID = newValue}
+  }
+  /// Returns true if `parentID` has been explicitly set.
+  var hasParentID: Bool {return self._parentID != nil}
+  /// Clears the value of `parentID`. Subsequent reads from it will return its default value.
+  mutating func clearParentID() {self._parentID = nil}
 
   var contribution: String = String()
 
@@ -220,6 +262,9 @@ struct ProtoStringInsertOperation {
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
+
+  fileprivate var _id: ProtoOperationID? = nil
+  fileprivate var _parentID: ProtoOperationID? = nil
 }
 
 struct ProtoOperationsTree {
@@ -387,8 +432,7 @@ extension ProtoObjectOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   static let protoMessageName: String = "ObjectOperation"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "version"),
-    2: .same(proto: "lamport"),
-    3: .same(proto: "peerID"),
+    2: .same(proto: "id"),
     4: .same(proto: "rawType"),
     5: .same(proto: "deleteOperations"),
     6: .same(proto: "attributeOperations"),
@@ -402,8 +446,7 @@ extension ProtoObjectOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularInt32Field(value: &self.version) }()
-      case 2: try { try decoder.decodeSingularInt64Field(value: &self.lamport) }()
-      case 3: try { try decoder.decodeSingularBytesField(value: &self.peerID) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._id) }()
       case 4: try { try decoder.decodeSingularInt32Field(value: &self.rawType) }()
       case 5: try { try decoder.decodeRepeatedMessageField(value: &self.deleteOperations) }()
       case 6: try { try decoder.decodeRepeatedMessageField(value: &self.attributeOperations) }()
@@ -417,11 +460,8 @@ extension ProtoObjectOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if self.version != 0 {
       try visitor.visitSingularInt32Field(value: self.version, fieldNumber: 1)
     }
-    if self.lamport != 0 {
-      try visitor.visitSingularInt64Field(value: self.lamport, fieldNumber: 2)
-    }
-    if !self.peerID.isEmpty {
-      try visitor.visitSingularBytesField(value: self.peerID, fieldNumber: 3)
+    if let v = self._id {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
     }
     if self.rawType != 0 {
       try visitor.visitSingularInt32Field(value: self.rawType, fieldNumber: 4)
@@ -440,8 +480,7 @@ extension ProtoObjectOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
 
   static func ==(lhs: ProtoObjectOperation, rhs: ProtoObjectOperation) -> Bool {
     if lhs.version != rhs.version {return false}
-    if lhs.lamport != rhs.lamport {return false}
-    if lhs.peerID != rhs.peerID {return false}
+    if lhs._id != rhs._id {return false}
     if lhs.rawType != rhs.rawType {return false}
     if lhs.deleteOperations != rhs.deleteOperations {return false}
     if lhs.attributeOperations != rhs.attributeOperations {return false}
@@ -455,8 +494,7 @@ extension ProtoAttributeOperation: SwiftProtobuf.Message, SwiftProtobuf._Message
   static let protoMessageName: String = "AttributeOperation"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "version"),
-    2: .same(proto: "lamport"),
-    3: .same(proto: "peerID"),
+    2: .same(proto: "id"),
     4: .same(proto: "name"),
     5: .same(proto: "rawType"),
     6: .same(proto: "deleteOperations"),
@@ -471,8 +509,7 @@ extension ProtoAttributeOperation: SwiftProtobuf.Message, SwiftProtobuf._Message
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularInt32Field(value: &self.version) }()
-      case 2: try { try decoder.decodeSingularInt64Field(value: &self.lamport) }()
-      case 3: try { try decoder.decodeSingularBytesField(value: &self.peerID) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._id) }()
       case 4: try { try decoder.decodeSingularStringField(value: &self.name) }()
       case 5: try { try decoder.decodeSingularInt32Field(value: &self.rawType) }()
       case 6: try { try decoder.decodeRepeatedMessageField(value: &self.deleteOperations) }()
@@ -487,11 +524,8 @@ extension ProtoAttributeOperation: SwiftProtobuf.Message, SwiftProtobuf._Message
     if self.version != 0 {
       try visitor.visitSingularInt32Field(value: self.version, fieldNumber: 1)
     }
-    if self.lamport != 0 {
-      try visitor.visitSingularInt64Field(value: self.lamport, fieldNumber: 2)
-    }
-    if !self.peerID.isEmpty {
-      try visitor.visitSingularBytesField(value: self.peerID, fieldNumber: 3)
+    if let v = self._id {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
     }
     if !self.name.isEmpty {
       try visitor.visitSingularStringField(value: self.name, fieldNumber: 4)
@@ -513,8 +547,7 @@ extension ProtoAttributeOperation: SwiftProtobuf.Message, SwiftProtobuf._Message
 
   static func ==(lhs: ProtoAttributeOperation, rhs: ProtoAttributeOperation) -> Bool {
     if lhs.version != rhs.version {return false}
-    if lhs.lamport != rhs.lamport {return false}
-    if lhs.peerID != rhs.peerID {return false}
+    if lhs._id != rhs._id {return false}
     if lhs.name != rhs.name {return false}
     if lhs.rawType != rhs.rawType {return false}
     if lhs.deleteOperations != rhs.deleteOperations {return false}
@@ -529,8 +562,7 @@ extension ProtoDeleteOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   static let protoMessageName: String = "DeleteOperation"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "version"),
-    2: .same(proto: "lamport"),
-    3: .same(proto: "peerID"),
+    2: .same(proto: "id"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -540,8 +572,7 @@ extension ProtoDeleteOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularInt32Field(value: &self.version) }()
-      case 2: try { try decoder.decodeSingularInt64Field(value: &self.lamport) }()
-      case 3: try { try decoder.decodeSingularBytesField(value: &self.peerID) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._id) }()
       default: break
       }
     }
@@ -551,19 +582,15 @@ extension ProtoDeleteOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     if self.version != 0 {
       try visitor.visitSingularInt32Field(value: self.version, fieldNumber: 1)
     }
-    if self.lamport != 0 {
-      try visitor.visitSingularInt64Field(value: self.lamport, fieldNumber: 2)
-    }
-    if !self.peerID.isEmpty {
-      try visitor.visitSingularBytesField(value: self.peerID, fieldNumber: 3)
+    if let v = self._id {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ProtoDeleteOperation, rhs: ProtoDeleteOperation) -> Bool {
     if lhs.version != rhs.version {return false}
-    if lhs.lamport != rhs.lamport {return false}
-    if lhs.peerID != rhs.peerID {return false}
+    if lhs._id != rhs._id {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -573,8 +600,7 @@ extension ProtoLWWOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
   static let protoMessageName: String = "LWWOperation"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "version"),
-    2: .same(proto: "lamport"),
-    3: .same(proto: "peerID"),
+    2: .same(proto: "id"),
     4: .same(proto: "int"),
     5: .same(proto: "float"),
     6: .same(proto: "date"),
@@ -590,8 +616,7 @@ extension ProtoLWWOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularInt32Field(value: &self.version) }()
-      case 2: try { try decoder.decodeSingularInt64Field(value: &self.lamport) }()
-      case 3: try { try decoder.decodeSingularBytesField(value: &self.peerID) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._id) }()
       case 4: try {
         var v: Int64?
         try decoder.decodeSingularInt64Field(value: &v)
@@ -642,11 +667,8 @@ extension ProtoLWWOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     if self.version != 0 {
       try visitor.visitSingularInt32Field(value: self.version, fieldNumber: 1)
     }
-    if self.lamport != 0 {
-      try visitor.visitSingularInt64Field(value: self.lamport, fieldNumber: 2)
-    }
-    if !self.peerID.isEmpty {
-      try visitor.visitSingularBytesField(value: self.peerID, fieldNumber: 3)
+    if let v = self._id {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
     }
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every case branch when no optimizations are
@@ -682,8 +704,7 @@ extension ProtoLWWOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
 
   static func ==(lhs: ProtoLWWOperation, rhs: ProtoLWWOperation) -> Bool {
     if lhs.version != rhs.version {return false}
-    if lhs.lamport != rhs.lamport {return false}
-    if lhs.peerID != rhs.peerID {return false}
+    if lhs._id != rhs._id {return false}
     if lhs.value != rhs.value {return false}
     if lhs.deleteOperations != rhs.deleteOperations {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -695,8 +716,8 @@ extension ProtoStringInsertOperation: SwiftProtobuf.Message, SwiftProtobuf._Mess
   static let protoMessageName: String = "StringInsertOperation"
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "version"),
-    2: .same(proto: "lamport"),
-    3: .same(proto: "peerID"),
+    2: .same(proto: "id"),
+    3: .same(proto: "parentID"),
     4: .same(proto: "contribution"),
     5: .same(proto: "deleteOperations"),
     6: .same(proto: "stringInsertOperations"),
@@ -709,8 +730,8 @@ extension ProtoStringInsertOperation: SwiftProtobuf.Message, SwiftProtobuf._Mess
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularInt32Field(value: &self.version) }()
-      case 2: try { try decoder.decodeSingularInt64Field(value: &self.lamport) }()
-      case 3: try { try decoder.decodeSingularBytesField(value: &self.peerID) }()
+      case 2: try { try decoder.decodeSingularMessageField(value: &self._id) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._parentID) }()
       case 4: try { try decoder.decodeSingularStringField(value: &self.contribution) }()
       case 5: try { try decoder.decodeRepeatedMessageField(value: &self.deleteOperations) }()
       case 6: try { try decoder.decodeRepeatedMessageField(value: &self.stringInsertOperations) }()
@@ -723,11 +744,11 @@ extension ProtoStringInsertOperation: SwiftProtobuf.Message, SwiftProtobuf._Mess
     if self.version != 0 {
       try visitor.visitSingularInt32Field(value: self.version, fieldNumber: 1)
     }
-    if self.lamport != 0 {
-      try visitor.visitSingularInt64Field(value: self.lamport, fieldNumber: 2)
+    if let v = self._id {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
     }
-    if !self.peerID.isEmpty {
-      try visitor.visitSingularBytesField(value: self.peerID, fieldNumber: 3)
+    if let v = self._parentID {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
     }
     if !self.contribution.isEmpty {
       try visitor.visitSingularStringField(value: self.contribution, fieldNumber: 4)
@@ -743,8 +764,8 @@ extension ProtoStringInsertOperation: SwiftProtobuf.Message, SwiftProtobuf._Mess
 
   static func ==(lhs: ProtoStringInsertOperation, rhs: ProtoStringInsertOperation) -> Bool {
     if lhs.version != rhs.version {return false}
-    if lhs.lamport != rhs.lamport {return false}
-    if lhs.peerID != rhs.peerID {return false}
+    if lhs._id != rhs._id {return false}
+    if lhs._parentID != rhs._parentID {return false}
     if lhs.contribution != rhs.contribution {return false}
     if lhs.deleteOperations != rhs.deleteOperations {return false}
     if lhs.stringInsertOperations != rhs.stringInsertOperations {return false}

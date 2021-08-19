@@ -277,6 +277,7 @@ final class CRLocalOperationsTests: XCTestCase {
         XCTAssertEqual(a5.operationsCount(), 1)
         XCTAssertEqual(a5.value, "abc")
 
+        
         let a6:CRAttributeMutableString = n1.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
         XCTAssertEqual(a6.operationsCount(), 0)
 //        XCTAssertNil(a6.value)
