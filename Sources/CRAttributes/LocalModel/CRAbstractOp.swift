@@ -32,7 +32,7 @@ extension CRAbstractOp {
 
 
     @NSManaged public var upstreamQueueOperation: Bool
-    @NSManaged public var downstreamQueueHeadOperation: Bool
+    @NSManaged public var waitingForContainer: Bool
     // TODO: add boolean attributes that it's waiting in pecific queues
 
 }
@@ -105,7 +105,8 @@ extension CRAbstractOp {
     static func operation(fromLamport:Int64, fromPeerID:UUID, in context: NSManagedObjectContext) -> CRAbstractOp? {
         let request:NSFetchRequest<CRAbstractOp> = CRAbstractOp.fetchRequest()
         request.predicate = NSPredicate(format: "lamport = %@ and peerID = %@", argumentArray: [fromLamport, fromPeerID])
-        return try? context.fetch(request)[0]
+        let ops = try? context.fetch(request)
+        return ops?.first
     }
 
     static func operation(from protoID:ProtoOperationID, in context: NSManagedObjectContext) -> CRAbstractOp? {

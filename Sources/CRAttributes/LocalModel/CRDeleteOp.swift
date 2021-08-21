@@ -28,6 +28,7 @@ extension CRDeleteOp {
 
 extension CRDeleteOp {
     convenience init(context: NSManagedObjectContext, from protoForm: ProtoDeleteOperation, container: CRAbstractOp?) {
+        print("From protobuf DeleteOp(\(protoForm.id.lamport))")
         self.init(context: context)
         self.version = protoForm.version
         self.peerID = protoForm.id.peerID.object()

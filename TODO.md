@@ -1,7 +1,7 @@
 # TODO
 
 
-- [] record local operations in serialised groups (OperationPack) for CloudKit sync
+- [x] record local operations in serialised groups (Forests) for CloudKit sync
 - [] compress OperationPacks
 - [] process remote operations (downstream)
 - [] attributedstring persistence (to speed up note opening)
@@ -14,6 +14,7 @@
 - [] optimise UUID store and restore in protobuf
 - [] instrument and optimise
 - [] revert to storing peerID with every message in the protobuf / there might be edge cases when user moves between devices
+- [] migrate upstream to the background queue / context
 
 
 ## ObjectID can change

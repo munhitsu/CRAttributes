@@ -20,6 +20,7 @@ extension CDOperationsForest {
     }
     
     @NSManaged public var version: Int32
+    @NSManaged public var lamport: lamportType
     @NSManaged public var peerID: UUID
     @NSManaged public var data: Data? // Peer OperationsForest
 }
@@ -30,6 +31,7 @@ extension CDOperationsForest : Identifiable {
         self.init(context: context)
         self.data = try? from.serializedData()
         self.version = 0
+        self.lamport = getLamport()
         self.peerID = localPeerID
     }
     
@@ -42,6 +44,7 @@ extension CDOperationsForest : Identifiable {
     
     static func allObjects(context: NSManagedObjectContext) -> [CDOperationsForest] {
         let request:NSFetchRequest<CDOperationsForest> = CDOperationsForest.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(key: "lamport", ascending: true)]
         return try! context.fetch(request)
     }
 }

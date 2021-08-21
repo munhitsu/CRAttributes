@@ -69,12 +69,12 @@ extension CRStorageController {
     // TODO: (later) introduce RGA Split and consolidate operations here, this will solve the recursion risk
     
     static func processDownstreamForest(forest cdForestObjectID: NSManagedObjectID) {
-        let remoteContext = CRStorageController.shared.replicatedContainer.newBackgroundContext()
-        let localContext = CRStorageController.shared.localContainer.newBackgroundContext()
+        let remoteContext = CRStorageController.shared.replicatedContainer.viewContext //TODO: move to background
+        let localContext = CRStorageController.shared.localContainer.viewContext
 
         let cdForest = remoteContext.object(with: cdForestObjectID) as! CDOperationsForest
         
-        localContext.performAndWait { //TODO: do I really need to wait here?
+        localContext.performAndWait {
             let protoForest = cdForest.protoStructure()
             for tree in protoForest.trees {
                 let protoContainerID:ProtoOperationID = tree.containerID
@@ -83,21 +83,24 @@ extension CRStorageController {
                     // this means independent tree
                     // just load me
                     _ = CRStorageController.rootAfterTreeToOperations(context: localContext, tree: tree, parent: nil)
+                    print("loaded absolute root")
                     try? localContext.save()
                 } else {
                     if let parentOp = CRAbstractOp.operation(from: parentID, in: localContext) {
                         // just load me
                         // but link root op with the correct parent
                         _ = CRStorageController.rootAfterTreeToOperations(context: localContext, tree: tree, parent: parentOp)
+                        print("loaded and linked a branch")
                         try? localContext.save()
                     } else {
                         // just load me
                         // but mark root op as in the downstream queue
                         let root = CRStorageController.rootAfterTreeToOperations(context: localContext, tree: tree, parent: nil)
-                        root?.downstreamQueueHeadOperation = true
+                        root?.waitingForContainer = true
                         //record somewhere the parentID
                         root?.peerID = parentID.peerID
                         root?.lamport = parentID.lamport
+                        print("loaded wating branch")
                         try? localContext.save()
                     }
                 }
@@ -113,18 +116,19 @@ extension CRStorageController {
         switch protoTree.value {
         case .some(.objectOperation):
             root = CRObjectOp(context: context, from: protoTree.objectOperation, container: nil)
-//            print("Object!")
+            print("Restored ObjectOp(\(root!.lamport)")
         case .some(.attributeOperation):
             root = CRAttributeOp(context: context, from: protoTree.attributeOperation, container: nil)
-//            print("Attribute!")
+            print("Restored AttributeOp(\(root!.lamport)")
         case .some(.deleteOperation):
             root = CRDeleteOp(context: context, from: protoTree.deleteOperation, container: nil)
-//            print("Delete!")
+            print("Restored DeleteOp(\(root!.lamport)")
         case .some(.lwwOperation):
             root = CRLWWOp(context: context, from: protoTree.lwwOperation, container: nil)
-//            print("LWW!")
+            print("Restored LWWOp(\(root!.lamport)")
         case .some(.stringInsertOperations):
-            print("StringInsert!")
+            root = CRStringInsertOp.restoreLinkedList(context: context, from: protoTree.stringInsertOperations.stringInsertOperations, container: nil)
+            print("Ignoring StringInsertOp(\(root!.lamport)")
         case .none:
             fatalNotImplemented()
         case .some(_):
@@ -141,8 +145,8 @@ extension CRStorageController {
 extension CRStorageController {
     static func processUpsteamOperationsQueue() {
         //TODO: how to convert it to context.perform ?
-        let contextLocal = CRStorageController.shared.localContainer.newBackgroundContext()
-        let contextRemote = CRStorageController.shared.replicatedContainer.newBackgroundContext()
+        let contextLocal = CRStorageController.shared.localContainer.viewContext
+        let contextRemote = CRStorageController.shared.replicatedContainer.viewContext
         
         let forests = protoOperationsForests(context: contextLocal)
         
@@ -170,14 +174,18 @@ extension CRStorageController {
         for queuedOperation in queuedOperations {
             // we pick operation and build a tree off it
             // as we progress operations are removed
-            if queuedOperation.upstreamQueueOperation {
+            var branchRoot = queuedOperation
+            while branchRoot.container?.upstreamQueueOperation ?? false {
+                branchRoot = branchRoot.container!
+            }
+            if branchRoot.upstreamQueueOperation {
                 var tree = ProtoOperationsTree()
-                if let id = queuedOperation.container?.protoOperationID() {
+                if let id = branchRoot.container?.protoOperationID() {
                     tree.containerID = id //TODO: what with the null?
                 } else {
                     tree.containerID = CROperationID.zero.protoForm()
                 }
-                switch queuedOperation {
+                switch branchRoot {
                 case let op as CRObjectOp:
                     tree.objectOperation = protoObjectOperationRecurse(op)
                 case let op as CRAttributeOp:
@@ -200,6 +208,8 @@ extension CRStorageController {
             forests.append(forest)
         }
         // TODO: split into forests when one is getting too big
+        
+        print(forests)
         return forests
     }
 
@@ -330,6 +340,9 @@ extension CRStorageController {
             $0.parentID.lamport = operation.parentLamport
             $0.parentID.peerID = operation.parentPeerID.data
         }
+        if operation.contribution == "3" {
+            print("debug")
+        }
 //        print("StringInsertOperation \(proto.id.lamport)")
         assert(operation.upstreamQueueOperation)
         for operation in operation.containedOperations!.allObjects {
@@ -352,6 +365,7 @@ extension CRStorageController {
     static func protoStringInsertOperationsLinkedList(_ operation: CRStringInsertOp) -> [ProtoStringInsertOperation] {
         assert(operation.upstreamQueueOperation == true)
         var protoOperations:[ProtoStringInsertOperation] = [protoStringInsertOperationRecurse(operation)]
+        print(protoOperations[0])
 
 //        print("###")
 //        print("prev: \(String(describing: operation.prev))")
@@ -361,14 +375,18 @@ extension CRStorageController {
         // going left
         var node:CRStringInsertOp? = operation.prev
         while node != nil && node!.upstreamQueueOperation {
-            protoOperations.insert(protoStringInsertOperationRecurse(node!), at: 0)
+            let protoForm = protoStringInsertOperationRecurse(node!)
+            print(protoForm)
+            protoOperations.insert(protoForm, at: 0)
             node = node?.prev
         }
 
         // going right
         node = operation.next
         while node != nil && node!.upstreamQueueOperation {
-            protoOperations.append(protoStringInsertOperationRecurse(node!))
+            let protoForm = protoStringInsertOperationRecurse(node!)
+            print(protoForm)
+            protoOperations.append(protoForm)
             node = node?.next
         }
 //        print("string list:")

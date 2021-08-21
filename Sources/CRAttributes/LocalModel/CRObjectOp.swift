@@ -60,6 +60,7 @@ extension CRObjectOp {
     }
     
     convenience init(context: NSManagedObjectContext, from protoForm: ProtoObjectOperation, container: CRAbstractOp?) {
+        print("From protobuf ObjectOp(\(protoForm.id.lamport))")
         self.init(context: context)
         self.version = protoForm.version
         self.peerID = protoForm.id.peerID.object()

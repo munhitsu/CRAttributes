@@ -27,7 +27,7 @@ let localModelDescription = CoreDataModelDescription(
                     .attribute(name: "containerPeerID", type: .UUIDAttributeType),
                     .attribute(name: "hasTombstone", type: .booleanAttributeType),
                     .attribute(name: "upstreamQueueOperation", type: .booleanAttributeType, defaultValue: true), //TODO: remove default as it's implicit
-                    .attribute(name: "downstreamQueueHeadOperation", type: .booleanAttributeType, defaultValue: false)
+                    .attribute(name: "waitingForContainer", type: .booleanAttributeType, defaultValue: false)
                 ],
                 relationships: [
                     .relationship(name: "container", destination: "CRAbstractOp", optional: true, toMany: false),  // insertion point
@@ -88,6 +88,7 @@ let localModelDescription = CoreDataModelDescription(
                     .attribute(name: "contribution", type: .stringAttributeType),
                     .attribute(name: "parentLamport", type: .integer64AttributeType),
                     .attribute(name: "parentPeerID", type: .UUIDAttributeType),
+                    .attribute(name: "waitingForParent", type: .booleanAttributeType, defaultValue: false)
                 ],
                 relationships: [
                     .relationship(name: "parent", destination: "CRStringInsertOp", optional: true, toMany: false, inverse: "childOperations"),  // insertion point

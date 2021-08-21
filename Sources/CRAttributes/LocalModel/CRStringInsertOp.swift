@@ -24,6 +24,7 @@ extension CRStringInsertOp {
     @NSManaged public var parent: CRStringInsertOp?
     @NSManaged public var parentLamport: lamportType
     @NSManaged public var parentPeerID: UUID
+    @NSManaged public var waitingForParent: Bool
     @NSManaged public var childOperations: NSSet?
 
     @NSManaged public var next: CRStringInsertOp?
@@ -75,6 +76,45 @@ extension CRStringInsertOp {
             self.parentPeerID = parent!.peerID
             self.parentLamport = parent!.lamport
         }
+    }
+
+    convenience init(context: NSManagedObjectContext, from protoForm: ProtoStringInsertOperation, container: CRAbstractOp?) {
+        print("From protobuf StringInsertOp(\(protoForm.id.lamport))")
+        self.init(context: context)
+        self.version = protoForm.version
+        self.peerID = protoForm.id.peerID.object()
+        self.lamport = protoForm.id.lamport
+        self.contribution = protoForm.contribution
+        self.parent = CRStringInsertOp.operation(from: protoForm.parentID, in: context) as? CRStringInsertOp // will be null if parent is not yet with us
+        self.parentLamport = protoForm.parentID.lamport
+        self.parentPeerID = protoForm.parentID.peerID.object()
+        self.container = container
+        if container != nil {
+            self.containerLamport = container!.lamport
+            self.containerPeerID = container!.peerID
+        }
+
+        for protoItem in protoForm.deleteOperations {
+            _ = CRDeleteOp(context: context, from: protoItem, container: self)
+        }
+        
+        // head of the orphaned branch
+        if self.parent == nil && self.parentLamport != 0 {
+            self.waitingForContainer = true
+        }
+    }
+    
+    static func restoreLinkedList(context: NSManagedObjectContext, from: [ProtoStringInsertOperation], container: CRAttributeOp?) -> CRStringInsertOp {
+        var cdOperations:[CRStringInsertOp] = []
+        var prevOp:CRStringInsertOp? = nil
+        for protoOp in from {
+            let op = CRStringInsertOp(context: context, from: protoOp, container: container)
+            cdOperations.append(op)
+            op.prev = prevOp
+            prevOp?.next = op
+            prevOp = op
+        }
+        return cdOperations[0]
     }
 
 //    func protoOperation() -> ProtoStringInsertOperation {

@@ -54,6 +54,7 @@ extension CRAttributeOp {
     }
 
     convenience init(context: NSManagedObjectContext, from protoForm: ProtoAttributeOperation, container: CRAbstractOp?) {
+        print("From protobuf AttributeOp(\(protoForm.id.lamport))")
         self.init(context: context)
         self.version = protoForm.version
         self.peerID = protoForm.id.peerID.object()
@@ -75,11 +76,9 @@ extension CRAttributeOp {
             _ = CRLWWOp(context: context, from: protoItem, container: self)
         }
 
-        //TODO: (high) this is hard
-//        for protoItem in protoForm.stringInsertOperations {
-//            _ = CRStringInsertOp(context: context, from: protoItem, parent: self)
-//        }
-
+        if protoForm.stringInsertOperations.count > 0 {
+            CRStringInsertOp.restoreLinkedList(context: context, from: protoForm.stringInsertOperations, container: self)
+        }
     }
 
     static func allObjects() -> [CRAttributeOp]{

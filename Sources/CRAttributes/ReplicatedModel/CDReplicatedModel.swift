@@ -14,6 +14,7 @@ let replicatedModelDescription = CoreDataModelDescription(
                 managedObjectClass: CDOperationsForest.self,
                 attributes: [
                     .attribute(name: "version", type: .integer32AttributeType, defaultValue: Int32(0)),
+                    .attribute(name: "lamport", type: .integer64AttributeType, defaultValue: 0),
                     .attribute(name: "peerID", type: .UUIDAttributeType, defaultValue: localPeerID),
                     .attribute(name: "data", type: .binaryDataAttributeType),
                 ]
