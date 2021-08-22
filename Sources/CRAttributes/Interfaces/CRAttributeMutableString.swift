@@ -23,13 +23,13 @@ class CRAttributeMutableString: CRAttribute {
         super.init(container: container, name: name, type: .mutableString)
         let context = CRStorageController.shared.localContainer.viewContext
         context.performAndWait {
-            let attributeOp = context.object(with: operationObjectID!) as? CRAttributeOp
+            let attributeOp = context.object(with: operationObjectID!) as? CDAttributeOp
             textStorage = CRTextStorage(attributeOp: attributeOp!)
         }
     }
 
     // Remember to execute within context.perform {}
-    override init(from:CRAttributeOp, container: CRObject) {
+    override init(from:CDAttributeOp, container: CRObject) {
         textStorage = CRTextStorage(attributeOp: from)
         super.init(from: from, container: container)
     }
@@ -57,7 +57,7 @@ class CRTextStorage: NSTextStorage {
 //    }
     
     //Execute within context.perform
-    init(attributeOp: CRAttributeOp) {
+    init(attributeOp: CDAttributeOp) {
         self.attributeObjectID = attributeOp.objectID
         attributedString = NSMutableAttributedString(string:"")
         super.init()
@@ -85,7 +85,7 @@ class CRTextStorage: NSTextStorage {
 
     public override func replaceCharacters(in range: NSRange, with str: String) {
         let context = CRStorageController.shared.localContainer.viewContext
-        let attributeOp:CRAttributeOp = (context.object(with: attributeObjectID) as? CRAttributeOp)!
+        let attributeOp:CDAttributeOp = (context.object(with: attributeObjectID) as? CDAttributeOp)!
         beginEditing()
         //TODO: - we may need a hash to track deleted operations
 
@@ -93,8 +93,8 @@ class CRTextStorage: NSTextStorage {
         
         // identify the prev and next for the insertion point (link to deleted operations)
         
-        let insertHeadOp:CRStringInsertOp?
-        let insertTailOp:CRStringInsertOp?
+        let insertHeadOp:CDStringInsertOp?
+        let insertTailOp:CDStringInsertOp?
         
         if range.location == 0 {
             insertHeadOp = nil
@@ -115,7 +115,7 @@ class CRTextStorage: NSTextStorage {
         
         var prevOp = insertHeadOp
         for position in 0..<strAttributed.length {
-            let newOp:CRStringInsertOp = CRStringInsertOp(context: context, parent: prevOp, container: attributeOp, contribution: strAttributed.mutableString.character(at: position))
+            let newOp:CDStringInsertOp = CDStringInsertOp(context: context, parent: prevOp, container: attributeOp, contribution: strAttributed.mutableString.character(at: position))
             prevOp?.next = newOp
             newOp.prev = prevOp
             try! context.save() // we need to save to obtain the objectID
@@ -140,16 +140,16 @@ class CRTextStorage: NSTextStorage {
         // we could listen to: didProcessEditingNotification
     }
     
-    func firstOp(context: NSManagedObjectContext, attributeOp: CRAttributeOp) -> CRStringInsertOp? {
-        let request:NSFetchRequest<CRStringInsertOp> = CRStringInsertOp.fetchRequest()
+    func firstOp(context: NSManagedObjectContext, attributeOp: CDAttributeOp) -> CDStringInsertOp? {
+        let request:NSFetchRequest<CDStringInsertOp> = CDStringInsertOp.fetchRequest()
         request.returnsObjectsAsFaults = false
         request.predicate = NSPredicate(format: "container == %@ and prev == nil", attributeOp)
         return try? context.fetch(request).first
     }
     
-    func operationForPosition(_ position: Int) -> CRStringInsertOp {
+    func operationForPosition(_ position: Int) -> CDStringInsertOp {
         let objectID:NSManagedObjectID = attributedString!.attribute(.opObjectID, at: position, effectiveRange: nil) as! NSManagedObjectID
-        return CRStorageController.shared.localContainer.viewContext.object(with: objectID) as! CRStringInsertOp
+        return CRStorageController.shared.localContainer.viewContext.object(with: objectID) as! CDStringInsertOp
     }
 
 //    unused
@@ -157,9 +157,9 @@ class CRTextStorage: NSTextStorage {
 //        attributedString.setAttributes([.opObjectID: operation.objectID], range: NSRange(location: position, length: 1))
 //    }
     
-    func markDeleted(_ operation: CRAbstractOp) {
+    func markDeleted(_ operation: CDAbstractOp) {
         let context = CRStorageController.shared.localContainer.viewContext
-        let _ = CRDeleteOp(context: context, container: operation)
+        let _ = CDDeleteOp(context: context, container: operation)
         operation.hasTombstone = true
     }
     
@@ -172,25 +172,25 @@ class CRTextStorage: NSTextStorage {
 //        endEditing()
     }
 
-    func prebuildAttributedStringFromOperations(attributeOp: CRAttributeOp) {
+    func prebuildAttributedStringFromOperations(attributeOp: CDAttributeOp) {
         let context = CRStorageController.shared.localContainer.viewContext
 
         // let's prefetch
         // there is no need to prefetch delete operations as we have the hasTombstone attribute
-        var request:NSFetchRequest<CRStringInsertOp> = CRStringInsertOp.fetchRequest()
+        var request:NSFetchRequest<CDStringInsertOp> = CDStringInsertOp.fetchRequest()
         request.returnsObjectsAsFaults = false
         request.predicate = NSPredicate(format: "container == %@", attributeOp)
         let _ = try! context.fetch(request)
         
         // let's get the first operation
-        request = CRStringInsertOp.fetchRequest()
+        request = CDStringInsertOp.fetchRequest()
         request.returnsObjectsAsFaults = false
         request.predicate = NSPredicate(format: "container == %@ and prev == nil", attributeOp)
-        let head:CRStringInsertOp? = try? context.fetch(request).first
+        let head:CDStringInsertOp? = try? context.fetch(request).first
         
         // build the attributedString
         attributedString = NSMutableAttributedString("")
-        var node:CRStringInsertOp? = head
+        var node:CDStringInsertOp? = head
         while node != nil {
             if node!.hasTombstone == false {
                 let contribution = NSMutableAttributedString(string:node!.contribution)

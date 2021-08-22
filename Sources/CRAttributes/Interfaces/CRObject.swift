@@ -15,7 +15,7 @@ import CoreData
 // ideally object creation should instantly create attributes
 
 class CRObject {
-    var operationObjectID: NSManagedObjectID? = nil // CRObjectOp
+    var operationObjectID: NSManagedObjectID? = nil // CDObjectOp
     let type: CRObjectType
     var attributesDict: [String:CRAttribute] = [:]
     
@@ -24,20 +24,20 @@ class CRObject {
         let context = CRStorageController.shared.localContainer.viewContext
         self.type = type
         context.performAndWait {
-            let containerObject: CRObjectOp?
+            let containerObject: CDObjectOp?
             if container != nil {
-                containerObject = context.object(with: container!.operationObjectID!) as? CRObjectOp
+                containerObject = context.object(with: container!.operationObjectID!) as? CDObjectOp
             } else {
                 containerObject = nil
             }
-            let operation = CRObjectOp(context: context, container: containerObject, type: type)
+            let operation = CDObjectOp(context: context, container: containerObject, type: type)
             try! context.save()
             self.operationObjectID = operation.objectID
         }
     }
     
     // Remember to execute within context.perform {}
-    init(from: CRObjectOp) {
+    init(from: CDObjectOp) {
         operationObjectID = from.objectID
         type = from.type
         prefetchAttributes()
@@ -53,12 +53,12 @@ class CRObject {
         }
 
         context.performAndWait {
-            let request:NSFetchRequest<CRAttributeOp> = CRAttributeOp.fetchRequest()
+            let request:NSFetchRequest<CDAttributeOp> = CDAttributeOp.fetchRequest()
             request.returnsObjectsAsFaults = false
             let predicate = NSPredicate(format: "container == %@ AND name == %@", context.object(with: operationObjectID!), name)
             request.predicate = predicate
 
-            let cdResults:[CRAttributeOp] = try! context.fetch(request)
+            let cdResults:[CDAttributeOp] = try! context.fetch(request)
 
             let attribute:CRAttribute
             if cdResults.count > 0 {
@@ -79,11 +79,11 @@ class CRObject {
         var crResults:[CRObject] = []
         
         context.performAndWait {
-            let request:NSFetchRequest<CRObjectOp> = CRObjectOp.fetchRequest()
+            let request:NSFetchRequest<CDObjectOp> = CDObjectOp.fetchRequest()
             request.returnsObjectsAsFaults = false
             request.predicate = NSPredicate(format: "rawType == \(type.rawValue)")
 
-            let cdResults:[CRObjectOp] = try! context.fetch(request)
+            let cdResults:[CDObjectOp] = try! context.fetch(request)
             
             crResults = cdResults.map { CRObject(from: $0) }
             
@@ -94,12 +94,12 @@ class CRObject {
     func prefetchAttributes() {
         let context = CRStorageController.shared.localContainer.viewContext
 //        context.performAndWait {
-            let request:NSFetchRequest<CRAttributeOp> = CRAttributeOp.fetchRequest()
+            let request:NSFetchRequest<CDAttributeOp> = CDAttributeOp.fetchRequest()
             request.returnsObjectsAsFaults = false
             request.predicate = NSPredicate(format: "container == %@", context.object(with: operationObjectID!))
 
     
-            let cdResults:[CRAttributeOp] = try! context.fetch(request)
+            let cdResults:[CDAttributeOp] = try! context.fetch(request)
 
             if cdResults.count > 0 {
                 for attributeOp in cdResults {
@@ -115,11 +115,11 @@ class CRObject {
         var crResults:[CRObject] = []
 
         context.performAndWait {
-            let request:NSFetchRequest<CRObjectOp> = CRObjectOp.fetchRequest()
+            let request:NSFetchRequest<CDObjectOp> = CDObjectOp.fetchRequest()
             request.returnsObjectsAsFaults = false
             request.predicate = NSPredicate(format: "container == %@", context.object(with: operationObjectID!))
 
-            let cdResults:[CRObjectOp] = try! context.fetch(request)
+            let cdResults:[CDObjectOp] = try! context.fetch(request)
             
             crResults = cdResults.map { CRObject(from: $0) }
         }

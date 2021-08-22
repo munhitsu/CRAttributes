@@ -221,13 +221,13 @@ final class CRLocalOperationsTests: XCTestCase {
         a1.value = 2
         XCTAssertEqual(a1.value, 2)
 //        print("CRObjectOps:")
-//        print(CRObjectOp.allObjects())
+//        print(CDObjectOp.allObjects())
 //
-//        print("CRAttributeOps:")
-//        print(CRAttributeOp.allObjects())
+//        print("CDAttributeOps:")
+//        print(CDAttributeOp.allObjects())
 //
 //        print("CRLLWOps:")
-//        print(CRLWWOp.allObjects())
+//        print(CDLWWOp.allObjects())
 
         let b_n1 = CRObject.allObjects(type: .testNote)[0]
         XCTAssertEqual(b_n1.operationObjectID, n1.operationObjectID)

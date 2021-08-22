@@ -9,14 +9,14 @@ import Foundation
 import CoreData
 import SwiftProtobuf
 
-@objc(CRAbstractOp)
-public class CRAbstractOp: NSManagedObject {
+@objc(CDAbstractOp)
+public class CDAbstractOp: NSManagedObject {
 }
 
-extension CRAbstractOp {
+extension CDAbstractOp {
 
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<CRAbstractOp> {
-        return NSFetchRequest<CRAbstractOp>(entityName: "CRAbstractOp")
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<CDAbstractOp> {
+        return NSFetchRequest<CDAbstractOp>(entityName: "CDAbstractOp")
     }
 
     @NSManaged public var version: Int32
@@ -24,27 +24,20 @@ extension CRAbstractOp {
     @NSManaged public var peerID: UUID
     @NSManaged public var hasTombstone: Bool
     
-    @NSManaged public var container: CRAbstractOp?
+    @NSManaged public var container: CDAbstractOp?
     @NSManaged public var containedOperations: NSSet?
 
-    @NSManaged public var containerLamport: lamportType
-    @NSManaged public var containerPeerID: UUID
-
-
     @NSManaged public var upstreamQueueOperation: Bool
-    @NSManaged public var waitingForContainer: Bool
-    // TODO: add boolean attributes that it's waiting in pecific queues
-
 }
 
 // MARK: Generated accessors for subOperations
-extension CRAbstractOp {
+extension CDAbstractOp {
 
     @objc(addSubOperationsObject:)
-    @NSManaged public func addToContainedOperations(_ value: CRAbstractOp)
+    @NSManaged public func addToContainedOperations(_ value: CDAbstractOp)
 
     @objc(removeSubOperationsObject:)
-    @NSManaged public func removeFromContainedOperations(_ value: CRAbstractOp)
+    @NSManaged public func removeFromContainedOperations(_ value: CDAbstractOp)
 
     @objc(addSubOperations:)
     @NSManaged public func addToContainedOperations(_ values: NSSet)
@@ -54,23 +47,16 @@ extension CRAbstractOp {
 
 }
 
-extension CRAbstractOp : Identifiable {
+extension CDAbstractOp : Identifiable {
 
 }
 
-extension CRAbstractOp {
-    convenience init(context: NSManagedObjectContext, container: CRAbstractOp?) {
+extension CDAbstractOp {
+    convenience init(context: NSManagedObjectContext, container: CDAbstractOp?) {
         self.init(context:context)
         self.lamport = getLamport()
         self.peerID = localPeerID
         self.container = container
-        if container == nil {
-            self.containerLamport = 0
-            self.containerPeerID = UUID.zero
-        } else {
-            self.containerLamport = container!.lamport
-            self.containerPeerID = container!.peerID
-        }
         self.hasTombstone = false
     }
     
@@ -94,26 +80,26 @@ extension CRAbstractOp {
         }
     }
     
-    static func upstreamWaitingOperations() -> [CRAbstractOp] {
+    static func upstreamWaitingOperations() -> [CDAbstractOp] {
         let context = CRStorageController.shared.localContainer.viewContext
-        let request:NSFetchRequest<CRAbstractOp> = CRAbstractOp.fetchRequest()
+        let request:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
         request.returnsObjectsAsFaults = false
         request.predicate = NSPredicate(format: "upstreamQueue == true")
         return try! context.fetch(request)
     }
 
-    static func operation(fromLamport:Int64, fromPeerID:UUID, in context: NSManagedObjectContext) -> CRAbstractOp? {
-        let request:NSFetchRequest<CRAbstractOp> = CRAbstractOp.fetchRequest()
+    static func operation(fromLamport:Int64, fromPeerID:UUID, in context: NSManagedObjectContext) -> CDAbstractOp? {
+        let request:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
         request.predicate = NSPredicate(format: "lamport = %@ and peerID = %@", argumentArray: [fromLamport, fromPeerID])
         let ops = try? context.fetch(request)
         return ops?.first
     }
 
-    static func operation(from protoID:ProtoOperationID, in context: NSManagedObjectContext) -> CRAbstractOp? {
+    static func operation(from protoID:ProtoOperationID, in context: NSManagedObjectContext) -> CDAbstractOp? {
         return operation(fromLamport: protoID.lamport, fromPeerID: protoID.peerID.object(), in: context)
     }
 
-    static func operation(from operationID:CROperationID, in context: NSManagedObjectContext) -> CRAbstractOp? {
+    static func operation(from operationID:CROperationID, in context: NSManagedObjectContext) -> CDAbstractOp? {
         return operation(fromLamport: operationID.lamport, fromPeerID: operationID.peerID, in: context)
     }
 

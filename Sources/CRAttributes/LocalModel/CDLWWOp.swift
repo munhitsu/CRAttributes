@@ -8,15 +8,15 @@
 import Foundation
 import CoreData
 
-@objc(CRLWWOp)
-public class CRLWWOp: CRAbstractOp {
+@objc(CDLWWOp)
+public class CDLWWOp: CDAbstractOp {
 
 }
 
-extension CRLWWOp {
+extension CDLWWOp {
 
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<CRLWWOp> {
-        return NSFetchRequest<CRLWWOp>(entityName: "CRLWWOp")
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<CDLWWOp> {
+        return NSFetchRequest<CDLWWOp>(entityName: "CDLWWOp")
     }
 
     @NSManaged public var int: Int64
@@ -27,44 +27,42 @@ extension CRLWWOp {
 
 }
 
-extension CRLWWOp {
-    convenience init(context: NSManagedObjectContext, container: CRAttributeOp?, value: Int) {
+extension CDLWWOp {
+    convenience init(context: NSManagedObjectContext, container: CDAttributeOp?, value: Int) {
         self.init(context:context, container: container)
         self.int = Int64(value)
         try! context.save()
     }
-    convenience init(context: NSManagedObjectContext, container: CRAttributeOp?, value: Float) {
+    convenience init(context: NSManagedObjectContext, container: CDAttributeOp?, value: Float) {
         self.init(context:context, container: container)
         self.float = value
         try! context.save()
     }
-    convenience init(context: NSManagedObjectContext, container: CRAttributeOp?, value: Date) {
+    convenience init(context: NSManagedObjectContext, container: CDAttributeOp?, value: Date) {
         self.init(context:context, container: container)
         self.date = value
         try! context.save()
     }
-    convenience init(context: NSManagedObjectContext, container: CRAttributeOp?, value: Bool) {
+    convenience init(context: NSManagedObjectContext, container: CDAttributeOp?, value: Bool) {
         self.init(context:context, container: container)
         self.boolean = value
         try! context.save()
     }
-    convenience init(context: NSManagedObjectContext, container: CRAttributeOp?, value: String) {
+    convenience init(context: NSManagedObjectContext, container: CDAttributeOp?, value: String) {
         self.init(context:context, container: container)
         self.string = value
         try! context.save()
     }
 
-    convenience init(context: NSManagedObjectContext, from protoForm: ProtoLWWOperation, container: CRAbstractOp?) {
+    convenience init(context: NSManagedObjectContext, from protoForm: ProtoLWWOperation, container: CDAbstractOp?, waitingForContainer: Bool=false) {
         print("From protobuf LLWOp(\(protoForm.id.lamport))")
         self.init(context: context)
         self.version = protoForm.version
         self.peerID = protoForm.id.peerID.object()
         self.lamport = protoForm.id.lamport
         self.container = container
-        if container != nil {
-            self.containerLamport = container!.lamport
-            self.containerPeerID = container!.peerID
-        }
+        self.upstreamQueueOperation = false
+
 
         switch protoForm.value {
         case .some(.int):
@@ -85,13 +83,13 @@ extension CRLWWOp {
         
         
         for protoItem in protoForm.deleteOperations {
-            _ = CRDeleteOp(context: context, from: protoItem, container: self)
+            _ = CDDeleteOp(context: context, from: protoItem, container: self)
         }
     }
     
-    static func allObjects() -> [CRLWWOp]{
+    static func allObjects() -> [CDLWWOp]{
         let context = CRStorageController.shared.localContainer.viewContext
-        let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
+        let request:NSFetchRequest<CDLWWOp> = CDLWWOp.fetchRequest()
         request.returnsObjectsAsFaults = false
         return try! context.fetch(request)
     }

@@ -70,7 +70,7 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(a6.textStorage!.string, "ABCdef")
         
         let context = CRStorageController.shared.localContainer.viewContext
-        let cdOp:CRAttributeOp = context.object(with: a6.operationObjectID!) as! CRAttributeOp
+        let cdOp:CDAttributeOp = context.object(with: a6.operationObjectID!) as! CDAttributeOp
         checkStringOperationsCorrectness(cdOp)
 
         let operationsLimit = 10
@@ -85,7 +85,7 @@ class CRRemoteOperationsTests: XCTestCase {
     
     func countUpstreamOps() -> Int {
         let localContext = CRStorageController.shared.localContainer.viewContext
-        let request:NSFetchRequest<CRAbstractOp> = CRAbstractOp.fetchRequest()
+        let request:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
         request.predicate = NSPredicate(format: "upstreamQueueOperation == true")
 
         return try! localContext.count(for: request)
@@ -107,22 +107,22 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(text.textStorage!.string, "123def###")
 
         let context = CRStorageController.shared.localContainer.viewContext
-        let textOp:CRAttributeOp = context.object(with: text.operationObjectID!) as! CRAttributeOp
+        let textOp:CDAttributeOp = context.object(with: text.operationObjectID!) as! CDAttributeOp
         checkStringOperationsCorrectness(textOp)
     }
     
     
-    func checkStringOperationsCorrectness(_ cdAttribute: CRAttributeOp) {
+    func checkStringOperationsCorrectness(_ cdAttribute: CDAttributeOp) {
         var nodesSeen = Set<lamportType>()
 
-        var headStringOperation:CRStringInsertOp? = nil
+        var headStringOperation:CDStringInsertOp? = nil
         for operation in cdAttribute.containedOperations!.allObjects {
-            if let operation = operation as? CRAbstractOp {
+            if let operation = operation as? CDAbstractOp {
                 if operation.upstreamQueueOperation {
                     switch operation {
-                    case _ as CRDeleteOp:
+                    case _ as CDDeleteOp:
                         print("ignoring Delete")
-                    case let op as CRStringInsertOp:
+                    case let op as CDStringInsertOp:
 //                        print("op(\(op.lamport))=\(op.contribution) prev(\(String(describing: op.prev?.lamport)))")
                         if op.prev == nil { // it will be only a new string in a new attribute in this scenario
                             assert(headStringOperation == nil)
@@ -153,7 +153,7 @@ class CRRemoteOperationsTests: XCTestCase {
 //        print(try! forest.jsonString())
   
         XCTAssertEqual(forest.peerID.object(), localPeerID)
-        XCTAssertGreaterThan(try! forest.serializedData().count, 8000)
+        XCTAssertGreaterThan(try! forest.serializedData().count, 1500)
 
         // testing in second run returns empty bundle
         let forests2 = CRStorageController.protoOperationsForests(context: context)
@@ -162,7 +162,7 @@ class CRRemoteOperationsTests: XCTestCase {
         context.reset()
         
         let forests3 = CRStorageController.protoOperationsForests(context: context)
-        XCTAssertGreaterThan(try! forests3[0].serializedData().count, 8000)
+        XCTAssertGreaterThan(try! forests3[0].serializedData().count, 1400)
 
         context.reset()
         
@@ -196,7 +196,7 @@ class CRRemoteOperationsTests: XCTestCase {
         //TODO: count objects in the replicated / scan proto form of the forest
 
 //        let protoBundle = CRStorageController.protoOperationsBundle()
-//        XCTAssertEqual(protoBundle.objectOperations.count, CRObjectOp.allObjects().count)
+//        XCTAssertEqual(protoBundle.objectOperations.count, CDObjectOp.allObjects().count)
 //        XCTAssertGreaterThan(protoBundle.attributeOperations.count, 0)
 //        XCTAssertGreaterThan(protoBundle.lwwOperations.count, 0)
 //        XCTAssertGreaterThan(protoBundle.stringInsertOperations.count, 0)
@@ -205,7 +205,7 @@ class CRRemoteOperationsTests: XCTestCase {
     
     func opCount() -> Int {
         let localContext = CRStorageController.shared.localContainer.viewContext
-        let request:NSFetchRequest<CRAbstractOp> = CRAbstractOp.fetchRequest()
+        let request:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
         
         return try! localContext.count(for: request)
     }
@@ -213,7 +213,7 @@ class CRRemoteOperationsTests: XCTestCase {
     func testBundleRestore() throws {
         // 1st batch of operations
         dummyLocalData()
-        var upstreamOps = countUpstreamOps()
+        let upstreamOps = countUpstreamOps()
         let localCount1 = opCount()
         print("created batch 1: \(localCount1)")
         XCTAssertEqual(upstreamOps, localCount1)

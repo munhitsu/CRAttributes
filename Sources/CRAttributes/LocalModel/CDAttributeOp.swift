@@ -8,7 +8,7 @@
 import Foundation
 import CoreData
 
-@objc(CRAttributeOp)
+@objc(CDAttributeOp)
 public class CDAttributeOp: CDAbstractOp {
 
 }
@@ -47,7 +47,7 @@ extension CDAttributeOp {
 
 
 extension CDAttributeOp {
-    convenience init(context: NSManagedObjectContext, container: CRObjectOp?, type: CRAttributeType, name: String) {
+    convenience init(context: NSManagedObjectContext, container: CDObjectOp?, type: CRAttributeType, name: String) {
         self.init(context: context, container: container)
         self.type = type
         self.name = name
@@ -62,24 +62,19 @@ extension CDAttributeOp {
         self.name = protoForm.name
         self.rawType = protoForm.rawType
         self.container = container
-        if container != nil {
-            self.containerLamport = container!.lamport
-            self.containerPeerID = container!.peerID
-        }
-        self.waitingForContainer = waitingForContainer
         self.upstreamQueueOperation = false
 
         
         for protoItem in protoForm.deleteOperations {
-            _ = CRDeleteOp(context: context, from: protoItem, container: self)
+            _ = CDDeleteOp(context: context, from: protoItem, container: self)
         }
         
         for protoItem in protoForm.lwwOperations {
-            _ = CRLWWOp(context: context, from: protoItem, container: self)
+            _ = CDLWWOp(context: context, from: protoItem, container: self)
         }
 
         if protoForm.stringInsertOperations.count > 0 {
-            _ = CRStringInsertOp.restoreLinkedList(context: context, from: protoForm.stringInsertOperations, container: self)
+            _ = CDStringInsertOp.restoreLinkedList(context: context, from: protoForm.stringInsertOperations, container: self)
         }
     }
 

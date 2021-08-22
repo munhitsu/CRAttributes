@@ -8,8 +8,8 @@
 import Foundation
 import CoreData
 
-@objc(CRObjectOp)
-public class CRObjectOp: CRAbstractOp {
+@objc(CDObjectOp)
+public class CDObjectOp: CDAbstractOp {
 
 }
 
@@ -31,17 +31,17 @@ struct CRObjectType: RawRepresentable, Equatable, Hashable, Comparable {
 
 }
 
-extension CRObjectOp {
+extension CDObjectOp {
 
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<CRObjectOp> {
-        return NSFetchRequest<CRObjectOp>(entityName: "CRObjectOp")
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<CDObjectOp> {
+        return NSFetchRequest<CDObjectOp>(entityName: "CDObjectOp")
     }
 
     @NSManaged public var rawType: Int32
 
 }
  
-extension CRObjectOp {
+extension CDObjectOp {
     var type: CRObjectType {
         get {
             return CRObjectType(rawValue: self.rawType)
@@ -52,14 +52,14 @@ extension CRObjectOp {
     }
 }
 
-extension CRObjectOp {
+extension CDObjectOp {
 
-    convenience init(context: NSManagedObjectContext, container: CRAbstractOp?, type: CRObjectType) {
+    convenience init(context: NSManagedObjectContext, container: CDAbstractOp?, type: CRObjectType) {
         self.init(context:context, container: container)
         self.type = type
     }
     
-    convenience init(context: NSManagedObjectContext, from protoForm: ProtoObjectOperation, container: CRAbstractOp?) {
+    convenience init(context: NSManagedObjectContext, from protoForm: ProtoObjectOperation, container: CDAbstractOp?, waitingForContainer: Bool=false) {
         print("From protobuf ObjectOp(\(protoForm.id.lamport))")
         self.init(context: context)
         self.version = protoForm.version
@@ -67,28 +67,25 @@ extension CRObjectOp {
         self.lamport = protoForm.id.lamport
         self.rawType = protoForm.rawType
         self.container = container
-        if container != nil {
-            self.containerLamport = container!.lamport
-            self.containerPeerID = container!.peerID
-        }
+        self.upstreamQueueOperation = false
 
         
         for protoItem in protoForm.deleteOperations {
-            _ = CRDeleteOp(context: context, from: protoItem, container: self)
+            _ = CDDeleteOp(context: context, from: protoItem, container: self)
         }
         
         for protoItem in protoForm.attributeOperations {
-            _ = CRAttributeOp(context: context, from: protoItem, container: self)
+            _ = CDAttributeOp(context: context, from: protoItem, container: self)
         }
         
         for protoItem in protoForm.objectOperations {
-            _ = CRObjectOp(context: context, from: protoItem, container: self)
+            _ = CDObjectOp(context: context, from: protoItem, container: self)
         }
     }
     
-    static func allObjects() -> [CRObjectOp]{
+    static func allObjects() -> [CDObjectOp]{
         let context = CRStorageController.shared.localContainer.viewContext
-        let request:NSFetchRequest<CRObjectOp> = CRObjectOp.fetchRequest()
+        let request:NSFetchRequest<CDObjectOp> = CDObjectOp.fetchRequest()
         request.returnsObjectsAsFaults = false
         return try! context.fetch(request)
     }

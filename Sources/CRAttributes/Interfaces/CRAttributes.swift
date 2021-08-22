@@ -24,16 +24,16 @@ class CRAttribute {
         self.name = name
         self.type = type
         context.performAndWait {
-            let containerObject: CRObjectOp?
-            containerObject = context.object(with: container.operationObjectID!) as? CRObjectOp
-            let operation = CRAttributeOp(context: context, container: containerObject, type: type, name: name)
+            let containerObject: CDObjectOp?
+            containerObject = context.object(with: container.operationObjectID!) as? CDObjectOp
+            let operation = CDAttributeOp(context: context, container: containerObject, type: type, name: name)
             try! context.save()
             self.operationObjectID = operation.objectID
         }
     }
     
     // Remember to execute within context.perform {}
-    init(from: CRAttributeOp, container: CRObject) {
+    init(from: CDAttributeOp, container: CRObject) {
         operationObjectID = from.objectID
         self.container = container
         name = from.name!
@@ -41,7 +41,7 @@ class CRAttribute {
     }
     
     // Remember to execute within context.perform {}
-    public static func factory(from attributeOperation: CRAttributeOp, container: CRObject) -> CRAttribute {
+    public static func factory(from attributeOperation: CDAttributeOp, container: CRObject) -> CRAttribute {
         //TODO: (low) make it nicer (e.g. store types classes in CRAttributeType
         switch attributeOperation.type {
         case CRAttributeType.mutableString:
@@ -80,7 +80,7 @@ class CRAttribute {
         let context = CRStorageController.shared.localContainer.viewContext
         var count = 0
         context.performAndWait {
-            let request:NSFetchRequest<CRAbstractOp> = CRAbstractOp.fetchRequest()
+            let request:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
             request.predicate = NSPredicate(format: "container == %@", context.object(with: operationObjectID!))
             count = try! context.count(for: request)
         }
@@ -95,13 +95,13 @@ class CRAttributeInt: CRAttribute {
             let context = CRStorageController.shared.localContainer.viewContext
             var value:Int?
             context.performAndWait {
-                let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
+                let request:NSFetchRequest<CDLWWOp> = CDLWWOp.fetchRequest()
                 request.returnsObjectsAsFaults = false
                 request.fetchLimit = 1
                 request.predicate = NSPredicate(format: "container == %@", context.object(with:operationObjectID!))
-                request.sortDescriptors = [NSSortDescriptor(keyPath: \CRLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRLWWOp.peerID, ascending: false)]
+                request.sortDescriptors = [NSSortDescriptor(keyPath: \CDLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CDLWWOp.peerID, ascending: false)]
 
-                let operations:[CRLWWOp] = try! context.fetch(request)
+                let operations:[CDLWWOp] = try! context.fetch(request)
                 if operations.isEmpty {
                     value = nil
                 } else {
@@ -113,7 +113,7 @@ class CRAttributeInt: CRAttribute {
         set {
             let context = CRStorageController.shared.localContainer.viewContext
             context.performAndWait {
-                _ = CRLWWOp(context: context, container: context.object(with:operationObjectID!) as? CRAttributeOp, value: newValue!)
+                _ = CDLWWOp(context: context, container: context.object(with:operationObjectID!) as? CDAttributeOp, value: newValue!)
             }
         }
     }
@@ -122,7 +122,7 @@ class CRAttributeInt: CRAttribute {
         super.init(container: container, name: name, type: .int)
     }
 
-    override init(from: CRAttributeOp, container: CRObject) {
+    override init(from: CDAttributeOp, container: CRObject) {
         super.init(from: from, container: container)
     }
 }
@@ -134,13 +134,13 @@ class CRAttributeFloat: CRAttribute {
             let context = CRStorageController.shared.localContainer.viewContext
             var value:Float?
             context.performAndWait {
-                let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
+                let request:NSFetchRequest<CDLWWOp> = CDLWWOp.fetchRequest()
                 request.returnsObjectsAsFaults = false
                 request.fetchLimit = 1
                 request.predicate = NSPredicate(format: "container == %@", context.object(with:operationObjectID!))
-                request.sortDescriptors = [NSSortDescriptor(keyPath: \CRLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRLWWOp.peerID, ascending: false)]
+                request.sortDescriptors = [NSSortDescriptor(keyPath: \CDLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CDLWWOp.peerID, ascending: false)]
 
-                let operations:[CRLWWOp] = try! context.fetch(request)
+                let operations:[CDLWWOp] = try! context.fetch(request)
                 if operations.isEmpty {
                     value = nil
                 } else {
@@ -152,7 +152,7 @@ class CRAttributeFloat: CRAttribute {
         set {
             let context = CRStorageController.shared.localContainer.viewContext
             context.performAndWait {
-                _ = CRLWWOp(context: context, container: context.object(with: operationObjectID!) as? CRAttributeOp, value: newValue!)
+                _ = CDLWWOp(context: context, container: context.object(with: operationObjectID!) as? CDAttributeOp, value: newValue!)
             }
         }
     }
@@ -161,7 +161,7 @@ class CRAttributeFloat: CRAttribute {
         super.init(container: container, name: name, type: .float)
     }
 
-    override init(from: CRAttributeOp, container: CRObject) {
+    override init(from: CDAttributeOp, container: CRObject) {
         super.init(from: from, container: container)
     }
 }
@@ -173,13 +173,13 @@ class CRAttributeDate: CRAttribute {
             let context = CRStorageController.shared.localContainer.viewContext
             var value:Date?
             context.performAndWait {
-                let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
+                let request:NSFetchRequest<CDLWWOp> = CDLWWOp.fetchRequest()
                 request.returnsObjectsAsFaults = false
                 request.fetchLimit = 1
                 request.predicate = NSPredicate(format: "container == %@", context.object(with:operationObjectID!))
-                request.sortDescriptors = [NSSortDescriptor(keyPath: \CRLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRLWWOp.peerID, ascending: false)]
+                request.sortDescriptors = [NSSortDescriptor(keyPath: \CDLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CDLWWOp.peerID, ascending: false)]
 
-                let operations:[CRLWWOp] = try! context.fetch(request)
+                let operations:[CDLWWOp] = try! context.fetch(request)
                 if operations.isEmpty {
                     value = nil
                 } else {
@@ -191,7 +191,7 @@ class CRAttributeDate: CRAttribute {
         set {
             let context = CRStorageController.shared.localContainer.viewContext
             context.performAndWait {
-                _ = CRLWWOp(context: context, container: context.object(with: operationObjectID!) as? CRAttributeOp, value: newValue!)
+                _ = CDLWWOp(context: context, container: context.object(with: operationObjectID!) as? CDAttributeOp, value: newValue!)
             }
         }
     }
@@ -200,7 +200,7 @@ class CRAttributeDate: CRAttribute {
         super.init(container: container, name: name, type: .date)
     }
 
-    override init(from: CRAttributeOp, container: CRObject) {
+    override init(from: CDAttributeOp, container: CRObject) {
         super.init(from: from, container: container)
     }
 }
@@ -212,13 +212,13 @@ class CRAttributeBool: CRAttribute {
             let context = CRStorageController.shared.localContainer.viewContext
             var value:Bool?
             context.performAndWait {
-                let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
+                let request:NSFetchRequest<CDLWWOp> = CDLWWOp.fetchRequest()
                 request.returnsObjectsAsFaults = false
                 request.fetchLimit = 1
                 request.predicate = NSPredicate(format: "container == %@", context.object(with:operationObjectID!))
-                request.sortDescriptors = [NSSortDescriptor(keyPath: \CRLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRLWWOp.peerID, ascending: false)]
+                request.sortDescriptors = [NSSortDescriptor(keyPath: \CDLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CDLWWOp.peerID, ascending: false)]
 
-                let operations:[CRLWWOp] = try! context.fetch(request)
+                let operations:[CDLWWOp] = try! context.fetch(request)
                 if operations.isEmpty {
                     value = nil
                 } else {
@@ -230,7 +230,7 @@ class CRAttributeBool: CRAttribute {
         set {
             let context = CRStorageController.shared.localContainer.viewContext
             context.performAndWait {
-                _ = CRLWWOp(context: context, container: context.object(with: operationObjectID!) as? CRAttributeOp, value: newValue!)
+                _ = CDLWWOp(context: context, container: context.object(with: operationObjectID!) as? CDAttributeOp, value: newValue!)
             }
         }
     }
@@ -239,7 +239,7 @@ class CRAttributeBool: CRAttribute {
         super.init(container: container, name: name, type: .boolean)
     }
 
-    override init(from: CRAttributeOp, container: CRObject) {
+    override init(from: CDAttributeOp, container: CRObject) {
         super.init(from: from, container: container)
     }
 }
@@ -251,13 +251,13 @@ class CRAttributeString: CRAttribute {
             let context = CRStorageController.shared.localContainer.viewContext
             var value:String?
             context.performAndWait {
-                let request:NSFetchRequest<CRLWWOp> = CRLWWOp.fetchRequest()
+                let request:NSFetchRequest<CDLWWOp> = CDLWWOp.fetchRequest()
                 request.returnsObjectsAsFaults = false
                 request.fetchLimit = 1
                 request.predicate = NSPredicate(format: "container == %@", context.object(with:operationObjectID!))
-                request.sortDescriptors = [NSSortDescriptor(keyPath: \CRLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CRLWWOp.peerID, ascending: false)]
+                request.sortDescriptors = [NSSortDescriptor(keyPath: \CDLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CDLWWOp.peerID, ascending: false)]
 
-                let operations:[CRLWWOp] = try! context.fetch(request)
+                let operations:[CDLWWOp] = try! context.fetch(request)
                 if operations.isEmpty {
                     value = nil
                 } else {
@@ -269,7 +269,7 @@ class CRAttributeString: CRAttribute {
         set {
             let context = CRStorageController.shared.localContainer.viewContext
             context.performAndWait {
-                _ = CRLWWOp(context: context, container: context.object(with: operationObjectID!) as? CRAttributeOp, value: newValue!)
+                _ = CDLWWOp(context: context, container: context.object(with: operationObjectID!) as? CDAttributeOp, value: newValue!)
             }
         }
     }
@@ -278,7 +278,7 @@ class CRAttributeString: CRAttribute {
         super.init(container: container, name: name, type: .string)
     }
 
-    override init(from: CRAttributeOp, container: CRObject) {
+    override init(from: CDAttributeOp, container: CRObject) {
         super.init(from: from, container: container)
     }
 }

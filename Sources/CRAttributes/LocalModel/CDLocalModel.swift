@@ -16,22 +16,19 @@ import CoreDataModelDescription
 
 let localModelDescription = CoreDataModelDescription(
     entities: [
-        .entity(name: "CRAbstractOp",
-                managedObjectClass: CRAbstractOp.self,
+        .entity(name: "CDAbstractOp",
+                managedObjectClass: CDAbstractOp.self,
                 isAbstract: true,
                 attributes: [
                     .attribute(name: "version", type: .integer32AttributeType, defaultValue: Int32(0)),
                     .attribute(name: "lamport", type: .integer64AttributeType),
                     .attribute(name: "peerID", type: .UUIDAttributeType),
-                    .attribute(name: "containerLamport", type: .integer64AttributeType),
-                    .attribute(name: "containerPeerID", type: .UUIDAttributeType),
                     .attribute(name: "hasTombstone", type: .booleanAttributeType),
                     .attribute(name: "upstreamQueueOperation", type: .booleanAttributeType, defaultValue: true), //TODO: remove default as it's implicit
-                    .attribute(name: "waitingForContainer", type: .booleanAttributeType, defaultValue: false)
                 ],
                 relationships: [
-                    .relationship(name: "container", destination: "CRAbstractOp", optional: true, toMany: false),  // insertion point
-                    .relationship(name: "containedOperations", destination: "CRAbstractOp", optional: true, toMany: true, inverse: "container"),  // insertion point
+                    .relationship(name: "container", destination: "CDAbstractOp", optional: true, toMany: false),  // insertion point
+                    .relationship(name: "containedOperations", destination: "CDAbstractOp", optional: true, toMany: true, inverse: "container"),  // insertion point
                 ],
                 indexes: [
                     .index(name: "lamport", elements: [.property(name: "lamport")]),
@@ -41,27 +38,27 @@ let localModelDescription = CoreDataModelDescription(
                ),
         // object parent is an object it is nested within
         // null parent means it's a top level object
-        // if you are a folder then set yourself a CRAttributeOp "name"
+        // if you are a folder then set yourself a CDAttributeOp "name"
         // subOperations will be either sub attributes or sub objects
-            .entity(name: "CRObjectOp",
-                    managedObjectClass: CRObjectOp.self,
-                    parentEntity: "CRAbstractOp",
+            .entity(name: "CDObjectOp",
+                    managedObjectClass: CDObjectOp.self,
+                    parentEntity: "CDAbstractOp",
                     attributes: [
                         .attribute(name: "rawType", type: .integer32AttributeType, defaultValue: Int32(0))
                     ]
                    ),
         // attribute parent is an object attribute is nested within
-        .entity(name: "CRAttributeOp",
-                managedObjectClass: CRAttributeOp.self,
-                parentEntity: "CRAbstractOp",
+        .entity(name: "CDAttributeOp",
+                managedObjectClass: CDAttributeOp.self,
+                parentEntity: "CDAbstractOp",
                 attributes: [
                     .attribute(name: "name", type: .stringAttributeType, defaultValue: "default"),
                     .attribute(name: "rawType", type: .integer32AttributeType, defaultValue: Int32(0))
                 ]
                ),
-        .entity(name: "CRLWWOp",
-                managedObjectClass: CRLWWOp.self,
-                parentEntity: "CRAbstractOp",
+        .entity(name: "CDLWWOp",
+                managedObjectClass: CDLWWOp.self,
+                parentEntity: "CDAbstractOp",
                 attributes: [
                     .attribute(name: "int", type: .integer64AttributeType, isOptional: true),
                     .attribute(name: "float", type: .floatAttributeType, isOptional: true),
@@ -71,9 +68,9 @@ let localModelDescription = CoreDataModelDescription(
                 ]
                ),
         // parent is what was deleted
-        .entity(name: "CRDeleteOp",
-                managedObjectClass: CRDeleteOp.self,
-                parentEntity: "CRAbstractOp"
+        .entity(name: "CDDeleteOp",
+                managedObjectClass: CDDeleteOp.self,
+                parentEntity: "CDAbstractOp"
                ),
         .entity(name: "RenderedString",
                 managedObjectClass: RenderedString.self,
@@ -81,22 +78,27 @@ let localModelDescription = CoreDataModelDescription(
                     .attribute(name: "string", type: .binaryDataAttributeType)
                 ]
                ),
-        .entity(name: "CRStringInsertOp",
-                managedObjectClass: CRStringInsertOp.self,
-                parentEntity: "CRAbstractOp",
+        .entity(name: "CDStringInsertOp",
+                managedObjectClass: CDStringInsertOp.self,
+                parentEntity: "CDAbstractOp",
                 attributes: [
                     .attribute(name: "contribution", type: .stringAttributeType),
-                    .attribute(name: "parentLamport", type: .integer64AttributeType),
-                    .attribute(name: "parentPeerID", type: .UUIDAttributeType),
-                    .attribute(name: "waitingForParent", type: .booleanAttributeType, defaultValue: false)
                 ],
                 relationships: [
-                    .relationship(name: "parent", destination: "CRStringInsertOp", optional: true, toMany: false, inverse: "childOperations"),  // insertion point
-                    .relationship(name: "childOperations", destination: "CRStringInsertOp", optional: true, toMany: true, inverse: "parent"),  // insertion point
-                    .relationship(name: "next", destination: "CRStringInsertOp", toMany: false, inverse: "prev"),
-                    .relationship(name: "prev", destination: "CRStringInsertOp", toMany: false, inverse: "next"),
+                    .relationship(name: "parent", destination: "CDStringInsertOp", optional: true, toMany: false, inverse: "childOperations"),  // insertion point
+                    .relationship(name: "childOperations", destination: "CDStringInsertOp", optional: true, toMany: true, inverse: "parent"),  // insertion point
+                    .relationship(name: "next", destination: "CDStringInsertOp", toMany: false, inverse: "prev"),
+                    .relationship(name: "prev", destination: "CDStringInsertOp", toMany: false, inverse: "next"),
                 ]
-               )
+               ),
+        .entity(name: "CDGhostOp",
+                managedObjectClass: CDGhostOp.self,
+                parentEntity: "CDAbstractOp"
+               ),
+        .entity(name: "CDGhostStringInsertOp",
+                managedObjectClass: CDGhostStringInsertOp.self,
+                parentEntity: "CDStringInsertOp"
+               ),
     ]
 )
 public let CRLocalModel = localModelDescription.makeModel()

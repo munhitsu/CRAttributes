@@ -46,7 +46,7 @@ public func newLamportSeen(_ seenLamport: lamportType) {
  */
 public func updateLastLamportFromCoOpLog(in context: NSManagedObjectContext) {
     //TODO:  deduplicate code through inheritance and maybe even model inheritance to have one query
-    let fetchRequestInsert:NSFetchRequest<CRAbstractOp> = CRAbstractOp.fetchRequest()
+    let fetchRequestInsert:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
     fetchRequestInsert.sortDescriptors = [NSSortDescriptor(key: "lamport", ascending: false)]
     fetchRequestInsert.fetchLimit = 1
     

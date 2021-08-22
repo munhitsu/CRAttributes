@@ -8,15 +8,15 @@
 import Foundation
 import CoreData
 
-@objc(CRDeleteOp)
-public class CRDeleteOp: CRAbstractOp {
+@objc(CDDeleteOp)
+public class CDDeleteOp: CDAbstractOp {
 
 }
 
-extension CRDeleteOp {
+extension CDDeleteOp {
 
-    @nonobjc public class func fetchRequest() -> NSFetchRequest<CRDeleteOp> {
-        return NSFetchRequest<CRDeleteOp>(entityName: "CRDeleteOp")
+    @nonobjc public class func fetchRequest() -> NSFetchRequest<CDDeleteOp> {
+        return NSFetchRequest<CDDeleteOp>(entityName: "CDDeleteOp")
     }
 
 //    func protoOperation() -> ProtoDeleteOperation {
@@ -26,8 +26,8 @@ extension CRDeleteOp {
 //    }
 }
 
-extension CRDeleteOp {
-    convenience init(context: NSManagedObjectContext, from protoForm: ProtoDeleteOperation, container: CRAbstractOp?) {
+extension CDDeleteOp {
+    convenience init(context: NSManagedObjectContext, from protoForm: ProtoDeleteOperation, container: CDAbstractOp?, waitingForContainer: Bool=false) {
         print("From protobuf DeleteOp(\(protoForm.id.lamport))")
         self.init(context: context)
         self.version = protoForm.version
@@ -35,9 +35,7 @@ extension CRDeleteOp {
         self.lamport = protoForm.id.lamport
         self.container = container
         self.container?.hasTombstone = true
-        if container != nil {
-            self.containerLamport = container!.lamport
-            self.containerPeerID = container!.peerID
-        }
+        self.upstreamQueueOperation = false
+
     }
 }
