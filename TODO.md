@@ -2,8 +2,9 @@
 
 
 - [x] record local operations in serialised groups (Forests) for CloudKit sync
-- [] compress OperationPacks
+- [] introduce ghost operation
 - [] process remote operations (downstream)
+- [] compress OperationPacks
 - [] attributedstring persistence (to speed up note opening)
 - [] coursor for remote editors (as we have O(1) for local but O(n) for remote)
 - [] I think I'm saving to often
@@ -14,7 +15,7 @@
 - [] optimise UUID store and restore in protobuf
 - [] instrument and optimise
 - [] revert to storing peerID with every message in the protobuf / there might be edge cases when user moves between devices
-- [] migrate upstream to the background queue / context
+- [] migrate upstream amd downstream to the background queue / context
 
 
 ## ObjectID can change

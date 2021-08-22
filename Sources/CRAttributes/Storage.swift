@@ -189,6 +189,7 @@ extension CRStorageController {
     }
     
     static func protoOperationsForests(context: NSManagedObjectContext) -> [ProtoOperationsForest] {
+//        print("protoOperationsForests()")
         let request:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
         request.returnsObjectsAsFaults = false
         request.predicate = NSPredicate(format: "upstreamQueueOperation == true")
@@ -222,6 +223,9 @@ extension CRStorageController {
                 case let op as CDLWWOp:
                     tree.lwwOperation = protoLWWOperationRecurse(op)
                 case let op as CDStringInsertOp:
+//                    if op.contribution == "#" {
+//                        print("debug")
+//                    }
                     tree.stringInsertOperations.stringInsertOperations = protoStringInsertOperationsLinkedList(op)
                 default:
                     fatalNotImplemented()
@@ -234,9 +238,12 @@ extension CRStorageController {
             forest.peerID = localPeerID.data
             forests.append(forest)
         }
-        // TODO: split into forests when one is getting too big
+        // TODO: split into forests when one is getting too big (2 MB is the CloudKit Operation limit but we can still compress - one forrest is one CloudKit record)
         
-        print(forests)
+//        print("forests: \(forests)")
+//        for forest in forests {
+//            print("trees: \(forest.trees.count)")
+//        }
         return forests
     }
 
@@ -275,6 +282,7 @@ extension CRStorageController {
             $0.id.lamport = operation.lamport
             $0.id.peerID  = operation.peerID.data
         }
+        assert(operation.container?.containedOperations?.contains(operation) ?? false)
 //        print("DeleteOperation \(proto.id.lamport)")
 
         operation.upstreamQueueOperation = false
@@ -367,9 +375,6 @@ extension CRStorageController {
             $0.parentID.lamport = operation.parent?.lamport ?? 0
             $0.parentID.peerID = operation.parent?.peerID.data ?? UUID.zero.data
         }
-        if operation.contribution == "3" {
-            print("debug")
-        }
 //        print("StringInsertOperation \(proto.id.lamport)")
         assert(operation.upstreamQueueOperation)
         for operation in operation.containedOperations!.allObjects {
@@ -392,7 +397,7 @@ extension CRStorageController {
     static func protoStringInsertOperationsLinkedList(_ operation: CDStringInsertOp) -> [ProtoStringInsertOperation] {
         assert(operation.upstreamQueueOperation == true)
         var protoOperations:[ProtoStringInsertOperation] = [protoStringInsertOperationRecurse(operation)]
-        print(protoOperations[0])
+//        print(protoOperations[0])
 
 //        print("###")
 //        print("prev: \(String(describing: operation.prev))")
@@ -403,7 +408,7 @@ extension CRStorageController {
         var node:CDStringInsertOp? = operation.prev
         while node != nil && node!.upstreamQueueOperation {
             let protoForm = protoStringInsertOperationRecurse(node!)
-            print(protoForm)
+//            print(protoForm)
             protoOperations.insert(protoForm, at: 0)
             node = node?.prev
         }
@@ -412,7 +417,7 @@ extension CRStorageController {
         node = operation.next
         while node != nil && node!.upstreamQueueOperation {
             let protoForm = protoStringInsertOperationRecurse(node!)
-            print(protoForm)
+//            print(protoForm)
             protoOperations.append(protoForm)
             node = node?.next
         }

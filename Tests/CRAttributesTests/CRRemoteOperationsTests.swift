@@ -82,7 +82,30 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(string.string, a7.textStorage!.string)
         XCTAssertEqual(a7.operationsCount(), 10) // we don't count deletes anymore as delete container is the deleted operation
     }
-    
+
+    func appendToDummyLocalData() {
+        let note = CRObject.allObjects(type: .testNote)[0]
+
+        let count:CRAttributeInt = note.attribute(name: "count", type: .int) as! CRAttributeInt
+        count.value = 4 // operations: 1
+
+        let text:CRAttributeMutableString = note.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
+        XCTAssertEqual(text.textStorage!.string, "ABCdef")
+        
+        text.textStorage!.replaceCharacters(in: NSRange.init(location: 0, length: 3), with: "123") // operations: 6
+        XCTAssertEqual(text.textStorage!.string, "123def")
+
+        text.textStorage!.replaceCharacters(in: NSRange.init(location: 6, length: 0), with: "###") // operations: 3
+        XCTAssertEqual(text.textStorage!.string, "123def###")
+
+        text.textStorage!.replaceCharacters(in: NSRange.init(location: 6, length: 2), with: "") // operations: 2
+        XCTAssertEqual(text.textStorage!.string, "123def#")
+
+        let context = CRStorageController.shared.localContainer.viewContext
+        let textOp:CDAttributeOp = context.object(with: text.operationObjectID!) as! CDAttributeOp
+        checkStringOperationsCorrectness(textOp)
+    }
+
     func countUpstreamOps() -> Int {
         let localContext = CRStorageController.shared.localContainer.viewContext
         let request:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
@@ -90,27 +113,6 @@ class CRRemoteOperationsTests: XCTestCase {
 
         return try! localContext.count(for: request)
     }
-    
-    func appendToDummyLocalData() {
-        let note = CRObject.allObjects(type: .testNote)[0]
-
-        let count:CRAttributeInt = note.attribute(name: "count", type: .int) as! CRAttributeInt
-        count.value = 4
-
-        let text:CRAttributeMutableString = note.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
-        XCTAssertEqual(text.textStorage!.string, "ABCdef")
-        
-        text.textStorage!.replaceCharacters(in: NSRange.init(location: 0, length: 3), with: "123")
-        XCTAssertEqual(text.textStorage!.string, "123def")
-
-        text.textStorage!.replaceCharacters(in: NSRange.init(location: 6, length: 0), with: "###")
-        XCTAssertEqual(text.textStorage!.string, "123def###")
-
-        let context = CRStorageController.shared.localContainer.viewContext
-        let textOp:CDAttributeOp = context.object(with: text.operationObjectID!) as! CDAttributeOp
-        checkStringOperationsCorrectness(textOp)
-    }
-    
     
     func checkStringOperationsCorrectness(_ cdAttribute: CDAttributeOp) {
         var nodesSeen = Set<lamportType>()
@@ -153,7 +155,7 @@ class CRRemoteOperationsTests: XCTestCase {
 //        print(try! forest.jsonString())
   
         XCTAssertEqual(forest.peerID.object(), localPeerID)
-        XCTAssertGreaterThan(try! forest.serializedData().count, 1500)
+        XCTAssertGreaterThan(try! forest.serializedData().count, 1400)
 
         // testing in second run returns empty bundle
         let forests2 = CRStorageController.protoOperationsForests(context: context)
@@ -179,7 +181,7 @@ class CRRemoteOperationsTests: XCTestCase {
         //let's preview
         forests = CRStorageController.protoOperationsForests(context: context)
         XCTAssertEqual(forests.count, 1)
-        XCTAssertEqual(forests[0].trees.count, 5)
+        XCTAssertEqual(forests[0].trees.count, 6)
 //        print(try! forests[0].jsonString())
         context.reset()
 
@@ -223,13 +225,13 @@ class CRRemoteOperationsTests: XCTestCase {
 
         // 2nd batch of operations
         appendToDummyLocalData()
-        XCTAssertEqual(countUpstreamOps(), 9)
+        XCTAssertEqual(countUpstreamOps(), 12)
         CRStorageController.processUpsteamOperationsQueue()
         XCTAssertEqual(countUpstreamOps(), 0)
 
         let localCount2 = opCount()-localCount1
         print("created batch 2: \(localCount2)")
-        XCTAssertEqual(localCount2, 9)
+        XCTAssertEqual(localCount2, 12)
         
         // let's restore the operations in the inverted order to force issues
         let remoteContext = CRStorageController.shared.replicatedContainer.viewContext
