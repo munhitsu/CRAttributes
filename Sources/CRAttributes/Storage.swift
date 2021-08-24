@@ -80,13 +80,19 @@ extension CRStorageController {
                 let containerID = CROperationID(from: tree.containerID)
 //                let parentID = CROperationID(from: tree.parentID)
                 
+                var containerOp:CDAbstractOp?
                 
-                var waitingForContainer = true
                 if containerID.isZero() {
                     // this means independent tree
-                    waitingForContainer = false
+                    containerOp = nil
+                } else {
+                    containerOp = CDAbstractOp.operation(from: containerID, in: localContext)
+                    if containerOp == nil {
+                        containerOp = CDGhostOp(context: localContext, from: containerID)
+                    }
                 }
-                let root = CRStorageController.rootAfterTreeToOperations(context: localContext, tree: tree, container: nil, waitingForContainer: waitingForContainer)
+                
+                let root = CRStorageController.rootAfterTreeToOperations(context: localContext, tree: tree, container: containerOp)
                 try? localContext.save()
                 
                 // let's 1st load it as a branch unless it's self defined as an absolute root

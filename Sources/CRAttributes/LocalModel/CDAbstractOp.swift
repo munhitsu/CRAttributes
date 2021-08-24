@@ -33,16 +33,16 @@ extension CDAbstractOp {
 // MARK: Generated accessors for subOperations
 extension CDAbstractOp {
 
-    @objc(addSubOperationsObject:)
+    @objc(addContainedOperationsObject:)
     @NSManaged public func addToContainedOperations(_ value: CDAbstractOp)
 
-    @objc(removeSubOperationsObject:)
+    @objc(removeContainedOperationsObject:)
     @NSManaged public func removeFromContainedOperations(_ value: CDAbstractOp)
 
-    @objc(addSubOperations:)
+    @objc(addContainedOperations:)
     @NSManaged public func addToContainedOperations(_ values: NSSet)
 
-    @objc(removeSubOperations:)
+    @objc(removeContainedOperations:)
     @NSManaged public func removeFromContainedOperations(_ values: NSSet)
 
 }
@@ -60,6 +60,23 @@ extension CDAbstractOp {
         self.hasTombstone = false
     }
     
+    convenience init(context: NSManagedObjectContext, from: CROperationID) {
+        self.init(context:context)
+        self.lamport = from.lamport
+        self.peerID = from.peerID
+        self.container = nil
+        self.hasTombstone = false
+    }
+
+    convenience init(context: NSManagedObjectContext, from: ProtoOperationID) {
+        self.init(context:context)
+        self.lamport = from.lamport
+        self.peerID = from.peerID.object()
+        self.container = nil
+        self.hasTombstone = false
+    }
+
+
 //    convenience init(context: NSManagedObjectContext, proto:ProtoBaseOperation) {
 //        self.init(context:context)
 //        self.version = proto.version

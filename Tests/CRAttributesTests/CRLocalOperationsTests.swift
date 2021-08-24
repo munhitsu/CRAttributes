@@ -331,7 +331,7 @@ final class CRLocalOperationsTests: XCTestCase {
     }
   
     func testCompareStringPerformanceUpstream() {
-        let operationsLimit = 10000
+        let operationsLimit = 10000 // TODO: bring back to 50K
         
         printTimeElapsedWhenRunningCode(title: "NSMutableAttributedString") {
             let string = NSMutableAttributedString()

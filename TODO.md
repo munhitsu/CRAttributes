@@ -16,6 +16,7 @@
 - [] instrument and optimise
 - [] revert to storing peerID with every message in the protobuf / there might be edge cases when user moves between devices
 - [] migrate upstream amd downstream to the background queue / context
+- [] reverse relation of container makes String Operations slow - eg from 2s for 10K and 12s for 50K it jumps to 10s for 10K and 220s for 50K
 
 
 ## ObjectID can change

@@ -27,8 +27,8 @@ let localModelDescription = CoreDataModelDescription(
                     .attribute(name: "upstreamQueueOperation", type: .booleanAttributeType, defaultValue: true), //TODO: remove default as it's implicit
                 ],
                 relationships: [
-                    .relationship(name: "container", destination: "CDAbstractOp", optional: true, toMany: false, inverse: "containedOperations"),  // insertion point
-                    .relationship(name: "containedOperations", destination: "CDAbstractOp", optional: true, toMany: true, inverse: "container"),  // insertion point
+                    .relationship(name: "container", destination: "CDAbstractOp", optional: true, toMany: false, inverse: "containedOperations"),
+                    .relationship(name: "containedOperations", destination: "CDAbstractOp", optional: true, toMany: true, inverse: "container"), // this one here is expensive, can we get rid of it
                 ],
                 indexes: [
                     .index(name: "lamport", elements: [.property(name: "lamport")]),
