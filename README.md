@@ -121,6 +121,15 @@ Time elapsed for CRTextStorage: 11.415868997573853 s.
 average: 0.073, relative standard deviation: 10.412%, values: [0.094805, 0.073712, 0.070798, 0.069835, 0.069900, 0.068491, 0.069923, 0.068632, 0.069312, 0.069902]
 
 
+## opening 50K
+Result of doing everything in the main context - let's call it a baseline
+But why is loading slower then?
+
+1. Time to convert upstream operations into the string:
+Time elapsed for CRTextStorage: 24.234724044799805 s.
+
+2. Time to rebuild the string from the saved from:
+average: 0.230, relative standard deviation: 1.900%, values: [0.236713, 0.232893, 0.229278, 0.227163, 0.232548, 0.227663, 0.232114, 0.227976, 0.234746, 0.220696]
 
 
 # Tasks

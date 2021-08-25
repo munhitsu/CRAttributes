@@ -1,5 +1,6 @@
 import XCTest
 import CoreData
+import os.signpost
 @testable import CRAttributes
 
 
@@ -41,6 +42,8 @@ let lorem = """
     Cras pellentesque dictum facilisis. Phasellus sed turpis fermentum, tempus magna sit amet, tempus metus. Aenean blandit fringilla dapibus. Nunc quis ex nibh. Integer at velit et ipsum efficitur consectetur sit amet mollis magna. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Vestibulum faucibus pharetra mattis. Suspendisse quis lacinia sem. Duis sed feugiat purus, eu maximus tortor. Donec maximus ex eget molestie.
     """
 
+
+let posLogHandler = OSLog(subsystem: "test.load", category: .pointsOfInterest)
 
 // adding out object type
 extension CRObjectType {
@@ -331,7 +334,7 @@ final class CRLocalOperationsTests: XCTestCase {
     }
   
     func testCompareStringPerformanceUpstream() {
-        let operationsLimit = 10000 // TODO: bring back to 50K
+        let operationsLimit = 50000 // TODO: bring back to 50K
         
         printTimeElapsedWhenRunningCode(title: "NSMutableAttributedString") {
             let string = NSMutableAttributedString()
@@ -366,6 +369,7 @@ final class CRLocalOperationsTests: XCTestCase {
     func testLoadingPerformanceUpstreamOperations() {
         let operationsLimit = 50000
         
+        os_signpost(.begin, log: posLogHandler, name: "CRTextStorage")
         printTimeElapsedWhenRunningCode(title: "CRTextStorage") {
             let noteObject = CRObject(type: .testNote, container: nil)
             let noteAttribute:CRAttributeMutableString = noteObject.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
@@ -373,6 +377,7 @@ final class CRLocalOperationsTests: XCTestCase {
             noteAttribute.textStorage!.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
             noteAttribute.textStorage!.endEditing()
         }
+        os_signpost(.end, log: posLogHandler, name: "CRTextStorage")
         measure {
             let noteObject = CRObject.allObjects(type: .testNote)[0]
             XCTAssertEqual(noteObject.operationObjectID, noteObject.operationObjectID)

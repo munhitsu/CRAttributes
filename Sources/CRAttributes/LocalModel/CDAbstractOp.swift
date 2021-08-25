@@ -19,33 +19,46 @@ extension CDAbstractOp {
         return NSFetchRequest<CDAbstractOp>(entityName: "CDAbstractOp")
     }
 
+//    @nonobjc public static func containedOperationsFetchRequest() -> NSFetchRequest<NSFetchRequestResult> {
+//        let request = NSFetchRequest<NSFetchRequestResult>(entityName: "CDAbstractOp")
+//        request.predicate = NSPredicate(format: "container == $FETCH_SOURCE")
+//        return request
+//    }
+        
     @NSManaged public var version: Int32
     @NSManaged public var lamport: Int64
     @NSManaged public var peerID: UUID
     @NSManaged public var hasTombstone: Bool
     
     @NSManaged public var container: CDAbstractOp?
-    @NSManaged public var containedOperations: NSSet?
+//    @available(*, deprecated, message: "will be removed")
+//    @NSManaged public var containedOperations: NSSet?
 
     @NSManaged public var upstreamQueueOperation: Bool
+
+    @nonobjc public func containedOperations() -> [CDAbstractOp] {
+        let request:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
+        request.predicate = NSPredicate(format: "container == %@", self)
+        return try! self.managedObjectContext?.fetch(request) ?? []
+    }
 }
 
 // MARK: Generated accessors for subOperations
-extension CDAbstractOp {
-
-    @objc(addContainedOperationsObject:)
-    @NSManaged public func addToContainedOperations(_ value: CDAbstractOp)
-
-    @objc(removeContainedOperationsObject:)
-    @NSManaged public func removeFromContainedOperations(_ value: CDAbstractOp)
-
-    @objc(addContainedOperations:)
-    @NSManaged public func addToContainedOperations(_ values: NSSet)
-
-    @objc(removeContainedOperations:)
-    @NSManaged public func removeFromContainedOperations(_ values: NSSet)
-
-}
+//extension CDAbstractOp {
+//
+//    @objc(addContainedOperationsObject:)
+//    @NSManaged public func addToContainedOperations(_ value: CDAbstractOp)
+//
+//    @objc(removeContainedOperationsObject:)
+//    @NSManaged public func removeFromContainedOperations(_ value: CDAbstractOp)
+//
+//    @objc(addContainedOperations:)
+//    @NSManaged public func addToContainedOperations(_ values: NSSet)
+//
+//    @objc(removeContainedOperations:)
+//    @NSManaged public func removeFromContainedOperations(_ values: NSSet)
+//
+//}
 
 extension CDAbstractOp : Identifiable {
 

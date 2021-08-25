@@ -21,8 +21,6 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
-		BB404E6B26D27FD500F1CE4B /* CDGhostOp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB404E6A26D27FD500F1CE4B /* CDGhostOp.swift */; };
-		BB404E6D26D2803500F1CE4B /* CDGhostStringInsertOp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB404E6C26D2803500F1CE4B /* CDGhostStringInsertOp.swift */; };
 		BB7BD5D526C4732500ADEDD4 /* test-mk-editing-trace.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = BB7BD5D426C4732500ADEDD4 /* test-mk-editing-trace.json */; };
 		BBA81EBF26C64F430015981B /* CRRemoteOperationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBA81EBE26C64F430015981B /* CRRemoteOperationsTests.swift */; };
 		BBFF6B3926C9818E005A6182 /* CDLocalModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBFF6B3826C9818E005A6182 /* CDLocalModel.swift */; };
@@ -208,8 +206,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		BB404E6A26D27FD500F1CE4B /* CDGhostOp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDGhostOp.swift; sourceTree = "<group>"; };
-		BB404E6C26D2803500F1CE4B /* CDGhostStringInsertOp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDGhostStringInsertOp.swift; sourceTree = "<group>"; };
 		BB7BD5D426C4732500ADEDD4 /* test-mk-editing-trace.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = "test-mk-editing-trace.json"; path = "Data Assets/test-mk-editing-trace.json"; sourceTree = "<group>"; };
 		BBA81EBD26C5ACE70015981B /* ProtoModel.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = ProtoModel.proto; sourceTree = "<group>"; };
 		BBA81EBE26C64F430015981B /* CRRemoteOperationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRRemoteOperationsTests.swift; sourceTree = "<group>"; };
@@ -452,8 +448,6 @@
 			isa = PBXGroup;
 			children = (
 				BBFF6B3826C9818E005A6182 /* CDLocalModel.swift */,
-				BB404E6A26D27FD500F1CE4B /* CDGhostOp.swift */,
-				BB404E6C26D2803500F1CE4B /* CDGhostStringInsertOp.swift */,
 				OBJ_18 /* CDAbstractOp.swift */,
 				OBJ_19 /* CDAttributeOp.swift */,
 				OBJ_20 /* CDDeleteOp.swift */,
@@ -842,10 +836,8 @@
 			buildActionMask = 0;
 			files = (
 				OBJ_150 /* Storage.swift in Sources */,
-				BB404E6D26D2803500F1CE4B /* CDGhostStringInsertOp.swift in Sources */,
 				OBJ_151 /* CoOpMutableStringOperationDelete.swift in Sources */,
 				BBFF6B3926C9818E005A6182 /* CDLocalModel.swift in Sources */,
-				BB404E6B26D27FD500F1CE4B /* CDGhostOp.swift in Sources */,
 				OBJ_152 /* CoOpMutableStringOperationInsert.swift in Sources */,
 				OBJ_153 /* CRAttributes.swift in Sources */,
 				OBJ_154 /* CRAttributeMutableString.swift in Sources */,

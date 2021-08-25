@@ -69,6 +69,7 @@ extension CRStorageController {
     // TODO: (later) introduce RGA Split and consolidate operations here, this will solve the recursion risk
     
     static func processDownstreamForest(forest cdForestObjectID: NSManagedObjectID) {
+        fatalNotImplemented()
         let remoteContext = CRStorageController.shared.replicatedContainer.viewContext //TODO: move to background
         let localContext = CRStorageController.shared.localContainer.viewContext
 
@@ -88,11 +89,11 @@ extension CRStorageController {
                 } else {
                     containerOp = CDAbstractOp.operation(from: containerID, in: localContext)
                     if containerOp == nil {
-                        containerOp = CDGhostOp(context: localContext, from: containerID)
+                        containerOp = nil
                     }
                 }
                 
-                let root = CRStorageController.rootAfterTreeToOperations(context: localContext, tree: tree, container: containerOp)
+                let root = CRStorageController.rootAfterTreeToOperations(context: localContext, tree: tree, container: containerOp, waitingForContainer: true)
                 try? localContext.save()
                 
                 // let's 1st load it as a branch unless it's self defined as an absolute root
@@ -262,19 +263,19 @@ extension CRStorageController {
         }
 //        print("ObjectOperation \(proto.id.lamport)")
 
-        for operation in operation.containedOperations!.allObjects {
-            if let operation = operation as? CDAbstractOp {
-                if operation.upstreamQueueOperation {
-                    switch operation {
-                    case let op as CDDeleteOp:
-                        proto.deleteOperations.append(protoDeleteOperationRecurse(op))
-                    case let op as CDAttributeOp:
-                        proto.attributeOperations.append(protoAttributeOperationRecurse(op))
-                    case let op as CDObjectOp:
-                        proto.objectOperations.append(protoObjectOperationRecurse(op))
-                    default:
-                        fatalError("unsupported subOperation")
-                    }
+        
+//        assert(operation.containedOperations as! Set<CDAbstractOp> == Set(operation.containedOps()))
+        for operation in operation.containedOperations() {
+            if operation.upstreamQueueOperation {
+                switch operation {
+                case let op as CDDeleteOp:
+                    proto.deleteOperations.append(protoDeleteOperationRecurse(op))
+                case let op as CDAttributeOp:
+                    proto.attributeOperations.append(protoAttributeOperationRecurse(op))
+                case let op as CDObjectOp:
+                    proto.objectOperations.append(protoObjectOperationRecurse(op))
+                default:
+                    fatalError("unsupported subOperation")
                 }
             }
         }
@@ -288,7 +289,7 @@ extension CRStorageController {
             $0.id.lamport = operation.lamport
             $0.id.peerID  = operation.peerID.data
         }
-        assert(operation.container?.containedOperations?.contains(operation) ?? false)
+//        assert(operation.container?.containedOperations?.contains(operation) ?? false)
 //        print("DeleteOperation \(proto.id.lamport)")
 
         operation.upstreamQueueOperation = false
@@ -307,21 +308,20 @@ extension CRStorageController {
 
         var headStringOperation:CDStringInsertOp? = nil
         
-        for operation in operation.containedOperations!.allObjects {
-            if let operation = operation as? CDAbstractOp {
-                if operation.upstreamQueueOperation {
-                    switch operation {
-                    case let op as CDDeleteOp:
-                        proto.deleteOperations.append(protoDeleteOperationRecurse(op))
-                    case let op as CDLWWOp:
-                        proto.lwwOperations.append(protoLWWOperationRecurse(op))
-                    case let op as CDStringInsertOp:
-                        if op.prev == nil { // it will be only a new string in a new attribute in this scenario
-                            headStringOperation = op
-                        }
-                    default:
-                        fatalError("unsupported subOperation")
+//        assert(operation.containedOperations as! Set<CDAbstractOp> == Set(operation.containedOps()))
+        for operation in operation.containedOperations() {
+            if operation.upstreamQueueOperation {
+                switch operation {
+                case let op as CDDeleteOp:
+                    proto.deleteOperations.append(protoDeleteOperationRecurse(op))
+                case let op as CDLWWOp:
+                    proto.lwwOperations.append(protoLWWOperationRecurse(op))
+                case let op as CDStringInsertOp:
+                    if op.prev == nil { // it will be only a new string in a new attribute in this scenario
+                        headStringOperation = op
                     }
+                default:
+                    fatalError("unsupported subOperation")
                 }
             }
         }
@@ -356,15 +356,14 @@ extension CRStorageController {
         }
 //        print("LWWOperation \(proto.id.lamport)")
 
-        for operation in operation.containedOperations!.allObjects {
-            if let operation = operation as? CDAbstractOp {
-                if operation.upstreamQueueOperation {
-                    switch operation {
-                    case let op as CDDeleteOp:
-                        proto.deleteOperations.append(protoDeleteOperationRecurse(op))
-                    default:
-                        fatalError("unsupported subOperation")
-                    }
+//        assert(operation.containedOperations as! Set<CDAbstractOp> == Set(operation.containedOps()))
+        for operation in operation.containedOperations() {
+            if operation.upstreamQueueOperation {
+                switch operation {
+                case let op as CDDeleteOp:
+                    proto.deleteOperations.append(protoDeleteOperationRecurse(op))
+                default:
+                    fatalError("unsupported subOperation")
                 }
             }
         }
@@ -382,16 +381,15 @@ extension CRStorageController {
             $0.parentID.peerID = operation.parent?.peerID.data ?? UUID.zero.data
         }
 //        print("StringInsertOperation \(proto.id.lamport)")
-        assert(operation.upstreamQueueOperation)
-        for operation in operation.containedOperations!.allObjects {
-            if let operation = operation as? CDAbstractOp {
-                if operation.upstreamQueueOperation {
-                    switch operation {
-                    case let op as CDDeleteOp:
-                        proto.deleteOperations.append(protoDeleteOperationRecurse(op))
-                    default:
-                        fatalError("unsupported subOperation")
-                    }
+//        assert(operation.upstreamQueueOperation)
+//        assert(operation.containedOperations as! Set<CDAbstractOp> == Set(operation.containedOps()))
+        for operation in operation.containedOperations() {
+            if operation.upstreamQueueOperation {
+                switch operation {
+                case let op as CDDeleteOp:
+                    proto.deleteOperations.append(protoDeleteOperationRecurse(op))
+                default:
+                    fatalError("unsupported subOperation")
                 }
             }
         }

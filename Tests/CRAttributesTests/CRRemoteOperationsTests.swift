@@ -118,21 +118,19 @@ class CRRemoteOperationsTests: XCTestCase {
         var nodesSeen = Set<lamportType>()
 
         var headStringOperation:CDStringInsertOp? = nil
-        for operation in cdAttribute.containedOperations!.allObjects {
-            if let operation = operation as? CDAbstractOp {
-                if operation.upstreamQueueOperation {
-                    switch operation {
-                    case _ as CDDeleteOp:
-                        print("ignoring Delete")
-                    case let op as CDStringInsertOp:
+        for operation in cdAttribute.containedOperations() {
+            if operation.upstreamQueueOperation {
+                switch operation {
+                case _ as CDDeleteOp:
+                    print("ignoring Delete")
+                case let op as CDStringInsertOp:
 //                        print("op(\(op.lamport))=\(op.contribution) prev(\(String(describing: op.prev?.lamport)))")
-                        if op.prev == nil { // it will be only a new string in a new attribute in this scenario
-                            assert(headStringOperation == nil)
-                            headStringOperation = op
-                        }
-                    default:
-                        fatalError("unsupported subOperation")
+                    if op.prev == nil { // it will be only a new string in a new attribute in this scenario
+                        assert(headStringOperation == nil)
+                        headStringOperation = op
                     }
+                default:
+                    fatalError("unsupported subOperation")
                 }
             }
         }

@@ -7,12 +7,16 @@
 
 import Foundation
 import CoreDataModelDescription
+import CoreData
 
 
 // use case
 // list of all top level folders
 // list of all folders and notes within a folder
 // list of all attributes within a note
+
+
+
 
 let localModelDescription = CoreDataModelDescription(
     entities: [
@@ -26,9 +30,12 @@ let localModelDescription = CoreDataModelDescription(
                     .attribute(name: "hasTombstone", type: .booleanAttributeType),
                     .attribute(name: "upstreamQueueOperation", type: .booleanAttributeType, defaultValue: true), //TODO: remove default as it's implicit
                 ],
+//                fetchedProperties: [
+//                    .fetchedProperty(name: "containedOps", fetchRequest: CDAbstractOp.containedOperationsFetchRequest())
+//                ],
                 relationships: [
-                    .relationship(name: "container", destination: "CDAbstractOp", optional: true, toMany: false, inverse: "containedOperations"),
-                    .relationship(name: "containedOperations", destination: "CDAbstractOp", optional: true, toMany: true, inverse: "container"), // this one here is expensive, can we get rid of it
+                    .relationship(name: "container", destination: "CDAbstractOp", optional: true, toMany: false),
+//                    .relationship(name: "containedOperations", destination: "CDAbstractOp", optional: true, toMany: true, inverse: "container"), //TODO: remove as maintaining this reverse link is expensive - it's only used for serialisation and deserialisation
                 ],
                 indexes: [
                     .index(name: "lamport", elements: [.property(name: "lamport")]),
@@ -90,14 +97,6 @@ let localModelDescription = CoreDataModelDescription(
                     .relationship(name: "next", destination: "CDStringInsertOp", toMany: false, inverse: "prev"),
                     .relationship(name: "prev", destination: "CDStringInsertOp", toMany: false, inverse: "next"),
                 ]
-               ),
-        .entity(name: "CDGhostOp",
-                managedObjectClass: CDGhostOp.self,
-                parentEntity: "CDAbstractOp"
-               ),
-        .entity(name: "CDGhostStringInsertOp",
-                managedObjectClass: CDGhostStringInsertOp.self,
-                parentEntity: "CDStringInsertOp"
                ),
     ]
 )
