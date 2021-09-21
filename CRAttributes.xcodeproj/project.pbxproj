@@ -21,7 +21,10 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		BB0FC2DD26DB9FFB0033FEC3 /* CRAttributedStringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0FC2DC26DB9FFB0033FEC3 /* CRAttributedStringTests.swift */; };
+		BB382A3E26FA6624006B51FC /* CDStringInsertOpProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB382A3D26FA6624006B51FC /* CDStringInsertOpProxy.swift */; };
 		BB7BD5D526C4732500ADEDD4 /* test-mk-editing-trace.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = BB7BD5D426C4732500ADEDD4 /* test-mk-editing-trace.json */; };
+		BB8D7C8326D831F300B4E83E /* RenderedStringReplaceOp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB8D7C8226D831F300B4E83E /* RenderedStringReplaceOp.swift */; };
 		BBA81EBF26C64F430015981B /* CRRemoteOperationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBA81EBE26C64F430015981B /* CRRemoteOperationsTests.swift */; };
 		BBFF6B3926C9818E005A6182 /* CDLocalModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBFF6B3826C9818E005A6182 /* CDLocalModel.swift */; };
 		BBFF6B3B26CA7330005A6182 /* ProtoModel.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBFF6B3A26CA7330005A6182 /* ProtoModel.pb.swift */; };
@@ -206,7 +209,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BB0FC2DC26DB9FFB0033FEC3 /* CRAttributedStringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRAttributedStringTests.swift; sourceTree = "<group>"; };
+		BB382A3D26FA6624006B51FC /* CDStringInsertOpProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDStringInsertOpProxy.swift; sourceTree = "<group>"; };
 		BB7BD5D426C4732500ADEDD4 /* test-mk-editing-trace.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = "test-mk-editing-trace.json"; path = "Data Assets/test-mk-editing-trace.json"; sourceTree = "<group>"; };
+		BB8D7C8226D831F300B4E83E /* RenderedStringReplaceOp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderedStringReplaceOp.swift; sourceTree = "<group>"; };
 		BBA81EBD26C5ACE70015981B /* ProtoModel.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = ProtoModel.proto; sourceTree = "<group>"; };
 		BBA81EBE26C64F430015981B /* CRRemoteOperationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRRemoteOperationsTests.swift; sourceTree = "<group>"; };
 		BBFF6B3826C9818E005A6182 /* CDLocalModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDLocalModel.swift; sourceTree = "<group>"; };
@@ -455,6 +461,8 @@
 				OBJ_22 /* CDObjectOp.swift */,
 				OBJ_25 /* CDStringInsertOp.swift */,
 				OBJ_26 /* RenderedString.swift */,
+				BB8D7C8226D831F300B4E83E /* RenderedStringReplaceOp.swift */,
+				BB382A3D26FA6624006B51FC /* CDStringInsertOpProxy.swift */,
 			);
 			path = LocalModel;
 			sourceTree = "<group>";
@@ -485,6 +493,7 @@
 				BBA81EBE26C64F430015981B /* CRRemoteOperationsTests.swift */,
 				OBJ_34 /* PropagationTests.swift */,
 				OBJ_35 /* XCTestManifests.swift */,
+				BB0FC2DC26DB9FFB0033FEC3 /* CRAttributedStringTests.swift */,
 			);
 			name = CRAttributesTests;
 			path = Tests/CRAttributesTests;
@@ -835,6 +844,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
+				BB8D7C8326D831F300B4E83E /* RenderedStringReplaceOp.swift in Sources */,
 				OBJ_150 /* Storage.swift in Sources */,
 				OBJ_151 /* CoOpMutableStringOperationDelete.swift in Sources */,
 				BBFF6B3926C9818E005A6182 /* CDLocalModel.swift in Sources */,
@@ -846,6 +856,7 @@
 				OBJ_156 /* Lamport.swift in Sources */,
 				OBJ_157 /* CDAbstractOp.swift in Sources */,
 				OBJ_158 /* CDAttributeOp.swift in Sources */,
+				BB382A3E26FA6624006B51FC /* CDStringInsertOpProxy.swift in Sources */,
 				BBFF6B3D26CA7DD4005A6182 /* CDReplicatedModel.swift in Sources */,
 				OBJ_159 /* CDDeleteOp.swift in Sources */,
 				OBJ_160 /* CDLWWOp.swift in Sources */,
@@ -874,6 +885,7 @@
 				OBJ_192 /* CRLocalOperationsTests.swift in Sources */,
 				OBJ_193 /* PropagationTests.swift in Sources */,
 				OBJ_194 /* XCTestManifests.swift in Sources */,
+				BB0FC2DD26DB9FFB0033FEC3 /* CRAttributedStringTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

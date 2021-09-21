@@ -7,6 +7,10 @@
 
 import Foundation
 import CoreData
+import os.signpost
+
+let signpostLogHandler = OSLog(subsystem: "time", category: .pointsOfInterest)
+
 
 public func fatalNotImplemented() {
     fatalError("Not Implemented")
@@ -31,17 +35,21 @@ public func flushAllCoreData(_ container: NSPersistentContainer) {
     }
 }
 
-public func printTimeElapsedWhenRunningCode(title: String = "", operation:() -> Void) {
+public func printTimeElapsedWhenRunningCode(title: StaticString = "", operation:() -> Void) {
+    os_signpost(.begin, log: signpostLogHandler, name: title)
     let startTime = CFAbsoluteTimeGetCurrent()
     operation()
     let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
     print("Time elapsed for \(title): \(timeElapsed) s.")
+    os_signpost(.end, log: signpostLogHandler, name: title)
 }
 
-public func timeElapsedInSecondsWhenRunningCode(operation: () -> Void) -> Double {
+public func timeElapsedInSecondsWhenRunningCode(title: StaticString = "", operation: () -> Void) -> Double {
+    os_signpost(.begin, log: signpostLogHandler, name: title)
     let startTime = CFAbsoluteTimeGetCurrent()
     operation()
     let timeElapsed = CFAbsoluteTimeGetCurrent() - startTime
+    os_signpost(.end, log: signpostLogHandler, name: title)
     return Double(timeElapsed)
 }
 

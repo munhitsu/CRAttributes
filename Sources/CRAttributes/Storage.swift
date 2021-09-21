@@ -9,10 +9,15 @@ import Foundation
 import CoreData
 
 //TODO: follow iwht https://developer.apple.com/documentation/coredata/consuming_relevant_store_changes
-public struct CRStorageController {
+public class CRStorageController {
     
-    static let shared = CRStorageController()
     
+    class func testMode() {
+        CRStorageController.shared = CRStorageController(inMemory: true)
+    }
+    
+    static var shared = CRStorageController()
+
     static var preview: CRStorageController = {
         let result = CRStorageController(inMemory: true)
         //        let viewContext = result.container.viewContext
@@ -31,7 +36,7 @@ public struct CRStorageController {
     let localContainer: NSPersistentContainer
     let replicatedContainer: NSPersistentContainer
     
-    init(inMemory: Bool = true) {
+    init(inMemory: Bool = false) {
         localContainer = NSPersistentContainer(name: "CRLocalModel", managedObjectModel: CRLocalModel)
         replicatedContainer = NSPersistentCloudKitContainer(name: "CRReplicatedModel", managedObjectModel: CRReplicatedModel)
         
@@ -58,9 +63,6 @@ public struct CRStorageController {
         replicatedDescription?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         replicatedDescription?.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
     }
-    
-    
-
 }
 
 

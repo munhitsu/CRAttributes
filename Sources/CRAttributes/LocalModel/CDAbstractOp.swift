@@ -118,7 +118,7 @@ extension CDAbstractOp {
         return try! context.fetch(request)
     }
 
-    static func operation(fromLamport:Int64, fromPeerID:UUID, in context: NSManagedObjectContext) -> CDAbstractOp? {
+    static func operation(fromLamport:lamportType, fromPeerID:UUID, in context: NSManagedObjectContext) -> CDAbstractOp? {
         let request:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
         request.predicate = NSPredicate(format: "lamport = %@ and peerID = %@", argumentArray: [fromLamport, fromPeerID])
         let ops = try? context.fetch(request)

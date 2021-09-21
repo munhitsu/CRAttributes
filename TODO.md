@@ -1,11 +1,18 @@
 # TODO
 
 
+- [] benchmark fetch using objectID vs fetch using OperationID -> write down results / benchmark as separate project maybe
+- [] benchmark - compare flat object with inheritend one
+- [] benchmark fetch on nsmanagedobjectID vs linked list
+- [] ask apple how to optimise further fetching based on the primary key
+
+- [x] add os.signpost to printTimeElapsedWhenRunningCode
+- [] serialise and deserialise attributed string
+
 - [x] record local operations in serialised groups (Forests) for CloudKit sync
-- [] introduce ghost operation
+- [-] introduce ghost operation
 - [] process remote operations (downstream)
 - [] compress OperationPacks
-- [] attributedstring persistence (to speed up note opening)
 - [] coursor for remote editors (as we have O(1) for local but O(n) for remote)
 - [] I think I'm saving to often
 - [x] cleanup package dependencies in the project
@@ -16,7 +23,9 @@
 - [] instrument and optimise
 - [] revert to storing peerID with every message in the protobuf / there might be edge cases when user moves between devices
 - [] migrate upstream amd downstream to the background queue / context
-- [] reverse relation of container makes String Operations slow - eg from 2s for 10K and 12s for 50K it jumps to 10s for 10K and 220s for 50K
+- [x] reverse relation of container makes String Operations slow - eg from 2s for 10K and 12s for 50K it jumps to 10s for 10K and 220s for 50K
+
+- [] context in app vs in test - should we use singleton and with what defaults
 
 
 ## ObjectID can change

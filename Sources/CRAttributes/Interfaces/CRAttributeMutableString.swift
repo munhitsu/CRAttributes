@@ -38,6 +38,8 @@ class CRAttributeMutableString: CRAttribute {
 
 extension NSAttributedString.Key {
     static let opObjectID = NSAttributedString.Key("CRObjectID")
+    static let opLamport = NSAttributedString.Key("CRLamport")
+    static let opPeerID = NSAttributedString.Key("CRPeerID")
 }
  
 
@@ -61,6 +63,17 @@ class CRTextStorage: NSTextStorage {
         self.attributeObjectID = attributeOp.objectID
         attributedString = NSMutableAttributedString(string:"")
         super.init()
+        
+        //TODO: deserialise string
+        //process the local queue
+
+        //start background queue doing:
+        //- merge downstream linked lists (steating op log)
+        
+        //start another background queue:
+        //- serialising the String and removing operations from op log
+        
+        
         prebuildAttributedStringFromOperations(attributeOp: attributeOp)
     }
 
@@ -140,24 +153,24 @@ class CRTextStorage: NSTextStorage {
         // we could listen to: didProcessEditingNotification
     }
     
-    func firstOp(context: NSManagedObjectContext, attributeOp: CDAttributeOp) -> CDStringInsertOp? {
+    private func firstOp(context: NSManagedObjectContext, attributeOp: CDAttributeOp) -> CDStringInsertOp? {
         let request:NSFetchRequest<CDStringInsertOp> = CDStringInsertOp.fetchRequest()
         request.returnsObjectsAsFaults = false
         request.predicate = NSPredicate(format: "container == %@ and prev == nil", attributeOp)
         return try? context.fetch(request).first
     }
     
-    func operationForPosition(_ position: Int) -> CDStringInsertOp {
+    private func operationForPosition(_ position: Int) -> CDStringInsertOp {
         let objectID:NSManagedObjectID = attributedString!.attribute(.opObjectID, at: position, effectiveRange: nil) as! NSManagedObjectID
         return CRStorageController.shared.localContainer.viewContext.object(with: objectID) as! CDStringInsertOp
     }
 
-//    unused
+//    unused 
 //    func setOperationForPosition(_ operation: CoOpStringInsert, _ position: Int) {
 //        attributedString.setAttributes([.opObjectID: operation.objectID], range: NSRange(location: position, length: 1))
 //    }
     
-    func markDeleted(_ operation: CDAbstractOp) {
+    private func markDeleted(_ operation: CDAbstractOp) {
         let context = CRStorageController.shared.localContainer.viewContext
         let _ = CDDeleteOp(context: context, container: operation)
         operation.hasTombstone = true
@@ -172,7 +185,7 @@ class CRTextStorage: NSTextStorage {
 //        endEditing()
     }
 
-    func prebuildAttributedStringFromOperations(attributeOp: CDAttributeOp) {
+    private func prebuildAttributedStringFromOperations(attributeOp: CDAttributeOp) {
         let context = CRStorageController.shared.localContainer.viewContext
 
         // let's prefetch
@@ -200,6 +213,9 @@ class CRTextStorage: NSTextStorage {
             node = node!.next
         }
     }
+    
+    
+    
 }
 
 

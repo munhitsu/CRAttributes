@@ -132,9 +132,41 @@ Time elapsed for CRTextStorage: 24.234724044799805 s.
 average: 0.230, relative standard deviation: 1.900%, values: [0.236713, 0.232893, 0.229278, 0.227163, 0.232548, 0.227663, 0.232114, 0.227976, 0.234746, 0.220696]
 
 
+
+
+rTree index on lamport only:
+Time elapsed for fetchFromOpID: 5.698631048202515 s.
+Time elapsed for fetchFromOpID: 5.666351914405823 s.
+
+binary index on lamport only:
+Time elapsed for fetchFromOpID: 5.68967604637146 s.
+Time elapsed for fetchFromOpID: 5.6395909786224365 s.
+
+
+
+
+# results with storing at the drive
+Test Case '-[CRAttributesTests.CRAttributedStringTests testFetchFromSortedList]' started.
+Time elapsed for buildStrWithObjID: 1123.0154089927673 s.
+Time elapsed for fetchFromObjID: 0.4828900098800659 s.
+Time elapsed for fetchFromObjID: 0.5006580352783203 s.
+50170
+Time elapsed for fetchFromSortedList: 0.127640962600708 s.
+50170
+Time elapsed for fetchFromSortedList: 0.12289893627166748 s.
+
+
+When restoring from the cold sqlite (new test run)
+Test Case '-[CRAttributesTests.CRAttributedStringTests testPrototype]' started.
+50170
+Time elapsed for fetchFromSortedList: 0.17053508758544922 s.
+50170
+Time elapsed for fetchFromSortedList: 0.11431002616882324 s.
+
 # Tasks
 rebuilding model
 ```
 cd Sources/CRAttributes/ReplicatedModel
 protoc --swift_out=. ProtoModel.proto
 ```
+

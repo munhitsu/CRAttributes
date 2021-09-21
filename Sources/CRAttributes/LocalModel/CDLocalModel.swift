@@ -85,6 +85,19 @@ let localModelDescription = CoreDataModelDescription(
                     .attribute(name: "string", type: .binaryDataAttributeType)
                 ]
                ),
+        //RenderedStringDownstreamOperations is a fetch
+        .entity(name: "RenderedStringReplaceOp",
+                managedObjectClass: RenderedStringReplaceOp.self,
+                attributes: [
+                    .attribute(name: "lamport", type: .integer64AttributeType),  // newly generated lamport for this operation
+                    .attribute(name: "position", type: .integer64AttributeType), // replacement point
+                    .attribute(name: "length", type: .integer64AttributeType),   // replaced characters
+                    .attribute(name: "contribution", type: .stringAttributeType) // data consolidated from all operations
+                ],
+                relationships: [
+                    .relationship(name: "stringOperations", destination: "CDAbstractOp", optional: false, toMany: true)
+                ]
+               ),
         .entity(name: "CDStringInsertOp",
                 managedObjectClass: CDStringInsertOp.self,
                 parentEntity: "CDAbstractOp",
