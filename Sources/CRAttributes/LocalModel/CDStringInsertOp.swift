@@ -21,6 +21,7 @@ extension CDStringInsertOp {
     }
 
     @NSManaged public var contribution: String
+    @NSManaged public var offset: Int64
     @NSManaged public var parent: CDStringInsertOp?
     @NSManaged public var childOperations: NSSet?
 
@@ -49,19 +50,20 @@ extension CDAttributeOp {
 
 
 extension CDStringInsertOp {
-    convenience init(context: NSManagedObjectContext, parent: CDStringInsertOp?, container: CDAttributeOp?, contribution: String) {
+    convenience init(context: NSManagedObjectContext, parent: CDStringInsertOp?, container: CDAttributeOp?, contribution: String, offset: Int64 = 0) {
         self.init(context:context, container: container)
         self.contribution = contribution
+        self.offset = offset
         self.parent = parent
     }
-    convenience init(context: NSManagedObjectContext, parent: CDStringInsertOp?, container: CDAttributeOp?, contribution: unichar) {
-        self.init(context:context, container: container)
-        var uc = contribution
-        self.contribution = NSString(characters: &uc, length: 1) as String //TODO: migrate to init(utf16CodeUnits: UnsafePointer<unichar>, count: Int)
-        self.parent = parent
-    }
+//    convenience init(context: NSManagedObjectContext, parent: CDStringInsertOp?, container: CDAttributeOp?, contribution: unichar) {
+//        self.init(context:context, container: container)
+//        var uc = contribution
+//        self.contribution = NSString(characters: &uc, length: 1) as String //TODO: migrate to init(utf16CodeUnits: UnsafePointer<unichar>, count: Int)
+//        self.parent = parent
+//    }
 
-    convenience init(context: NSManagedObjectContext, from protoForm: ProtoStringInsertOperation, container: CDAbstractOp?, waitingForContainer: Bool=false) {
+    convenience init(context: NSManagedObjectContext, from protoForm: ProtoStringInsertOperation, container: CDAbstractOp?) {
         print("From protobuf StringInsertOp(\(protoForm.id.lamport))")
         self.init(context: context)
         self.version = protoForm.version
@@ -79,11 +81,11 @@ extension CDStringInsertOp {
         
     }
     
-    static func restoreLinkedList(context: NSManagedObjectContext, from: [ProtoStringInsertOperation], container: CDAttributeOp?, waitingForContainer: Bool=false) -> CDStringInsertOp {
+    static func restoreLinkedList(context: NSManagedObjectContext, from: [ProtoStringInsertOperation], container: CDAttributeOp?) -> CDStringInsertOp {
         var cdOperations:[CDStringInsertOp] = []
         var prevOp:CDStringInsertOp? = nil
         for protoOp in from {
-            let op = CDStringInsertOp(context: context, from: protoOp, container: container, waitingForContainer: waitingForContainer)
+            let op = CDStringInsertOp(context: context, from: protoOp, container: container)
             cdOperations.append(op)
             op.prev = prevOp
             prevOp?.next = op
@@ -92,6 +94,14 @@ extension CDStringInsertOp {
         return cdOperations[0]
     }
 
+    func stringAddress() -> CRStringAddress {
+        //TODO: cache me
+        return CRStringAddress(lamport: self.lamport, peerID: self.peerID, offset: self.offset)
+    }
+    
+    func opProxy() -> CDStringInsertOpProxy {
+        return CDStringInsertOpProxy(context: managedObjectContext!, object: self)
+    }
 //    func protoOperation() -> ProtoStringInsertOperation {
 //        return ProtoStringInsertOperation.with {
 //            $0.base = super.protoOperation()

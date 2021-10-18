@@ -36,32 +36,41 @@ class CRAttributeMutableString: CRAttribute {
 }
 
 
-extension NSAttributedString.Key {
-    static let opObjectID = NSAttributedString.Key("CRObjectID")
-    static let opLamport = NSAttributedString.Key("CRLamport")
-    static let opPeerID = NSAttributedString.Key("CRPeerID")
-}
+//extension NSAttributedString.Key {
+//    static let opObjectID = NSAttributedString.Key("CRObjectID")
+//    static let opProxy = NSAttributedString.Key("CROpProxy")
+//    static let opLamport = NSAttributedString.Key("CRLamport")
+//    static let opPeerID = NSAttributedString.Key("CRPeerID")
+//}
+
+
+let stringOptimiseQueueLengthMax = 100
  
 
+
+/**
+ not thread safe - purely for use from the ViewContext
+ */
 class CRTextStorage: NSTextStorage {
 //    let container: CRObject
 //    let attributeName: String
-    var attributeObjectID: NSManagedObjectID
-    var attributedString: NSMutableAttributedString? = nil
-    // TODO: try later to use the self=NSTextStorage internal storage
-
-//    override init() {
-////        self.container = container
-////        self.attributeName = attributeName
-//        attributedString = NSMutableAttributedString(string:"")
-//        attributeOp = nil
-//        super.init()
-//    }
+    var attributeOp: CDAttributeOp
+    var attributedString: NSMutableAttributedString = NSMutableAttributedString(string:"")
+    var addressesArray: [CRStringAddress] = []
     
-    //Execute within context.perform
+    var stringOptimiseCountDown = stringOptimiseQueueLengthMax
+    
+    var knownOperationForAddress: [CRStringAddress:CDStringInsertOp] = [:]
+    var context: NSManagedObjectContext
+    
+    
+    // TODO: try later to use the self=NSTextStorage internal storage
+    
+    //Execute within context.perform of viewContext
     init(attributeOp: CDAttributeOp) {
-        self.attributeObjectID = attributeOp.objectID
-        attributedString = NSMutableAttributedString(string:"")
+        self.attributeOp = attributeOp
+        context = CRStorageController.shared.localContainer.viewContext
+//        attributedString = NSMutableAttributedString(string:"")
         super.init()
         
         //TODO: deserialise string
@@ -74,13 +83,14 @@ class CRTextStorage: NSTextStorage {
         //- serialising the String and removing operations from op log
         
         
-        prebuildAttributedStringFromOperations(attributeOp: attributeOp)
+        prebuildStringBundleFromRenderedString(attributeOp: attributeOp)
+//        prebuildAttributedStringFromOperations(attributeOp: attributeOp)
     }
 
     required init?(coder aDecoder: NSCoder) {
         fatalNotImplemented()
-        attributedString = NSMutableAttributedString(string:"")
-        attributeObjectID = NSManagedObjectID()
+        context = CRStorageController.shared.localContainer.viewContext
+        attributeOp = CDAttributeOp()
         super.init(coder: aDecoder)
     }
 
@@ -88,72 +98,131 @@ class CRTextStorage: NSTextStorage {
     // source https://developer.apple.com/documentation/foundation/nsattributedstring/1412616-string
     public override var string: String {
         get {
-            return attributedString?.string ?? ""
+            return attributedString.string
         }
     }
 
     public override func attributes(at location: Int, effectiveRange range: NSRangePointer?) -> [NSAttributedString.Key : Any] {
-        return attributedString?.attributes(at: location, effectiveRange: range) ?? [:]
+        return attributedString.attributes(at: location, effectiveRange: range)
     }
 
-    public override func replaceCharacters(in range: NSRange, with str: String) {
-        let context = CRStorageController.shared.localContainer.viewContext
-        let attributeOp:CDAttributeOp = (context.object(with: attributeObjectID) as? CDAttributeOp)!
+    public override func replaceCharacters(in range: NSRange, with strContent: String) {
         beginEditing()
         //TODO: - we may need a hash to track deleted operations
 
 
-        
-        // identify the prev and next for the insertion point (link to deleted operations)
-        
-        let insertHeadOp:CDStringInsertOp?
-        let insertTailOp:CDStringInsertOp?
-        
-        if range.location == 0 {
-            insertHeadOp = nil
-            insertTailOp = firstOp(context: context, attributeOp: attributeOp)
-        } else {
-            insertHeadOp = operationForPosition(range.location - 1)
-            insertTailOp = insertHeadOp?.next
-        }
-        
-        // deleting operations
-        for position in range.location..<(range.location + range.length) {
-            let op = operationForPosition(position)
-            markDeleted(op)
-        }
+        // TODO: delete operations in the range
+        // TODO: - save once every 60 objects
 
         // create a string to insert with all linked operatations
-        let strAttributed = NSMutableAttributedString(string: str)
-        
-        var prevOp = insertHeadOp
-        for position in 0..<strAttributed.length {
-            let newOp:CDStringInsertOp = CDStringInsertOp(context: context, parent: prevOp, container: attributeOp, contribution: strAttributed.mutableString.character(at: position))
-            prevOp?.next = newOp
-            newOp.prev = prevOp
-            try! context.save() // we need to save to obtain the objectID
-            strAttributed.setAttributes([.opObjectID: newOp.objectID], range: NSRange(location: position, length: 1))
-            prevOp = newOp
-        }
-        let lastOp = prevOp
-        
-        attributedString!.replaceCharacters(in: range, with: strAttributed)
+        var strAddresses: [CRStringAddress] = [] //TODO: - prealocate the right size / maybe us map?
+                
 
-        lastOp?.next = insertTailOp
-        insertTailOp?.prev = lastOp
-        
+        // create insert operation
+        let newOp:CDStringInsertOp = CDStringInsertOp(context: context, parent: nil, container: attributeOp, contribution: strContent)
+        let opAddress = newOp.stringAddress()
+        var charAddress = opAddress
+        // TODO: link the operation in linked list and with parent
         try! context.save()
+        
+        for (index, _ ) in strContent.enumerated() {
+            charAddress.offset = opAddress.offset + Int64(index)
+            strAddresses.append(charAddress)
+        }
+        
+        _ = CDRenderedStringOp(context: context, containerOp: attributeOp, in: range, operationString: strContent, operationAddresses: strAddresses)
+        try! context.save() // TODO: - make it save once a 60 objects
+        considerSnapshotingStringBundle()
 
         edited(.editedCharacters,
                range: range,
-               changeInLength: (str as NSString).length - range.length)
+               changeInLength: (strContent as NSString).length - range.length)
         endEditing()
         
         // TODO: how to fire save() on the last endEditing? do we have to?
-        // we could listen to: didProcessEditingNotification
+        // maybe we could listen to: didProcessEditingNotification
     }
     
+  
+    // each setAttributes shall be a CRDT operation with range mapped to CRDT address space
+    public override func setAttributes(_ attrs: [NSAttributedString.Key : Any]?, range: NSRange) {
+        //TODO: each attribute set/delete will be an operation (TBD about the parent ID, I think it's string insert one except for deleted operations
+//        beginEditing()
+//        attributedString.setAttributes(attrs, range: range)
+//        edited(.editedAttributes, range: range, changeInLength: 0)
+//        endEditing()
+    }
+
+    
+    private func prebuildStringBundleFromRenderedString(attributeOp: CDAttributeOp) {
+        let context = CRStorageController.shared.localContainer.viewContext
+        var tempString:String? = nil
+        (tempString, addressesArray) = CDRenderedStringOp.stringBundleFor(context: context, container: attributeOp)
+        self.attributedString = NSMutableAttributedString(string: tempString!)
+    }
+    
+    /**
+     getsLamport synchronously on the main thread
+     saves string bundle in background
+     will only execute once stringOptimiseQueueLengthMax
+     */
+    func considerSnapshotingStringBundle() {
+        stringOptimiseCountDown -= 1
+        if stringOptimiseCountDown != 0 {
+            return
+        }
+        let lamport = getLamport()
+        stringOptimiseCountDown = stringOptimiseQueueLengthMax
+
+        //TODO: should it be context per save?
+        let context = CRStorageController.shared.localContainer.newBackgroundContext()
+
+        let attributeObjectID = self.attributeOp.objectID
+        let stringSnapshot = attributedString.string
+        let addressesSnapshot = addressesArray
+        context.perform {
+            let attributeOp:CDAttributeOp = (context.object(with: attributeObjectID) as? CDAttributeOp)!
+            _ = CDRenderedStringOp(context: context, containerOp: attributeOp, lamport: lamport, stringSnapshot: stringSnapshot, addressesSnapshot: addressesSnapshot)
+            try! context.save()
+        }
+    }
+    
+    
+    // MARK: - rebuild me
+    
+//    private func prebuildAttributedStringFromOperations(attributeOp: CDAttributeOp) {
+//        let context = CRStorageController.shared.localContainer.viewContext
+////        fatalNotImplemented() //TODO - now mix the rendered string snapshots and remote operations
+//
+//        // let's prefetch
+//        // there is no need to prefetch delete operations as we have the hasTombstone attribute
+//        var request:NSFetchRequest<CDStringInsertOp> = CDStringInsertOp.fetchRequest()
+//        request.returnsObjectsAsFaults = false
+//        request.predicate = NSPredicate(format: "container == %@", attributeOp)
+//        let _ = try! context.fetch(request)
+//
+//        // let's get the first operation
+//        request = CDStringInsertOp.fetchRequest()
+//        request.returnsObjectsAsFaults = false
+//        request.predicate = NSPredicate(format: "container == %@ and prev == nil", attributeOp)
+//        let head:CDStringInsertOp? = try? context.fetch(request).first
+//
+//        // build the attributedString
+//        attributedString = NSMutableAttributedString(string:"")
+//        var node:CDStringInsertOp? = head
+//        while node != nil {
+//            if node!.hasTombstone == false {
+//                let contribution = NSMutableAttributedString(string:node!.contribution)
+//                contribution.setAttributes([.opProxy: node!.opProxy()], range: NSRange(location: 0, length: 1))
+//                attributedString!.append(contribution)
+//            }
+//            node = node!.next
+//        }
+//    }
+    
+    
     private func firstOp(context: NSManagedObjectContext, attributeOp: CDAttributeOp) -> CDStringInsertOp? {
+        // TODO: - replace with address to operation
         let request:NSFetchRequest<CDStringInsertOp> = CDStringInsertOp.fetchRequest()
         request.returnsObjectsAsFaults = false
         request.predicate = NSPredicate(format: "container == %@ and prev == nil", attributeOp)
@@ -161,59 +230,35 @@ class CRTextStorage: NSTextStorage {
     }
     
     private func operationForPosition(_ position: Int) -> CDStringInsertOp {
-        let objectID:NSManagedObjectID = attributedString!.attribute(.opObjectID, at: position, effectiveRange: nil) as! NSManagedObjectID
-        return CRStorageController.shared.localContainer.viewContext.object(with: objectID) as! CDStringInsertOp
+        let opAddress = addressesArray[position]
+        return operationForAddress(opAddress)
     }
+    
+    private func operationForAddress(_ address: CRStringAddress) -> CDStringInsertOp {
+        fatalNotImplemented()
+        var masterOpAddress = address
+        masterOpAddress.offset = 0
+        
+        // how do we preload the dict, and when?
+//        masterOp =
+        
+        
+//        let opProxy:CDStringInsertOpProxy = attributedString!.attribute(.opProxy, at: 0  , effectiveRange: nil) as! CDStringInsertOpProxy
+        return CDStringInsertOp()
 
-//    unused 
+    }
+    
+    
+
+//    unused
 //    func setOperationForPosition(_ operation: CoOpStringInsert, _ position: Int) {
 //        attributedString.setAttributes([.opObjectID: operation.objectID], range: NSRange(location: position, length: 1))
 //    }
     
     private func markDeleted(_ operation: CDAbstractOp) {
-        let context = CRStorageController.shared.localContainer.viewContext
         let _ = CDDeleteOp(context: context, container: operation)
         operation.hasTombstone = true
     }
-    
-    
-    // each setAttributes shall be a CRDT operation with range mapped to CRDT address space
-    public override func setAttributes(_ attrs: [NSAttributedString.Key : Any]?, range: NSRange) {
-//        beginEditing()
-//        attributedString.setAttributes(attrs, range: range)
-//        edited(.editedAttributes, range: range, changeInLength: 0)
-//        endEditing()
-    }
-
-    private func prebuildAttributedStringFromOperations(attributeOp: CDAttributeOp) {
-        let context = CRStorageController.shared.localContainer.viewContext
-
-        // let's prefetch
-        // there is no need to prefetch delete operations as we have the hasTombstone attribute
-        var request:NSFetchRequest<CDStringInsertOp> = CDStringInsertOp.fetchRequest()
-        request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "container == %@", attributeOp)
-        let _ = try! context.fetch(request)
-        
-        // let's get the first operation
-        request = CDStringInsertOp.fetchRequest()
-        request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "container == %@ and prev == nil", attributeOp)
-        let head:CDStringInsertOp? = try? context.fetch(request).first
-        
-        // build the attributedString
-        attributedString = NSMutableAttributedString("")
-        var node:CDStringInsertOp? = head
-        while node != nil {
-            if node!.hasTombstone == false {
-                let contribution = NSMutableAttributedString(string:node!.contribution)
-                contribution.setAttributes([.opObjectID: node!.objectID], range: NSRange(location: 0, length: 1))
-                attributedString!.append(contribution)
-            }
-            node = node!.next
-        }
-    }
-    
     
     
 }

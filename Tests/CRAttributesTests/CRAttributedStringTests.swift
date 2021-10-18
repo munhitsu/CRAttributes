@@ -158,7 +158,7 @@ class CRAttributedStringTests: XCTestCase {
         printTimeElapsedWhenRunningCode(title: "fetchFromOpID") {
             for position in 0..<(strWithOpID?.string.count ?? -1) {
                 let lamport = strWithOpID!.attribute(.opLamport, at: position, effectiveRange: nil) as! lamportType
-                let peerID = strWithOpID!.attribute(.opPeerID, at: position, effectiveRange: nil) as! UUID
+//                let peerID = strWithOpID!.attribute(.opPeerID, at: position, effectiveRange: nil) as! UUID
                 let strOp:CDStringInsertOp = fetchOperation(fromLamport: lamport, in: context!) as! CDStringInsertOp
                 _ = strOp.contribution
 //                let op:CDStringInsertOp = CDAbstractOp.operation(fromLamport: lamport, fromPeerID: peerID, in: context) as! CDStringInsertOp

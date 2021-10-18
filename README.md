@@ -163,10 +163,64 @@ Time elapsed for fetchFromSortedList: 0.17053508758544922 s.
 50170
 Time elapsed for fetchFromSortedList: 0.11431002616882324 s.
 
+
+
+# adding rendered string
+
+## before:
+/Users/munhitsu/hack-memory/CRAttributes/Tests/CRAttributesTests/CRLocalOperationsTests.swift:428: Test Case '-[CRAttributesTests.CRLocalOperationsTests testLoadingPerformanceUpstreamOperations]' measured [Time, seconds] average: 0.177, relative standard deviation: 18.885%, values: [0.234950, 0.164570, 0.216153, 0.151576, 0.159007, 0.161176, 0.231860, 0.151317, 0.151783, 0.151456], performanceMetricID:com.apple.XCTPerformanceMetric_WallClockTime, baselineName: "", baselineAverage: , polarity: prefers smaller, maxPercentRegression: 10.000%, maxPercentRelativeStandardDeviation: 10.000%, maxRegression: 0.100, maxStandardDeviation: 0.100
+
+## after:
+
+
+
+
+
+
+
+
+
+# SQL debug
+## slow SQL queries 
+
+attributedStringFor()
+CoreData: sql: SELECT 0, t0.Z_PK, t0.Z_OPT, t0.ZCONTRIBUTIONRAW, t0.ZISSNAPSHOT, t0.ZLAMPORT, t0.ZLENGTH, t0.ZLOCATION, t0.ZCONTAINER FROM ZCDRENDEREDSTRINGOP t0 WHERE ( t0.ZCONTAINER = ? AND  t0.ZISSNAPSHOT = ?) ORDER BY t0.ZLAMPORT DESC LIMIT 1
+CoreData: annotation: sql connection fetch time: 0.0183s
+CoreData: annotation: total fetch execution time: 0.0187s for 1 rows.
+lamport: 100003
+CoreData: sql: SELECT 0, t0.Z_PK, t0.Z_OPT, t0.ZCONTRIBUTIONRAW, t0.ZISSNAPSHOT, t0.ZLAMPORT, t0.ZLENGTH, t0.ZLOCATION, t0.ZCONTAINER FROM ZCDRENDEREDSTRINGOP t0 WHERE ( t0.ZCONTAINER = ? AND  t0.ZLAMPORT > ?) ORDER BY t0.ZLAMPORT
+CoreData: annotation: sql connection fetch time: 0.0435s
+CoreData: annotation: total fetch execution time: 0.0436s for 0 rows.
+operations: 0
+
+
+## after removing reference in where
+attributedStringFor() - start
+CoreData: sql: SELECT 0, t0.Z_PK, t0.Z_OPT, t0.ZCONTRIBUTIONRAW, t0.ZISSNAPSHOT, t0.ZLAMPORT, t0.ZLENGTH, t0.ZLOCATION, t0.ZCONTAINER FROM ZCDRENDEREDSTRINGOP t0 WHERE  t0.ZISSNAPSHOT = ? ORDER BY t0.ZLAMPORT DESC LIMIT 1
+CoreData: annotation: sql connection fetch time: 0.0036s
+CoreData: annotation: total fetch execution time: 0.0040s for 1 rows.
+lamport: 100003
+CoreData: sql: SELECT 0, t0.Z_PK, t0.Z_OPT, t0.ZCONTRIBUTIONRAW, t0.ZISSNAPSHOT, t0.ZLAMPORT, t0.ZLENGTH, t0.ZLOCATION, t0.ZCONTAINER FROM ZCDRENDEREDSTRINGOP t0 WHERE  t0.ZLAMPORT > ? ORDER BY t0.ZLAMPORT
+CoreData: annotation: sql connection fetch time: 0.0001s
+CoreData: annotation: total fetch execution time: 0.0002s for 0 rows.
+operations: 0
+attributedStringFor() - done
+
+
+
+
 # Tasks
 rebuilding model
 ```
 cd Sources/CRAttributes/ReplicatedModel
 protoc --swift_out=. ProtoModel.proto
 ```
+
+
+
+
+# patch
+                propertyNameToProperty[relationshipDescription.name] = relationship
+                entityNameToPropertyNameToProperty[entityDescription.name]![relationshipDescription.name] = relationship
+
 

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreData
 
 /**
  a form to aid serialisaiton within NSMutableAttributedString
@@ -15,7 +16,7 @@ class CDStringInsertOpProxy: NSObject, NSCoding {
     var context:NSManagedObjectContext
     private var _objectURL:URL?
     private var _objectID:NSManagedObjectID?
-    private var _object:BeOperation? = nil
+    private var _object:CDStringInsertOp? = nil
 
     // MARK: - computed properties
 
@@ -34,7 +35,7 @@ class CDStringInsertOpProxy: NSObject, NSCoding {
         }
     }
     
-    var object:BeOperation {
+    var object:CDStringInsertOp {
         set {
             _object = newValue
         }
@@ -43,10 +44,10 @@ class CDStringInsertOpProxy: NSObject, NSCoding {
                 return _object!
             } else {
                 if _objectID != nil {
-                    return (context.object(with: _objectID!) as? BeOperation)!
+                    return (context.object(with: _objectID!) as? CDStringInsertOp)!
                 } else {
                     _objectID = (context.persistentStoreCoordinator?.managedObjectID(forURIRepresentation: _objectURL!))!
-                    return (context.object(with: _objectID!) as? BeOperation)!
+                    return (context.object(with: _objectID!) as? CDStringInsertOp)!
                 }
             }
         }
@@ -70,27 +71,27 @@ class CDStringInsertOpProxy: NSObject, NSCoding {
         self.context = context
     }
 
-    convenience init(context:NSManagedObjectContext, operation:NSManagedObjectID) {
+    convenience init(context:NSManagedObjectContext, object:NSManagedObjectID) {
         self.init(context: context)
-        self.objectID = operation
+        self.objectID = object
     }
 
-    convenience init(context:NSManagedObjectContext, operation:BeOperation) {
+    convenience init(context:NSManagedObjectContext, object:CDStringInsertOp) {
         self.init(context: context)
-        self.operation = operation
+        self.object = object
     }
 
-    convenience init(context:NSManagedObjectContext, operation:URL) {
+    convenience init(context:NSManagedObjectContext, object:URL) {
         self.init(context: context)
-        self.objectURL = operation
+        self.objectURL = object
     }
 
     // MARK: - NSCoding
     
     required convenience init?(coder: NSCoder) {
-        self.init(context: StorageController.shared.container.viewContext)
+        self.init(context: CRStorageController.shared.localContainer.viewContext)
 
-        context = StorageController.shared.container.viewContext // TODO: I'm not too comfortable - too hardcoded and we will want to process AttributedString in a background task
+        context = CRStorageController.shared.localContainer.viewContext // TODO: I'm not too comfortable - too hardcoded and we will want to process AttributedString in a background task
         // but how else can I pass argument to a deserialisaiton form coder
         if let objectURL = coder.decodeObject(forKey: "objectURL") as? URL {
             self.objectURL = objectURL

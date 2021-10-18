@@ -95,8 +95,8 @@ extension CRStorageController {
                     }
                 }
                 
-                let root = CRStorageController.rootAfterTreeToOperations(context: localContext, tree: tree, container: containerOp, waitingForContainer: true)
-                try? localContext.save()
+//                let root = CRStorageController.rootAfterTreeToOperations(context: localContext, tree: tree, container: containerOp, waitingForContainer: true)
+//                try? localContext.save()
                 
                 // let's 1st load it as a branch unless it's self defined as an absolute root
                 
@@ -131,15 +131,15 @@ extension CRStorageController {
             }
             
             // let's pick up all the branches and try to link them
-            let request:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
-            request.predicate = NSPredicate(format: "waitingForContainer == true")
-            let branches:[CDAbstractOp]? = try? localContext.fetch(request)
-            for branchRoot in branches ?? [] {
-//                if let containerOp = CDAbstractOp.operation(fromLamport: branchRoot.containerLamport, fromPeerID: branchRoot.containerPeerID, in: localContext) {
-//                    branchRoot.container = containerOp
-//                    // maybe we want to perform a funciton on the operation to perform linking
-//                }
-            }
+//            let request:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
+//            request.predicate = NSPredicate(format: "waitingForContainer == true")
+//            let branches:[CDAbstractOp]? = try? localContext.fetch(request)
+//            for branchRoot in branches ?? [] {
+////                if let containerOp = CDAbstractOp.operation(fromLamport: branchRoot.containerLamport, fromPeerID: branchRoot.containerPeerID, in: localContext) {
+////                    branchRoot.container = containerOp
+////                    // maybe we want to perform a funciton on the operation to perform linking
+////                }
+//            }
             try? localContext.save()
         }
     }
@@ -163,7 +163,7 @@ extension CRStorageController {
             root = CDLWWOp(context: context, from: protoTree.lwwOperation, container: container, waitingForContainer: waitingForContainer)
             print("Restored LWWOp(\(root!.lamport)")
         case .some(.stringInsertOperations):
-            root = CDStringInsertOp.restoreLinkedList(context: context, from: protoTree.stringInsertOperations.stringInsertOperations, container: container as? CDAttributeOp, waitingForContainer: waitingForContainer)
+            root = CDStringInsertOp.restoreLinkedList(context: context, from: protoTree.stringInsertOperations.stringInsertOperations, container: container as? CDAttributeOp)
             print("Ignoring StringInsertOp(\(root!.lamport)")
         case .none:
             fatalNotImplemented()

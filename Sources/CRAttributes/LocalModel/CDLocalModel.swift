@@ -62,6 +62,10 @@ let localModelDescription = CoreDataModelDescription(
                     .attribute(name: "name", type: .stringAttributeType, defaultValue: "default"),
                     .attribute(name: "rawType", type: .integer32AttributeType, defaultValue: Int32(0))
                 ]
+//                ,
+//                relationships: [
+//                    .relationship(name: "renderedStringOperations", destination: "CDRenderedStringOp", optional: true, toMany: true, inverse: "container")
+//                ]
                ),
         .entity(name: "CDLWWOp",
                 managedObjectClass: CDLWWOp.self,
@@ -79,25 +83,6 @@ let localModelDescription = CoreDataModelDescription(
                 managedObjectClass: CDDeleteOp.self,
                 parentEntity: "CDAbstractOp"
                ),
-        .entity(name: "RenderedString",
-                managedObjectClass: RenderedString.self,
-                attributes: [
-                    .attribute(name: "string", type: .binaryDataAttributeType)
-                ]
-               ),
-        //RenderedStringDownstreamOperations is a fetch
-        .entity(name: "RenderedStringReplaceOp",
-                managedObjectClass: RenderedStringReplaceOp.self,
-                attributes: [
-                    .attribute(name: "lamport", type: .integer64AttributeType),  // newly generated lamport for this operation
-                    .attribute(name: "position", type: .integer64AttributeType), // replacement point
-                    .attribute(name: "length", type: .integer64AttributeType),   // replaced characters
-                    .attribute(name: "contribution", type: .stringAttributeType) // data consolidated from all operations
-                ],
-                relationships: [
-                    .relationship(name: "stringOperations", destination: "CDAbstractOp", optional: false, toMany: true)
-                ]
-               ),
         .entity(name: "CDStringInsertOp",
                 managedObjectClass: CDStringInsertOp.self,
                 parentEntity: "CDAbstractOp",
@@ -111,7 +96,37 @@ let localModelDescription = CoreDataModelDescription(
                     .relationship(name: "prev", destination: "CDStringInsertOp", toMany: false, inverse: "next"),
                 ]
                ),
-    ]
+        .entity(name: "CDRenderedStringOp",
+                managedObjectClass: CDRenderedStringOp.self,
+                attributes: [
+                    .attribute(name: "lamport", type: .integer64AttributeType, isOptional: false),  // newly generated lamport for this operation
+                    .attribute(name: "isSnapshot", type: .booleanAttributeType, isOptional: false, defaultValue: false),
+                    .attribute(name: "location", type: .integer64AttributeType, defaultValue: 0), // replacement point
+                    .attribute(name: "length", type: .integer64AttributeType, defaultValue: 0),   // replaced characters
+                    .attribute(name: "stringContributionRaw", type: .binaryDataAttributeType, defaultValue: nil), // data consolidated from all operations will contain references to operations
+                    .attribute(name: "arrayContributionRaw", type: .binaryDataAttributeType, defaultValue: nil), // data consolidated from all operations will contain references to operations
+                    // pure delete may store nil here
+                ],
+                relationships: [
+                    .relationship(name: "container", destination: "CDAttributeOp", optional: false, toMany: false)
+                ],
+                indexes: [
+                    .index(name: "lamport", elements: [
+                        .property(name: "container"),
+                        .property(name: "lamport")
+                    ]),
+                    .index(name: "lamport_desc", elements: [
+                        .property(name: "container"),
+                        .property(name: "lamport", type: .binary, ascending: false)
+                    ]),
+                    .index(name: "isSnapshot", elements: [
+                        .property(name: "container"),
+                        .property(name: "isSnapshot")
+                    ]),
+                ]
+//                ,
+//                constraints: ["lamport"]
+               ),    ]
 )
 public let CRLocalModel = localModelDescription.makeModel()
 

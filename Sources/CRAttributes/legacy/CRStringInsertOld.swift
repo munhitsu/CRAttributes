@@ -7,7 +7,7 @@
 
 import Foundation
 import CoreData
-import UIKit
+//import UIKit
 //
 //@objc(CoOpAttributeStringInsert)
 //public class CoOpAttributeStringInsert: NSManagedObject {

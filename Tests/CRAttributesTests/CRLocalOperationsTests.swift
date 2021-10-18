@@ -52,11 +52,12 @@ extension CRObjectType {
 
 
 final class CRLocalOperationsTests: XCTestCase {
-
+    
     override func setUpWithError() throws {
         super.setUp()
         // Put setup code here. This method is called before the invocation of each test method in the class.
         print("setUpWithError()")
+        CRStorageController.testMode()
         flushAllCoreData(CRStorageController.shared.localContainer)
     }
 
@@ -332,6 +333,57 @@ final class CRLocalOperationsTests: XCTestCase {
         XCTAssertEqual(string.string, b_a7.textStorage!.string)
 
     }
+    
+    func testStringSaveRestore() {
+        let n1 = CRObject(type: .testNote, container: nil)
+        let a5:CRAttributeString = n1.attribute(name: "title", type: .string) as! CRAttributeString
+        XCTAssertEqual(a5.operationsCount(), 0)
+        XCTAssertNil(a5.value)
+        a5.value = "abc"
+        XCTAssertEqual(a5.operationsCount(), 1)
+        XCTAssertEqual(a5.value, "abc")
+
+        
+        // MutableString handcrafted
+        let a6:CRAttributeMutableString = n1.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
+        XCTAssertEqual(a6.operationsCount(), 0)
+//        XCTAssertNil(a6.value)
+        a6.textStorage!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: "A")
+        XCTAssertEqual(a6.textStorage!.string, "A")
+        a6.textStorage!.replaceCharacters(in: NSRange.init(location: 1, length: 0), with: "BCDEF")
+        XCTAssertEqual(a6.textStorage!.string, "ABCDEF")
+        a6.textStorage!.replaceCharacters(in: NSRange.init(location: 3, length: 3), with: "def")
+        XCTAssertEqual(a6.textStorage!.string, "ABCdef")
+
+        
+        // MutableString from fixture
+        let operationsLimit = 10
+        let string = NSMutableAttributedString()
+        string.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: Self.self))
+        
+        let a7:CRAttributeMutableString = n1.attribute(name: "note2", type: .mutableString) as! CRAttributeMutableString
+        a7.textStorage!.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
+        XCTAssertEqual(string.string, a7.textStorage!.string)
+        XCTAssertEqual(a7.operationsCount(), operationsLimit)
+        
+        
+        // Restoring
+        let b_n1 = CRObject.allObjects(type: .testNote)[0]
+        XCTAssertEqual(b_n1.operationObjectID, n1.operationObjectID)
+        
+        let b_a5:CRAttributeString = b_n1.attribute(name: "title", type: .string) as! CRAttributeString
+        XCTAssertEqual(b_a5.value, "abc")
+
+
+        let b_a6:CRAttributeMutableString = b_n1.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
+        XCTAssertEqual(b_a6.textStorage!.string, "ABCdef")
+
+        let b_a7:CRAttributeMutableString = b_n1.attribute(name: "note2", type: .mutableString) as! CRAttributeMutableString
+        XCTAssertEqual(string.string, b_a7.textStorage!.string)
+
+        // TODO: add snapshot test
+    }
+    
   
     func testCompareStringPerformanceUpstream() {
         let operationsLimit = 50000 // TODO: bring back to 50K
@@ -346,7 +398,7 @@ final class CRLocalOperationsTests: XCTestCase {
             string.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
             string.endEditing()
         }
-        printTimeElapsedWhenRunningCode(title: "NSTextStorage") {
+        printTimeElapsedWhenRunningCode(title: "NSTextStorage w/o wrapping with begin/end Editing") {
             let string = NSTextStorage()
             string.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
         }
@@ -369,15 +421,15 @@ final class CRLocalOperationsTests: XCTestCase {
     func testLoadingPerformanceUpstreamOperations() {
         let operationsLimit = 50000
         
-        os_signpost(.begin, log: posLogHandler, name: "CRTextStorage")
         printTimeElapsedWhenRunningCode(title: "CRTextStorage") {
             let noteObject = CRObject(type: .testNote, container: nil)
             let noteAttribute:CRAttributeMutableString = noteObject.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
             noteAttribute.textStorage!.beginEditing()
             noteAttribute.textStorage!.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
             noteAttribute.textStorage!.endEditing()
+            noteAttribute.textStorage!.optimiseRenderedAttributedString()
         }
-        os_signpost(.end, log: posLogHandler, name: "CRTextStorage")
+        
         measure {
             let noteObject = CRObject.allObjects(type: .testNote)[0]
             XCTAssertEqual(noteObject.operationObjectID, noteObject.operationObjectID)
