@@ -59,7 +59,7 @@ public func updateLastLamportFromCoOpLog(in context: NSManagedObjectContext) {
 
 
 //RGA Split Tree Address
-struct CRStringAddress: Comparable, Hashable {
+struct CRStringAddress: Comparable, Hashable, Codable {
     var lamport: lamportType
     var peerID: UUID
     var offset: Int64

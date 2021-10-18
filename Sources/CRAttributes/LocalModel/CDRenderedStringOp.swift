@@ -38,7 +38,6 @@ extension CDRenderedStringOp {
 
     // this is slow to save so user needss to generate lamport synchronously before and run this async/in background
     convenience init(context: NSManagedObjectContext, containerOp: CDAttributeOp, lamport: Int64, stringSnapshot: String?, addressesSnapshot: [CRStringAddress]?) {
-        print("stringSnapshot() - start")
         self.init(context:context)
         self.container = containerOp
         self.lamport = lamport
@@ -48,14 +47,12 @@ extension CDRenderedStringOp {
         assert((stringSnapshot == nil && addressesSnapshot == nil) || (stringSnapshot != nil && addressesSnapshot != nil))
         
         if stringSnapshot != nil {
-            self.stringContributionRaw = try? NSKeyedArchiver.archivedData(withRootObject: stringSnapshot!, requiringSecureCoding: false)
-            self.arrayContributionRaw =  try? NSKeyedArchiver.archivedData(withRootObject: addressesSnapshot!, requiringSecureCoding: false)
+            setStringContribution(newValue: stringSnapshot!)
+            setArrayContribution(newValue: addressesSnapshot!)
         }
-        print("stringSnapshot() - end")
     }
     
     convenience init(context: NSManagedObjectContext, containerOp: CDAttributeOp, in range: NSRange, operationString: String?, operationAddresses: [CRStringAddress]?) {
-        print("stringOperation() - start")
         self.init(context:context)
         self.container = containerOp
         self.lamport = getLamport()
@@ -64,17 +61,28 @@ extension CDRenderedStringOp {
         self.location = Int64(range.location)
         assert((operationString == nil && operationAddresses == nil) || (operationString != nil && operationAddresses != nil))
         if operationString != nil {
-            self.stringContributionRaw = try? NSKeyedArchiver.archivedData(withRootObject: operationString!, requiringSecureCoding: false)
-            self.arrayContributionRaw = try? NSKeyedArchiver.archivedData(withRootObject: operationAddresses!, requiringSecureCoding: false)
+            setStringContribution(newValue: operationString!)
+            setArrayContribution(newValue: operationAddresses!)
+            //TODO: [__SwiftValue encodeWithCoder:]: unrecognized selector sent to instance 0x1007ba180
         }
-        print("stringOperation() - end")
     }
 
     func getStringContribution() -> String {
         return (try? (NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(self.stringContributionRaw!) as? String)!) ?? ""
     }
+    func setStringContribution(newValue: String) {
+        self.stringContributionRaw = try? NSKeyedArchiver.archivedData(withRootObject: newValue, requiringSecureCoding: false)
+    }
+    
     func getArrayContribution() -> [CRStringAddress] {
-        return (try? (NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(self.arrayContributionRaw!) as? [CRStringAddress])!) ?? []
+        let decoder = JSONDecoder()
+        return try! decoder.decode([CRStringAddress].self, from: self.arrayContributionRaw!)
+//        return (try? (NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(self.arrayContributionRaw!) as? [CRStringAddress])!) ?? []
+    }
+    func setArrayContribution(newValue: [CRStringAddress]) {
+        let encoder = JSONEncoder()
+        self.arrayContributionRaw = try! encoder.encode(newValue)
+//        self.arrayContributionRaw = try? NSKeyedArchiver.archivedData(withRootObject: newValue, requiringSecureCoding: false)
     }
 }
 
@@ -108,10 +116,13 @@ extension CDRenderedStringOp {
             if op.isSnapshot == true {
                 string = snapshots.first?.getStringContribution() ?? ""
             }
-            let startStringIndex = string.index(string.startIndex, offsetBy: String.IndexDistance(op.location))
-            let endStringIndex = string.index(startStringIndex, offsetBy: String.IndexDistance(op.length))
-            string.replaceSubrange(startStringIndex...endStringIndex, with: op.getStringContribution())
-            array.replaceSubrange(Int(op.location)...Int((op.location+op.length)), with: op.getArrayContribution())
+//            let startStringIndex = string.index(string.startIndex, offsetBy: String.IndexDistance(op.location))
+//            let endStringIndex = string.index(startStringIndex, offsetBy: String.IndexDistance(op.length))
+//            string.replaceSubrange(startStringIndex...endStringIndex, with: op.getStringContribution())
+            let range = NSRange(location: Int(op.location), length: Int(op.length))
+            string.replaceCharacters(in: range, with: op.getStringContribution())
+            array.replaceElements(in: range, with: op.getArrayContribution())
+//            array.replaceSubrange(Int(op.location)...Int((op.location+op.length)), with: op.getArrayContribution())
         }
         print("stringBundleFor () - done")
         return (string, array)

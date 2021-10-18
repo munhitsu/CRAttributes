@@ -427,7 +427,7 @@ final class CRLocalOperationsTests: XCTestCase {
             noteAttribute.textStorage!.beginEditing()
             noteAttribute.textStorage!.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
             noteAttribute.textStorage!.endEditing()
-            noteAttribute.textStorage!.optimiseRenderedAttributedString()
+            noteAttribute.textStorage!.considerSnapshotingStringBundle(force: true)
         }
         
         measure {

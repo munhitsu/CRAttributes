@@ -88,6 +88,7 @@ let localModelDescription = CoreDataModelDescription(
                 parentEntity: "CDAbstractOp",
                 attributes: [
                     .attribute(name: "contribution", type: .stringAttributeType),
+                    .attribute(name: "offset", type: .integer64AttributeType, defaultValue: 0),
                 ],
                 relationships: [
                     .relationship(name: "parent", destination: "CDStringInsertOp", optional: true, toMany: false, inverse: "childOperations"),  // insertion point
@@ -103,8 +104,8 @@ let localModelDescription = CoreDataModelDescription(
                     .attribute(name: "isSnapshot", type: .booleanAttributeType, isOptional: false, defaultValue: false),
                     .attribute(name: "location", type: .integer64AttributeType, defaultValue: 0), // replacement point
                     .attribute(name: "length", type: .integer64AttributeType, defaultValue: 0),   // replaced characters
-                    .attribute(name: "stringContributionRaw", type: .binaryDataAttributeType, defaultValue: nil), // data consolidated from all operations will contain references to operations
-                    .attribute(name: "arrayContributionRaw", type: .binaryDataAttributeType, defaultValue: nil), // data consolidated from all operations will contain references to operations
+                    .attribute(name: "stringContributionRaw", type: .binaryDataAttributeType, isOptional: true, defaultValue: nil), // data consolidated from all operations will contain references to operations
+                    .attribute(name: "arrayContributionRaw", type: .binaryDataAttributeType, isOptional: true, defaultValue: nil), // data consolidated from all operations will contain references to operations
                     // pure delete may store nil here
                 ],
                 relationships: [

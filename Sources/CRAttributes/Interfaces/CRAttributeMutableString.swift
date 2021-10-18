@@ -130,6 +130,10 @@ class CRTextStorage: NSTextStorage {
             strAddresses.append(charAddress)
         }
         
+        // insert
+        attributedString.replaceCharacters(in: range, with: strContent)
+        addressesArray.replaceElements(in: range, with: strAddresses)
+        
         _ = CDRenderedStringOp(context: context, containerOp: attributeOp, in: range, operationString: strContent, operationAddresses: strAddresses)
         try! context.save() // TODO: - make it save once a 60 objects
         considerSnapshotingStringBundle()
@@ -166,9 +170,9 @@ class CRTextStorage: NSTextStorage {
      saves string bundle in background
      will only execute once stringOptimiseQueueLengthMax
      */
-    func considerSnapshotingStringBundle() {
+    func considerSnapshotingStringBundle(force: Bool=false) {
         stringOptimiseCountDown -= 1
-        if stringOptimiseCountDown != 0 {
+        if force != true && stringOptimiseCountDown != 0 {
             return
         }
         let lamport = getLamport()
@@ -236,9 +240,9 @@ class CRTextStorage: NSTextStorage {
     
     private func operationForAddress(_ address: CRStringAddress) -> CDStringInsertOp {
         fatalNotImplemented()
-        var masterOpAddress = address
-        masterOpAddress.offset = 0
-        
+//        var masterOpAddress = address
+//        masterOpAddress.offset = 0
+//        
         // how do we preload the dict, and when?
 //        masterOp =
         
