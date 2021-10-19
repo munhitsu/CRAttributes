@@ -214,6 +214,7 @@
 		BB8D7C8226D831F300B4E83E /* CDRenderedStringOp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDRenderedStringOp.swift; sourceTree = "<group>"; };
 		BBA81EBD26C5ACE70015981B /* ProtoModel.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = ProtoModel.proto; sourceTree = "<group>"; };
 		BBA81EBE26C64F430015981B /* CRRemoteOperationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRRemoteOperationsTests.swift; sourceTree = "<group>"; };
+		BBBF0889271F685100493613 /* BENCHMARKS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BENCHMARKS.md; sourceTree = "<group>"; };
 		BBFF6B3826C9818E005A6182 /* CDLocalModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDLocalModel.swift; sourceTree = "<group>"; };
 		BBFF6B3A26CA7330005A6182 /* ProtoModel.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProtoModel.pb.swift; sourceTree = "<group>"; };
 		BBFF6B3C26CA7DD4005A6182 /* CDReplicatedModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDReplicatedModel.swift; sourceTree = "<group>"; };
@@ -621,6 +622,7 @@
 				OBJ_142 /* Data Assets */,
 				OBJ_143 /* TODO.md */,
 				OBJ_144 /* README.md */,
+				BBBF0889271F685100493613 /* BENCHMARKS.md */,
 			);
 			sourceTree = "<group>";
 		};

@@ -15,7 +15,7 @@ import UIKit
 
 
 
-let stringOptimiseQueueLengthMax = 11111
+let stringOptimiseQueueLengthMax = 1234
 
 
 class CRAttributeMutableString: CRAttribute {
@@ -161,9 +161,7 @@ class CRTextStorage: NSTextStorage {
     
     private func prebuildStringBundleFromRenderedString(attributeOp: CDAttributeOp) {
         let context = CRStorageController.shared.localContainer.viewContext
-        var tempString:String? = nil
-        (tempString, addressesArray) = CDRenderedStringOp.stringBundleFor(context: context, container: attributeOp)
-        self.attributedString = NSMutableAttributedString(string: tempString!)
+        (attributedString, addressesArray) = CDRenderedStringOp.stringBundleFor(context: context, container: attributeOp)
     }
     
     /**

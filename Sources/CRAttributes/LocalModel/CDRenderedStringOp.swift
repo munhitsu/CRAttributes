@@ -75,20 +75,35 @@ extension CDRenderedStringOp {
     }
     
     func getArrayContribution() -> [CRStringAddress] {
-        let decoder = JSONDecoder()
-        return try! decoder.decode([CRStringAddress].self, from: self.arrayContributionRaw!)
-//        return (try? (NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(self.arrayContributionRaw!) as? [CRStringAddress])!) ?? []
+        let array:[CRStringAddress] = self.arrayContributionRaw?.withUnsafeBytes { (pointer: UnsafePointer<CRStringAddress>) -> [CRStringAddress] in
+            let buffer = UnsafeBufferPointer(start: pointer,
+                                             count: self.arrayContributionRaw!.count/32)
+            return Array<CRStringAddress>(buffer)
+        } ?? []
+
+
+//        let array = self.arrayContributionRaw?.withUnsafeBytes {
+//            $0.load(as: [CRStringAddress].self)
+//        }
+        return array
+        
+//        let decoder = JSONDecoder()
+//        return try! decoder.decode([CRStringAddress].self, from: self.arrayContributionRaw!)
+////        return (try? (NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(self.arrayContributionRaw!) as? [CRStringAddress])!) ?? []
     }
     func setArrayContribution(newValue: [CRStringAddress]) {
-        let encoder = JSONEncoder()
-        self.arrayContributionRaw = try! encoder.encode(newValue)
+        self.arrayContributionRaw = newValue.withUnsafeBufferPointer {
+            return Data(buffer: $0)
+        }
+//        let encoder = JSONEncoder()
+//        self.arrayContributionRaw = try! encoder.encode(newValue)
 //        self.arrayContributionRaw = try? NSKeyedArchiver.archivedData(withRootObject: newValue, requiringSecureCoding: false)
     }
 }
 
 
 extension CDRenderedStringOp {
-    static func stringBundleFor(context: NSManagedObjectContext, container: CDAttributeOp) -> (String, [CRStringAddress]) {
+    static func stringBundleFor(context: NSManagedObjectContext, container: CDAttributeOp) -> (NSMutableAttributedString, [CRStringAddress]) {
         // get latest snapshot
         let requestSnapshot: NSFetchRequest<CDRenderedStringOp> = CDRenderedStringOp.fetchRequest()
         requestSnapshot.predicate = NSPredicate(format: "container == %@ and isSnapshot == true", argumentArray: [container])
@@ -97,7 +112,7 @@ extension CDRenderedStringOp {
         requestSnapshot.returnsObjectsAsFaults = false
         
         let snapshots:[CDRenderedStringOp] = try! context.fetch(requestSnapshot)
-        var string:String = snapshots.first?.getStringContribution() ?? ""
+        let string:NSMutableAttributedString = NSMutableAttributedString(string: snapshots.first?.getStringContribution() ?? "")
         var array:[CRStringAddress] = snapshots.first?.getArrayContribution() ?? []
         let lamport = snapshots.first?.lamport ?? 0
         print("snapshot lamport: \(lamport)")
@@ -113,7 +128,7 @@ extension CDRenderedStringOp {
                 
         for op in operations {
             if op.isSnapshot == true {
-                string = snapshots.first?.getStringContribution() ?? ""
+                continue
             }
 //            let startStringIndex = string.index(string.startIndex, offsetBy: String.IndexDistance(op.location))
 //            let endStringIndex = string.index(startStringIndex, offsetBy: String.IndexDistance(op.length))
