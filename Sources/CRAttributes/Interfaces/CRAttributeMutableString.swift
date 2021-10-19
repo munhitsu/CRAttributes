@@ -15,6 +15,8 @@ import UIKit
 
 
 
+let stringOptimiseQueueLengthMax = 11111
+
 
 class CRAttributeMutableString: CRAttribute {
     var textStorage: CRTextStorage? = nil
@@ -44,7 +46,6 @@ class CRAttributeMutableString: CRAttribute {
 //}
 
 
-let stringOptimiseQueueLengthMax = 100
  
 
 
@@ -176,6 +177,7 @@ class CRTextStorage: NSTextStorage {
             return
         }
         let lamport = getLamport()
+        print("scheduling snapshot with lamport: \(lamport)")
         stringOptimiseCountDown = stringOptimiseQueueLengthMax
 
         //TODO: should it be context per save?

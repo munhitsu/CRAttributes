@@ -89,7 +89,6 @@ extension CDRenderedStringOp {
 
 extension CDRenderedStringOp {
     static func stringBundleFor(context: NSManagedObjectContext, container: CDAttributeOp) -> (String, [CRStringAddress]) {
-        print("stringBundleFor() - start")
         // get latest snapshot
         let requestSnapshot: NSFetchRequest<CDRenderedStringOp> = CDRenderedStringOp.fetchRequest()
         requestSnapshot.predicate = NSPredicate(format: "container == %@ and isSnapshot == true", argumentArray: [container])
@@ -101,7 +100,7 @@ extension CDRenderedStringOp {
         var string:String = snapshots.first?.getStringContribution() ?? ""
         var array:[CRStringAddress] = snapshots.first?.getArrayContribution() ?? []
         let lamport = snapshots.first?.lamport ?? 0
-        print("lamport: \(lamport)")
+        print("snapshot lamport: \(lamport)")
 
         // get all operations newer then snapshot and execute them
         let requestOps: NSFetchRequest<CDRenderedStringOp> = CDRenderedStringOp.fetchRequest()
@@ -110,7 +109,7 @@ extension CDRenderedStringOp {
         requestOps.returnsObjectsAsFaults = false
         
         let operations:[CDRenderedStringOp] = try! context.fetch(requestOps)
-        print("operations: \(operations.count)")
+        print("operations to process: \(operations.count)")
                 
         for op in operations {
             if op.isSnapshot == true {
@@ -124,7 +123,6 @@ extension CDRenderedStringOp {
             array.replaceElements(in: range, with: op.getArrayContribution())
 //            array.replaceSubrange(Int(op.location)...Int((op.location+op.length)), with: op.getArrayContribution())
         }
-        print("stringBundleFor () - done")
         return (string, array)
     }
 }

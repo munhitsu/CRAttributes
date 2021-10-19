@@ -55,16 +55,12 @@ final class CRLocalOperationsTests: XCTestCase {
     
     override func setUpWithError() throws {
         super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-        print("setUpWithError()")
-        CRStorageController.testMode()
+        CRStorageController.testMode() // in memory db
         flushAllCoreData(CRStorageController.shared.localContainer)
     }
 
     override func tearDownWithError() throws {
         super.tearDown()
-        print("tearDownWithError()")
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
     
     // test lamport creation
@@ -427,24 +423,25 @@ final class CRLocalOperationsTests: XCTestCase {
             noteAttribute.textStorage!.beginEditing()
             noteAttribute.textStorage!.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
             noteAttribute.textStorage!.endEditing()
-            noteAttribute.textStorage!.considerSnapshotingStringBundle(force: true)
+//            noteAttribute.textStorage!.considerSnapshotingStringBundle(force: true)
         }
         
         measure {
             let noteObject = CRObject.allObjects(type: .testNote)[0]
             XCTAssertEqual(noteObject.operationObjectID, noteObject.operationObjectID)
             let noteAttribute = noteObject.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
-            let _ = noteAttribute.textStorage?.string
+            print("Loaded \(noteAttribute.textStorage!.string.count) charactrers")
         }
     }
     
     func testLoadingPerformanceSinglePaste() {
-        print("String length:\(lorem.count*5)")
+        let myText = lorem+lorem+lorem+lorem+lorem
+        print("String length:\(myText.count)")
         printTimeElapsedWhenRunningCode(title: "CRTextStorage") {
             let noteObject = CRObject(type: .testNote, container: nil)
             let noteAttribute:CRAttributeMutableString = noteObject.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
             noteAttribute.textStorage!.beginEditing()
-            noteAttribute.textStorage!.replaceCharacters(in: NSRange(location: 0, length: 0), with: lorem+lorem+lorem+lorem+lorem)
+            noteAttribute.textStorage!.replaceCharacters(in: NSRange(location: 0, length: 0), with: myText)
             noteAttribute.textStorage!.endEditing()
         }
 //        CRStorageController.shared.localContainer.viewContext.reset()
@@ -452,7 +449,8 @@ final class CRLocalOperationsTests: XCTestCase {
             let noteObject = CRObject.allObjects(type: .testNote)[0]
             XCTAssertEqual(noteObject.operationObjectID, noteObject.operationObjectID)
             let noteAttribute = noteObject.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
-            let _ = noteAttribute.textStorage?.string
+            print("Loaded \(noteAttribute.textStorage!.string.count) charactrers")
+            XCTAssertEqual((noteAttribute.textStorage!.string), myText)
         }
     }
     
