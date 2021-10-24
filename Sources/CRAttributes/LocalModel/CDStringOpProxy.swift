@@ -11,12 +11,12 @@ import CoreData
 /**
  a form to aid serialisaiton within NSMutableAttributedString
  */
-class CDStringInsertOpProxy: NSObject, NSCoding {
+class CDStringOpProxy: NSObject, NSCoding {
     
     var context:NSManagedObjectContext
     private var _objectURL:URL?
     private var _objectID:NSManagedObjectID?
-    private var _object:CDStringInsertOp? = nil
+    private var _object:CDStringOp? = nil
 
     // MARK: - computed properties
 
@@ -35,7 +35,7 @@ class CDStringInsertOpProxy: NSObject, NSCoding {
         }
     }
     
-    var object:CDStringInsertOp {
+    var object:CDStringOp {
         set {
             _object = newValue
         }
@@ -44,10 +44,10 @@ class CDStringInsertOpProxy: NSObject, NSCoding {
                 return _object!
             } else {
                 if _objectID != nil {
-                    return (context.object(with: _objectID!) as? CDStringInsertOp)!
+                    return (context.object(with: _objectID!) as? CDStringOp)!
                 } else {
                     _objectID = (context.persistentStoreCoordinator?.managedObjectID(forURIRepresentation: _objectURL!))!
-                    return (context.object(with: _objectID!) as? CDStringInsertOp)!
+                    return (context.object(with: _objectID!) as? CDStringOp)!
                 }
             }
         }
@@ -76,7 +76,7 @@ class CDStringInsertOpProxy: NSObject, NSCoding {
         self.objectID = object
     }
 
-    convenience init(context:NSManagedObjectContext, object:CDStringInsertOp) {
+    convenience init(context:NSManagedObjectContext, object:CDStringOp) {
         self.init(context: context)
         self.object = object
     }

@@ -29,6 +29,7 @@ let localModelDescription = CoreDataModelDescription(
                     .attribute(name: "peerID", type: .UUIDAttributeType),
                     .attribute(name: "hasTombstone", type: .booleanAttributeType),
                     .attribute(name: "upstreamQueueOperation", type: .booleanAttributeType, defaultValue: true), //TODO: remove default as it's implicit
+                    //TODO: replace with rawSatus from stringOp
                 ],
 //                fetchedProperties: [
 //                    .fetchedProperty(name: "containedOps", fetchRequest: CDAbstractOp.containedOperationsFetchRequest())
@@ -78,17 +79,23 @@ let localModelDescription = CoreDataModelDescription(
                     .attribute(name: "string", type: .stringAttributeType, isOptional: true)
                 ]
                ),
-        // parent is what was deleted
+        // container is what was deleted
         .entity(name: "CDDeleteOp",
                 managedObjectClass: CDDeleteOp.self,
                 parentEntity: "CDAbstractOp"
                ),
-        .entity(name: "CDStringInsertOp",
-                managedObjectClass: CDStringInsertOp.self,
+        .entity(name: "CDStringOp",
+                managedObjectClass: CDStringOp.self,
                 parentEntity: "CDAbstractOp",
                 attributes: [
-                    .attribute(name: "contribution", type: .stringAttributeType),
-                    .attribute(name: "offset", type: .integer64AttributeType, defaultValue: 0),
+                    .attribute(name: "parentLamport", type: .integer64AttributeType),
+                    .attribute(name: "parentPeerID", type: .UUIDAttributeType),
+                    .attribute(name: "parentOffset", type: .integer32AttributeType, defaultValue: 0),
+                    .attribute(name: "offset", type: .integer32AttributeType, defaultValue: 0), // part of the address
+                    .attribute(name: "insertContribution", type: .stringAttributeType),
+                    .attribute(name: "deletedLength", type: .integer32AttributeType), // for delete
+                    .attribute(name: "rawState", type: .integer32AttributeType, defaultValue: 0), // default: unknown
+                    .attribute(name: "rawType", type: .integer32AttributeType, defaultValue: 0), // default: insert
                 ],
                 relationships: [
                     .relationship(name: "parent", destination: "CDStringInsertOp", optional: true, toMany: false, inverse: "childOperations"),  // insertion point
@@ -105,7 +112,7 @@ let localModelDescription = CoreDataModelDescription(
                     .attribute(name: "location", type: .integer64AttributeType, defaultValue: 0), // replacement point
                     .attribute(name: "length", type: .integer64AttributeType, defaultValue: 0),   // replaced characters
                     .attribute(name: "stringContributionRaw", type: .binaryDataAttributeType, isOptional: true, defaultValue: nil), // data consolidated from all operations will contain references to operations
-                    .attribute(name: "arrayContributionRaw", type: .binaryDataAttributeType, isOptional: true, defaultValue: nil), // data consolidated from all operations will contain references to operations
+                    .attribute(name: "arrayContributionRaw", type: .binaryDataAttributeType, isOptional: true,  defaultValue: nil), // data consolidated from all operations will contain references to operations
                     // pure delete may store nil here
                 ],
                 relationships: [

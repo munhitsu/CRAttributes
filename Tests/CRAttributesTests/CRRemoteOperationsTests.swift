@@ -117,13 +117,13 @@ class CRRemoteOperationsTests: XCTestCase {
     func checkStringOperationsCorrectness(_ cdAttribute: CDAttributeOp) {
         var nodesSeen = Set<lamportType>()
 
-        var headStringOperation:CDStringInsertOp? = nil
+        var headStringOperation:CDStringOp? = nil
         for operation in cdAttribute.containedOperations() {
             if operation.upstreamQueueOperation {
                 switch operation {
                 case _ as CDDeleteOp:
                     print("ignoring Delete")
-                case let op as CDStringInsertOp:
+                case let op as CDStringOp:
 //                        print("op(\(op.lamport))=\(op.contribution) prev(\(String(describing: op.prev?.lamport)))")
                     if op.prev == nil { // it will be only a new string in a new attribute in this scenario
                         assert(headStringOperation == nil)

@@ -1,6 +1,18 @@
 # TODO
 
 
+
+
+
+- [x] on string upstream - update rendered form
+- [x] on string upstream - create delete unprocessed op
+- [x] on string upstream - create insert unprocessed op
+- [] process string upstream op into the RGA
+- [] ship string upstream op to the replicated container
+- [] merge downstream string op
+
+
+
 - [] benchmark fetch using objectID vs fetch using OperationID -> write down results / benchmark as separate project maybe
 - [] benchmark - compare flat object with inheritend one
 - [] benchmark fetch on nsmanagedobjectID vs linked list

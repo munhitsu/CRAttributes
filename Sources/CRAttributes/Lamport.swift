@@ -59,10 +59,14 @@ public func updateLastLamportFromCoOpLog(in context: NSManagedObjectContext) {
 
 
 //RGA Split Tree Address
-struct CRStringAddress: Comparable, Hashable, Codable {
+public struct CRStringAddress: Comparable, Hashable, Codable {
     var lamport: lamportType
     var peerID: UUID
-    var offset: Int64
+    var offset: Int32
+    
+    static var zero: CRStringAddress {
+        CRStringAddress(lamport: 0, peerID: UUID.zero, offset: 0)
+    }
     
     init() {
         self.peerID = localPeerID
@@ -70,12 +74,19 @@ struct CRStringAddress: Comparable, Hashable, Codable {
         self.offset = 0
     }
 
-    init(lamport: lamportType, peerID: UUID, offset: Int64) {
+    init(lamport: lamportType, peerID: UUID, offset: Int32) {
         self.lamport = lamport
         self.peerID = peerID
         self.offset = offset
         newLamportSeen(lamport)
     }
+
+//    public static func ==  (lhs: CRStringAddress, rhs: CRStringAddress) -> Bool {
+//        return lhs.lamport == rhs.lamport &&
+//        lhs.peerID == rhs.peerID &&
+//        lhs.offset == rhs.offset
+//    }
+    
 
     public static func < (lhs: CRStringAddress, rhs: CRStringAddress) -> Bool {
         if lhs.lamport == rhs.lamport {
@@ -87,6 +98,10 @@ struct CRStringAddress: Comparable, Hashable, Codable {
         } else {
             return lhs.lamport < rhs.lamport
         }
+    }
+    
+    public func equalOrigin(with: CRStringAddress) -> Bool {
+        return self.lamport == with.lamport && self.peerID == with.peerID
     }
 }
 
@@ -158,8 +173,6 @@ public extension UUID {
     }
     
     static var zero:UUID {
-        get {
-            return UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
-        }
+        UUID(uuidString: "00000000-0000-0000-0000-000000000000")! //TODO: cast from 2 x Int64
     }
 }

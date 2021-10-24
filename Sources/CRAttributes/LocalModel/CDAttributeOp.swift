@@ -74,7 +74,7 @@ extension CDAttributeOp {
         }
 
         if protoForm.stringInsertOperations.count > 0 {
-            _ = CDStringInsertOp.restoreLinkedList(context: context, from: protoForm.stringInsertOperations, container: self)
+            _ = CDStringOp.restoreLinkedList(context: context, from: protoForm.stringInsertOperations, container: self)
         }
     }
 

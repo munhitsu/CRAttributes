@@ -163,7 +163,7 @@ extension CRStorageController {
             root = CDLWWOp(context: context, from: protoTree.lwwOperation, container: container, waitingForContainer: waitingForContainer)
             print("Restored LWWOp(\(root!.lamport)")
         case .some(.stringInsertOperations):
-            root = CDStringInsertOp.restoreLinkedList(context: context, from: protoTree.stringInsertOperations.stringInsertOperations, container: container as? CDAttributeOp)
+            root = CDStringOp.restoreLinkedList(context: context, from: protoTree.stringInsertOperations.stringInsertOperations, container: container as? CDAttributeOp)
             print("Ignoring StringInsertOp(\(root!.lamport)")
         case .none:
             fatalNotImplemented()
@@ -231,7 +231,7 @@ extension CRStorageController {
                     tree.deleteOperation = protoDeleteOperationRecurse(op)
                 case let op as CDLWWOp:
                     tree.lwwOperation = protoLWWOperationRecurse(op)
-                case let op as CDStringInsertOp:
+                case let op as CDStringOp:
 //                    if op.contribution == "#" {
 //                        print("debug")
 //                    }
@@ -308,7 +308,7 @@ extension CRStorageController {
         }
 //        print("AttributeOperation \(proto.id.lamport)")
 
-        var headStringOperation:CDStringInsertOp? = nil
+        var headStringOperation:CDStringOp? = nil
         
 //        assert(operation.containedOperations as! Set<CDAbstractOp> == Set(operation.containedOps()))
         for operation in operation.containedOperations() {
@@ -318,7 +318,7 @@ extension CRStorageController {
                     proto.deleteOperations.append(protoDeleteOperationRecurse(op))
                 case let op as CDLWWOp:
                     proto.lwwOperations.append(protoLWWOperationRecurse(op))
-                case let op as CDStringInsertOp:
+                case let op as CDStringOp:
                     if op.prev == nil { // it will be only a new string in a new attribute in this scenario
                         headStringOperation = op
                     }
@@ -373,12 +373,12 @@ extension CRStorageController {
         return proto
     }
     
-    static func protoStringInsertOperationRecurse(_ operation: CDStringInsertOp) -> ProtoStringInsertOperation {
+    static func protoStringInsertOperationRecurse(_ operation: CDStringOp) -> ProtoStringInsertOperation {
         var proto = ProtoStringInsertOperation.with {
             $0.version = operation.version
             $0.id.lamport = operation.lamport
             $0.id.peerID  = operation.peerID.data
-            $0.contribution = operation.contribution
+            $0.contribution = operation.insertContribution
             $0.parentID.lamport = operation.parent?.lamport ?? 0
             $0.parentID.peerID = operation.parent?.peerID.data ?? UUID.zero.data
         }
@@ -400,7 +400,7 @@ extension CRStorageController {
     }
 
     // returns a list of linked string operations (including deletes as sub operations)
-    static func protoStringInsertOperationsLinkedList(_ operation: CDStringInsertOp) -> [ProtoStringInsertOperation] {
+    static func protoStringInsertOperationsLinkedList(_ operation: CDStringOp) -> [ProtoStringInsertOperation] {
         assert(operation.upstreamQueueOperation == true)
         var protoOperations:[ProtoStringInsertOperation] = [protoStringInsertOperationRecurse(operation)]
 //        print(protoOperations[0])
@@ -411,7 +411,7 @@ extension CRStorageController {
 //        print("next: \(String(describing: operation.next))")
 
         // going left
-        var node:CDStringInsertOp? = operation.prev
+        var node:CDStringOp? = operation.prev
         while node != nil && node!.upstreamQueueOperation {
             let protoForm = protoStringInsertOperationRecurse(node!)
 //            print(protoForm)

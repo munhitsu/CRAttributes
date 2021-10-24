@@ -13,7 +13,7 @@ public class CDObjectOp: CDAbstractOp {
 
 }
 
-
+//TODO: - is this in use?
 struct CRObjectType: RawRepresentable, Equatable, Hashable, Comparable {
     typealias RawValue = Int32
     

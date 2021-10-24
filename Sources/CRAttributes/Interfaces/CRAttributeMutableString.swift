@@ -61,7 +61,7 @@ class CRTextStorage: NSTextStorage {
     
     var stringOptimiseCountDown = stringOptimiseQueueLengthMax
     
-    var knownOperationForAddress: [CRStringAddress:CDStringInsertOp] = [:]
+    var knownOperationForAddress: [CRStringAddress:CDStringOp] = [:]
     var context: NSManagedObjectContext
     
     
@@ -112,22 +112,47 @@ class CRTextStorage: NSTextStorage {
         //TODO: - we may need a hash to track deleted operations
 
 
-        // TODO: delete operations in the range
+        if range.length > 0 {
+            // TODO: delete operations in the range
+            var lastAddress:CRStringAddress? = nil
+            var length:Int32 = 0
+            for address in addressesArray[range.location...(range.location+range.length-1)] {
+                if let safeLastAddress = lastAddress {
+                    if safeLastAddress.equalOrigin(with: address) {
+                       length += 1
+                    } else {
+                        let _ = CDStringOp.initDelete(context: self.context, container: self.attributeOp, parentAddress: safeLastAddress, length: length)
+                        lastAddress = address
+                    }
+                } else {
+                    lastAddress = address
+                    length += 1
+                }
+            }
+            let _ = CDStringOp.initDelete(context: self.context, container: self.attributeOp, parentAddress: lastAddress!, length: length)
+            try! context.save()
+        }
         // TODO: - save once every 60 objects
 
-        // create a string to insert with all linked operatations
+        // create the string to insert
         var strAddresses: [CRStringAddress] = [] //TODO: - prealocate the right size / maybe us map?
                 
-
-        // create insert operation
-        let newOp:CDStringInsertOp = CDStringInsertOp(context: context, parent: nil, container: attributeOp, contribution: strContent)
-        let opAddress = newOp.stringAddress()
-        var charAddress = opAddress
+        // create the operation to insert
+        
+        let parentAddress: CRStringAddress
+        if range.location > 0 {
+            parentAddress = addressesArray[range.location-1]
+        } else {
+            parentAddress = CRStringAddress.zero
+        }
+        
+        let newOp:CDStringOp = CDStringOp.initInsert(context: context, container: attributeOp, parentAddress: parentAddress, contribution: strContent) //TODO: should we be passing prev, next here? - feels like a waste of CPU but we are saving space (unnecesairly)
+        var charAddress = newOp.stringAddress()
         // TODO: link the operation in linked list and with parent
         try! context.save()
         
         for (index, _ ) in strContent.enumerated() {
-            charAddress.offset = opAddress.offset + Int64(index)
+            charAddress.offset = Int32(index)
             strAddresses.append(charAddress)
         }
         
@@ -191,6 +216,34 @@ class CRTextStorage: NSTextStorage {
         }
     }
     
+    private func operationForPosition(_ position: Int) -> CDStringOp {
+        let opAddress = addressesArray[position]
+        return operationForAddress(opAddress)
+    }
+    
+    private func operationForAddress(_ address: CRStringAddress) -> CDStringOp {
+        fatalNotImplemented()
+        //TODO: check if I can have here the ManagedObjectID as part of addressesArray
+        
+        // query db for specific address
+        // query db for master operation operations (offset = 0) / order by offset
+        
+        
+        
+        
+//        var masterOpAddress = address
+//        masterOpAddress.offset = 0
+//
+        // how do we preload the dict, and when?
+//        masterOp =
+        
+        
+//        let opProxy:CDStringInsertOpProxy = attributedString!.attribute(.opProxy, at: 0  , effectiveRange: nil) as! CDStringInsertOpProxy
+        return CDStringOp()
+
+    }
+
+    
     
     // MARK: - rebuild me
     
@@ -225,31 +278,12 @@ class CRTextStorage: NSTextStorage {
 //    }
     
     
-    private func firstOp(context: NSManagedObjectContext, attributeOp: CDAttributeOp) -> CDStringInsertOp? {
+    private func firstOp(context: NSManagedObjectContext, attributeOp: CDAttributeOp) -> CDStringOp? {
         // TODO: - replace with address to operation
-        let request:NSFetchRequest<CDStringInsertOp> = CDStringInsertOp.fetchRequest()
+        let request:NSFetchRequest<CDStringOp> = CDStringOp.fetchRequest()
         request.returnsObjectsAsFaults = false
         request.predicate = NSPredicate(format: "container == %@ and prev == nil", attributeOp)
         return try? context.fetch(request).first
-    }
-    
-    private func operationForPosition(_ position: Int) -> CDStringInsertOp {
-        let opAddress = addressesArray[position]
-        return operationForAddress(opAddress)
-    }
-    
-    private func operationForAddress(_ address: CRStringAddress) -> CDStringInsertOp {
-        fatalNotImplemented()
-//        var masterOpAddress = address
-//        masterOpAddress.offset = 0
-//        
-        // how do we preload the dict, and when?
-//        masterOp =
-        
-        
-//        let opProxy:CDStringInsertOpProxy = attributedString!.attribute(.opProxy, at: 0  , effectiveRange: nil) as! CDStringInsertOpProxy
-        return CDStringInsertOp()
-
     }
     
     

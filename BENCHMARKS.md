@@ -31,3 +31,14 @@ moving from JSON encoder for array to unsafe memory mapping
 bringing down the oplog depth to 1234 max (with 640 ops)
 ## operations (640 ops)
 -[CRAttributesTests.CRLocalOperationsTests testLoadingPerformanceUpstreamOperations]' measured [Time, seconds] average: 0.016, relative standard deviation: 34.241%, values: [0.029890, 0.019985, 0.015865, 0.013768, 0.012832, 0.012998, 0.012606, 0.012478, 0.012247, 0.012346]
+
+### sqlite on filesystem
+-[CRAttributesTests.CRLocalOperationsTests testLoadingPerformanceUpstreamOperations]' measured [Time, seconds] average: 0.016, relative standard deviation: 41.532%, values: [0.035091, 0.020017, 0.015882, 0.014065, 0.013019, 0.013210, 0.012641, 0.012578, 0.012509, 0.012367]
+
+## snapshot only
+no impact expected
+-[CRAttributesTests.CRLocalOperationsTests testLoadingPerformanceSinglePaste]' measured [Time, seconds] average: 0.010, relative standard deviation: 42.713%, values: [0.020734, 0.014002, 0.011471, 0.009880, 0.008773, 0.007821, 0.007240, 0.006707, 0.006785, 0.006369]
+
+### sqlite on filesystem
+-[CRAttributesTests.CRLocalOperationsTests testLoadingPerformanceSinglePaste]' measured [Time, seconds] average: 0.011, relative standard deviation: 39.036%, values: [0.020249, 0.014730, 0.012780, 0.011494, 0.009526, 0.007999, 0.007307, 0.007544, 0.006591, 0.007412]
+
