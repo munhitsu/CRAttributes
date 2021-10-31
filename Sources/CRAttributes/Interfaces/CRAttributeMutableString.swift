@@ -94,7 +94,11 @@ class CRTextStorage: NSTextStorage {
         attributeOp = CDAttributeOp()
         super.init(coder: aDecoder)
     }
-
+    
+    required init?(pasteboardPropertyList propertyList: Any, ofType type: NSPasteboard.PasteboardType) {
+        fatalError("init(pasteboardPropertyList:ofType:) has not been implemented")
+    }
+    
     // subclasses should implement it to execute in O(1) time.
     // source https://developer.apple.com/documentation/foundation/nsattributedstring/1412616-string
     public override var string: String {

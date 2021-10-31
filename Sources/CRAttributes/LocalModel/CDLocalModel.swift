@@ -92,16 +92,16 @@ let localModelDescription = CoreDataModelDescription(
                     .attribute(name: "parentPeerID", type: .UUIDAttributeType),
                     .attribute(name: "parentOffset", type: .integer32AttributeType, defaultValue: 0),
                     .attribute(name: "offset", type: .integer32AttributeType, defaultValue: 0), // part of the address
-                    .attribute(name: "insertContribution", type: .stringAttributeType),
-                    .attribute(name: "deletedLength", type: .integer32AttributeType), // for delete
+                    .attribute(name: "insertContribution", type: .stringAttributeType, isOptional: true),
+                    .attribute(name: "deletedLength", type: .integer32AttributeType, defaultValue: 0), // for delete
                     .attribute(name: "rawState", type: .integer32AttributeType, defaultValue: 0), // default: unknown
                     .attribute(name: "rawType", type: .integer32AttributeType, defaultValue: 0), // default: insert
                 ],
                 relationships: [
-                    .relationship(name: "parent", destination: "CDStringInsertOp", optional: true, toMany: false, inverse: "childOperations"),  // insertion point
-                    .relationship(name: "childOperations", destination: "CDStringInsertOp", optional: true, toMany: true, inverse: "parent"),  // insertion point
-                    .relationship(name: "next", destination: "CDStringInsertOp", toMany: false, inverse: "prev"),
-                    .relationship(name: "prev", destination: "CDStringInsertOp", toMany: false, inverse: "next"),
+                    .relationship(name: "parent", destination: "CDStringOp", optional: true, toMany: false, inverse: "childOperations"),  // insertion point
+                    .relationship(name: "childOperations", destination: "CDStringOp", optional: true, toMany: true, inverse: "parent"),  // insertion point
+                    .relationship(name: "next", destination: "CDStringOp", toMany: false, inverse: "prev"),
+                    .relationship(name: "prev", destination: "CDStringOp", toMany: false, inverse: "next"),
                 ]
                ),
         .entity(name: "CDRenderedStringOp",
