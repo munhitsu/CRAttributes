@@ -253,7 +253,7 @@ struct ProtoStringInsertOperation {
   /// Clears the value of `parentID`. Subsequent reads from it will return its default value.
   mutating func clearParentID() {self._parentID = nil}
 
-  var contribution: String = String()
+  var contribution: Int32 = 0
 
   var deleteOperations: [ProtoDeleteOperation] = []
 
@@ -745,7 +745,7 @@ extension ProtoStringInsertOperation: SwiftProtobuf.Message, SwiftProtobuf._Mess
       case 1: try { try decoder.decodeSingularInt32Field(value: &self.version) }()
       case 2: try { try decoder.decodeSingularMessageField(value: &self._id) }()
       case 3: try { try decoder.decodeSingularMessageField(value: &self._parentID) }()
-      case 4: try { try decoder.decodeSingularStringField(value: &self.contribution) }()
+      case 4: try { try decoder.decodeSingularInt32Field(value: &self.contribution) }()
       case 5: try { try decoder.decodeRepeatedMessageField(value: &self.deleteOperations) }()
       case 6: try { try decoder.decodeRepeatedMessageField(value: &self.stringInsertOperations) }()
       default: break
@@ -763,8 +763,8 @@ extension ProtoStringInsertOperation: SwiftProtobuf.Message, SwiftProtobuf._Mess
     if let v = self._parentID {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
     }
-    if !self.contribution.isEmpty {
-      try visitor.visitSingularStringField(value: self.contribution, fieldNumber: 4)
+    if self.contribution != 0 {
+      try visitor.visitSingularInt32Field(value: self.contribution, fieldNumber: 4)
     }
     if !self.deleteOperations.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.deleteOperations, fieldNumber: 5)

@@ -90,10 +90,7 @@ let localModelDescription = CoreDataModelDescription(
                 attributes: [
                     .attribute(name: "parentLamport", type: .integer64AttributeType),
                     .attribute(name: "parentPeerID", type: .UUIDAttributeType),
-                    .attribute(name: "parentOffset", type: .integer32AttributeType, defaultValue: 0),
-                    .attribute(name: "offset", type: .integer32AttributeType, defaultValue: 0), // part of the address
-                    .attribute(name: "insertContribution", type: .stringAttributeType, isOptional: true),
-                    .attribute(name: "deletedLength", type: .integer32AttributeType, defaultValue: 0), // for delete
+                    .attribute(name: "insertContribution", type: .integer32AttributeType, isOptional: true),
                     .attribute(name: "rawState", type: .integer32AttributeType, defaultValue: 0), // default: unknown
                     .attribute(name: "rawType", type: .integer32AttributeType, defaultValue: 0), // default: insert
                 ],

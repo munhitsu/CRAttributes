@@ -13,11 +13,16 @@ import Combine
 public class CRStorageController {
     
     
-    class func testMode() {
-        CRStorageController.shared = CRStorageController(inMemory: true)
+    static func testMode() {
+        CRStorageController._shared = CRStorageController(inMemory: true)
     }
     
-    static var shared = CRStorageController()
+    static var _shared:CRStorageController? = nil
+    
+    static var shared:CRStorageController {
+        CRStorageController._shared = CRStorageController._shared ?? CRStorageController()
+        return _shared!
+    }
 
     static var preview: CRStorageController = {
         let result = CRStorageController(inMemory: true)
@@ -53,6 +58,7 @@ public class CRStorageController {
             localContainer.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
             replicatedContainer.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
         }
+        print("Container URL: \(String(describing: localContainer.persistentStoreDescriptions.first?.url))")
         
         localContainer.loadPersistentStores(completionHandler: { (_, error) in
             if let error = error as NSError? {

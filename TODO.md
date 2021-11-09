@@ -1,12 +1,14 @@
 # TODO
 
 
-
-
-
 - [x] on string upstream - update rendered form
-- [x] on string upstream - create delete unprocessed op
-- [x] on string upstream - create insert unprocessed op
+
+- [] update model to RGA
+- [] on string upstream - create insert unprocessed op - RGA - use core data batch API
+- [] on string upstream - create delete unprocessed op - RGA
+
+
+
 - [] process string upstream op into the RGA
 - [] whye can't I get merged object ID - compare with:
 https://www.donnywals.com/observing-changes-to-managed-objects-across-contexts-with-combine/
@@ -14,6 +16,14 @@ https://www.donnywals.com/observing-changes-to-managed-objects-across-contexts-w
 - [] merge downstream string op
 
 
+- [] 2 delete operations.... and protobuf impact
+
+
+
+## deprecated due to pivot to RGA
+
+- [x] on string upstream - create delete unprocessed op - RGA Split
+- [x] on string upstream - create insert unprocessed op - RGA Split
 
 
 

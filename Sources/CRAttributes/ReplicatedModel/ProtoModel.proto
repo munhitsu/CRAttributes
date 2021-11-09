@@ -55,7 +55,7 @@ message StringInsertOperation {
     int32 version = 1;
     OperationID id = 2;
     OperationID parentID = 3;
-    string contribution = 4;
+    int32 contribution = 4;
     repeated DeleteOperation deleteOperations = 5;
     repeated StringInsertOperation stringInsertOperations = 6;
 }

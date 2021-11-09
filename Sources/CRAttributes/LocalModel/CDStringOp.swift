@@ -22,10 +22,7 @@ extension CDStringOp {
 
     @NSManaged public var parentLamport: Int64
     @NSManaged public var parentPeerID: UUID
-    @NSManaged public var parentOffset: Int32
-    @NSManaged public var offset: Int32
-    @NSManaged public var insertContribution: String
-    @NSManaged public var deletedLength: Int32
+    @NSManaged public var insertContribution: Int32
     @NSManaged public var parent: CDStringOp?
     @NSManaged public var childOperations: NSSet?
 
@@ -34,7 +31,6 @@ extension CDStringOp {
 
     @NSManaged public var rawState: Int32
     @NSManaged public var rawType: Int32
-
 }
 
 
@@ -61,6 +57,7 @@ extension CDStringOp {
             self.rawState = newValue.rawValue
         }
     }
+    
     var type: CDStringOpType {
         get {
             return CDStringOpType(rawValue: self.rawType)!
@@ -70,55 +67,39 @@ extension CDStringOp {
         }
     }
     
-    var isDerived: Bool {
-        self.offset != 0
+    var unicodeScalar: UnicodeScalar {
+        get {
+            UnicodeScalar(UInt32(insertContribution))!
+        }
+        set {
+            insertContribution = Int32(newValue.value) // there will be loss in UInt32 to Int32 conversion eventually
+        }
     }
 }
 
 
 extension CDStringOp {
     
-//    public static func initInsert(context: NSManagedObjectContext, parent: CDStringOp?, container: CDAttributeOp?, contribution: String, offset: Int32 = 0) {
-//
-//    }
-    
-    public static func initDelete(context: NSManagedObjectContext, container: CDAttributeOp?, parentAddress: CRStringAddress, length: Int32) -> CDStringOp {
-        let op = CDStringOp(context:context, container: container)
-        op.parentLamport = parentAddress.lamport
-        op.parentPeerID = parentAddress.peerID
-        op.parentOffset = parentAddress.offset
-        op.deletedLength = length
-        op.type = .delete
-        return op
+
+    convenience init(context: NSManagedObjectContext, container: CDAttributeOp?, parent: CDStringOp?, contribution: UnicodeScalar = UnicodeScalar(0), type: CDStringOpType, state: CDStringOpState) {
+        self.init(context:context, container: container)
+        self.unicodeScalar = contribution
+        self.parent = parent
+        self.type = type
+        self.state = state
     }
-    
-    public static func initInsert(context: NSManagedObjectContext, container: CDAttributeOp?, parentAddress: CRStringAddress, contribution: String, offset: Int32 = 0) -> CDStringOp {
-        let op = CDStringOp(context:context, container: container)
-        op.parentLamport = parentAddress.lamport
-        op.parentPeerID = parentAddress.peerID
-        op.parentOffset = parentAddress.offset
-        op.offset = 0
-        op.insertContribution = contribution
-        op.type = .insert
-        return op
-    }
-    
-    public static func initInsert(context: NSManagedObjectContext, container: CDAttributeOp?, parent: CDStringOp?, contribution: String, offset: Int32 = 0) -> CDStringOp {
-        let op = CDStringOp(context:context, container: container)
-        op.parent = parent
-        op.offset = offset
-        op.insertContribution = contribution
-        op.type = .insert
-        return op
+
+    convenience init(context: NSManagedObjectContext, container: CDAttributeOp?, parentAddress: CROperationID, contribution: UnicodeScalar = UnicodeScalar(0), type: CDStringOpType, state: CDStringOpState) {
+        self.init(context:context, container: container)
+        self.parentLamport = parentAddress.lamport
+        self.parentPeerID = parentAddress.peerID
+        self.unicodeScalar = contribution
+        self.parent = parent
+        self.type = type
+        self.state = state
     }
 
     
-//    convenience init(context: NSManagedObjectContext, parent: CDStringOp?, container: CDAttributeOp?, contribution: String, offset: Int32 = 0) {
-//        self.init(context:context, container: container)
-//        self.insertContribution = contribution
-//        self.offset = offset
-//        self.parent = parent
-//    }
 //    convenience init(context: NSManagedObjectContext, parent: CDStringOp?, container: CDAttributeOp?, contribution: unichar) {
 //        self.init(context:context, container: container)
 //        var uc = contribution
@@ -156,12 +137,6 @@ extension CDStringOp {
         }
         return cdOperations[0]
     }
-
-    func stringAddress() -> CRStringAddress {
-        //TODO: cache me
-        return CRStringAddress(lamport: self.lamport, peerID: self.peerID, offset: self.offset)
-    }
-    
     
     /**
         returns operation that will be previous to the position
@@ -172,64 +147,14 @@ extension CDStringOp {
     }
     
     
-    func fromStringAddress(context: NSManagedObjectContext, address: CRStringAddress) -> CDStringOp {
+    static func fromStringAddress(context: NSManagedObjectContext, address: CROperationID) -> CDStringOp? {
         let request:NSFetchRequest<CDStringOp> = CDStringOp.fetchRequest()
         request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "lamport == %@ and peerId == %@", argumentArray: [address.lamport, address.peerID, address.offset])
-        request.sortDescriptors = [NSSortDescriptor(key: "offset", ascending: true)]
-        let ops = (try? context.fetch(request) as [CDStringOp]) ?? []
+        request.predicate = NSPredicate(format: "lamport == %@ and peerId == %@", argumentArray: [address.lamport, address.peerID])
+        request.fetchLimit = 1
+        return try? context.fetch(request).first
+    }
 
-        var originOp: CDStringOp?
-        var nodeToSplit: CDStringOp?
-        for op in ops {
-            switch op.offset {
-            case address.offset:
-                return op
-            case 0:
-                originOp = op
-                nodeToSplit = op
-            case < address.offset:
-                
-            default:
-                continue
-            }
-        }
-        // we need to split the node - find - the last node to split !!!!!!!!!!
-        
-        let op = originOp?.splitNodeAt(context: context, offset: address.offset)
-        return op
-    }
-    
-    func opProxy() -> CDStringOpProxy {
-        return CDStringOpProxy(context: managedObjectContext!, object: self)
-    }
-    
-    /**
-    does not save
-     */
-    func splitNodeAt(context: NSManagedObjectContext, offset nextOffset: Int32) -> CDStringOp? {
-        //TODO: ERROR - it should walk over all nodes in the op
-        
-        let newLength: Int = Int(nextOffset - offset)
-        guard newLength > 0 else { return nil }
-        guard newLength < insertContribution.count else { return nil }
-        
-        
-        let str0End = insertContribution.index(insertContribution.startIndex, offsetBy: newLength)
-        let prevContribution = String(insertContribution[..<str0End])
-        let nextContribution = String(insertContribution[str0End...])
-        self.insertContribution = prevContribution
-        let nextOp = CDStringOp.initInsert(context: context, container: (self.container as! CDAttributeOp), parent: self.parent, contribution: nextContribution, offset: nextOffset)
-        nextOp.next = self.next
-        nextOp.prev = self
-        self.next = nextOp
-        if self.hasTombstone {
-            next?.hasTombstone = true
-            // we are not creating extra delete op as there is no use for it ATM and will complicate sync
-            // attribute is enough
-        }
-        return nextOp
-    }
 
 //    private func markDeleted() {
 //        let _ = CDStringOp.initDelete(context: context, container: self, parentAddress: <#T##CRStringAddress#>, length: <#T##Int32#>)

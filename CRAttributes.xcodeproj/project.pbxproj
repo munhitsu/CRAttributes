@@ -22,11 +22,9 @@
 
 /* Begin PBXBuildFile section */
 		BB0FC2DD26DB9FFB0033FEC3 /* CRAttributedStringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0FC2DC26DB9FFB0033FEC3 /* CRAttributedStringTests.swift */; };
-		BB382A3E26FA6624006B51FC /* CDStringOpProxy.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB382A3D26FA6624006B51FC /* CDStringOpProxy.swift */; };
 		BB7BD5D526C4732500ADEDD4 /* test-mk-editing-trace.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = BB7BD5D426C4732500ADEDD4 /* test-mk-editing-trace.json */; };
 		BB8D7C8326D831F300B4E83E /* CDRenderedStringOp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB8D7C8226D831F300B4E83E /* CDRenderedStringOp.swift */; };
 		BBA81EBF26C64F430015981B /* CRRemoteOperationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBA81EBE26C64F430015981B /* CRRemoteOperationsTests.swift */; };
-		BBCBAE7927303F26005E7717 /* CRStringAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBCBAE7827303F26005E7717 /* CRStringAddress.swift */; };
 		BBCBAE7B27303F38005E7717 /* CROperationID.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBCBAE7A27303F38005E7717 /* CROperationID.swift */; };
 		BBCBAE7D27303F5F005E7717 /* UUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBCBAE7C27303F5F005E7717 /* UUID.swift */; };
 		BBCBAE7F273042A8005E7717 /* RGAController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBCBAE7E273042A8005E7717 /* RGAController.swift */; };
@@ -213,13 +211,11 @@
 
 /* Begin PBXFileReference section */
 		BB0FC2DC26DB9FFB0033FEC3 /* CRAttributedStringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRAttributedStringTests.swift; sourceTree = "<group>"; };
-		BB382A3D26FA6624006B51FC /* CDStringOpProxy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDStringOpProxy.swift; sourceTree = "<group>"; };
 		BB7BD5D426C4732500ADEDD4 /* test-mk-editing-trace.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = "test-mk-editing-trace.json"; path = "Data Assets/test-mk-editing-trace.json"; sourceTree = "<group>"; };
 		BB8D7C8226D831F300B4E83E /* CDRenderedStringOp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDRenderedStringOp.swift; sourceTree = "<group>"; };
 		BBA81EBD26C5ACE70015981B /* ProtoModel.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = ProtoModel.proto; sourceTree = "<group>"; };
 		BBA81EBE26C64F430015981B /* CRRemoteOperationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRRemoteOperationsTests.swift; sourceTree = "<group>"; };
 		BBBF0889271F685100493613 /* BENCHMARKS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BENCHMARKS.md; sourceTree = "<group>"; };
-		BBCBAE7827303F26005E7717 /* CRStringAddress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRStringAddress.swift; sourceTree = "<group>"; };
 		BBCBAE7A27303F38005E7717 /* CROperationID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CROperationID.swift; sourceTree = "<group>"; };
 		BBCBAE7C27303F5F005E7717 /* UUID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UUID.swift; sourceTree = "<group>"; };
 		BBCBAE7E273042A8005E7717 /* RGAController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RGAController.swift; sourceTree = "<group>"; };
@@ -399,6 +395,7 @@
 		OBJ_12 /* Interfaces */ = {
 			isa = PBXGroup;
 			children = (
+				BBCBAE7A27303F38005E7717 /* CROperationID.swift */,
 				OBJ_9 /* CRStorageController.swift */,
 				OBJ_13 /* CRAttributes.swift */,
 				OBJ_14 /* CRAttributeMutableString.swift */,
@@ -468,7 +465,6 @@
 				OBJ_21 /* CDLWWOp.swift */,
 				OBJ_22 /* CDObjectOp.swift */,
 				OBJ_25 /* CDStringOp.swift */,
-				BB382A3D26FA6624006B51FC /* CDStringOpProxy.swift */,
 				BB8D7C8226D831F300B4E83E /* CDRenderedStringOp.swift */,
 			);
 			path = LocalModel;
@@ -648,8 +644,6 @@
 			children = (
 				BBFF6B3726C7CC60005A6182 /* legacy */,
 				OBJ_16 /* Lamport.swift */,
-				BBCBAE7827303F26005E7717 /* CRStringAddress.swift */,
-				BBCBAE7A27303F38005E7717 /* CROperationID.swift */,
 				BBCBAE7C27303F5F005E7717 /* UUID.swift */,
 				OBJ_30 /* Utils.swift */,
 				BBCBAE7E273042A8005E7717 /* RGAController.swift */,
@@ -855,7 +849,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
-				BBCBAE7927303F26005E7717 /* CRStringAddress.swift in Sources */,
 				BB8D7C8326D831F300B4E83E /* CDRenderedStringOp.swift in Sources */,
 				OBJ_150 /* CRStorageController.swift in Sources */,
 				OBJ_151 /* CoOpMutableStringOperationDelete.swift in Sources */,
@@ -870,7 +863,6 @@
 				OBJ_157 /* CDAbstractOp.swift in Sources */,
 				BBCBAE7D27303F5F005E7717 /* UUID.swift in Sources */,
 				OBJ_158 /* CDAttributeOp.swift in Sources */,
-				BB382A3E26FA6624006B51FC /* CDStringOpProxy.swift in Sources */,
 				BBFF6B3D26CA7DD4005A6182 /* CDReplicatedModel.swift in Sources */,
 				OBJ_159 /* CDDeleteOp.swift in Sources */,
 				OBJ_160 /* CDLWWOp.swift in Sources */,

@@ -10,6 +10,7 @@ import CoreData
 import AppKit
 #if os(iOS)
 import UIKit
+import SwiftProtobuf
 //import XCTest
 #endif
 
@@ -57,11 +58,11 @@ class CRTextStorage: NSTextStorage {
 //    let attributeName: String
     var attributeOp: CDAttributeOp
     var attributedString: NSMutableAttributedString = NSMutableAttributedString(string:"")
-    var addressesArray: [CRStringAddress] = []
+    var addressesArray: [CROperationID] = []
     
     var stringOptimiseCountDown = stringOptimiseQueueLengthMax
     
-    var knownOperationForAddress: [CRStringAddress:CDStringOp] = [:]
+    var knownOperationForAddress: [CROperationID:CDStringOp] = [:]
     var context: NSManagedObjectContext
     
     
@@ -118,47 +119,32 @@ class CRTextStorage: NSTextStorage {
 
         if range.length > 0 {
             // TODO: delete operations in the range
-            var lastAddress:CRStringAddress? = nil
-            var length:Int32 = 0
             for address in addressesArray[range.location...(range.location+range.length-1)] {
-                if let safeLastAddress = lastAddress {
-                    if safeLastAddress.equalOrigin(with: address) {
-                       length += 1
-                    } else {
-                        let _ = CDStringOp.initDelete(context: self.context, container: self.attributeOp, parentAddress: safeLastAddress, length: length)
-                        lastAddress = address
-                    }
-                } else {
-                    lastAddress = address
-                    length += 1
-                }
+                let _ = CDStringOp(context: self.context, container: self.attributeOp, parentAddress: address, type:.delete, state: .inUpstreamQueueRendered)
             }
-            let _ = CDStringOp.initDelete(context: self.context, container: self.attributeOp, parentAddress: lastAddress!, length: length)
             try! context.save()
         }
         // TODO: - save once every 60 objects
 
         // create the string to insert
-        var strAddresses: [CRStringAddress] = [] //TODO: - prealocate the right size / maybe us map?
+        var strAddresses: [CROperationID] = [] //TODO: - prealocate the right size / maybe us map?
                 
         // create the operation to insert
-        
-        let parentAddress: CRStringAddress
+        // 1st the parent
+        var parentAddress: CROperationID
         if range.location > 0 {
             parentAddress = addressesArray[range.location-1]
         } else {
-            parentAddress = CRStringAddress.zero
+            parentAddress = CROperationID.zero
         }
         
-        let newOp:CDStringOp = CDStringOp.initInsert(context: context, container: attributeOp, parentAddress: parentAddress, contribution: strContent) //TODO: should we be passing prev, next here? - feels like a waste of CPU but we are saving space (unnecesairly)
-        var charAddress = newOp.stringAddress()
-        // TODO: link the operation in linked list and with parent
-        try! context.save()
-        
-        for (index, _ ) in strContent.enumerated() {
-            charAddress.offset = Int32(index)
+        for us in strContent.unicodeScalars {
+            let newOp:CDStringOp = CDStringOp(context: self.context, container: self.attributeOp, parentAddress: parentAddress, contribution: us, type: .insert, state: .inUpstreamQueueRendered)
+            let charAddress = newOp.operationID()
             strAddresses.append(charAddress)
+            parentAddress = charAddress
         }
+        //TODO: migrate to batch save
         
         // insert
         attributedString.replaceCharacters(in: range, with: strContent)
@@ -222,31 +208,8 @@ class CRTextStorage: NSTextStorage {
     
     private func operationForPosition(_ position: Int) -> CDStringOp {
         let opAddress = addressesArray[position]
-        return operationForAddress(opAddress)
+        return CDStringOp.fromStringAddress(context: self.context, address: opAddress)!
     }
-    
-    private func operationForAddress(_ address: CRStringAddress) -> CDStringOp {
-        fatalNotImplemented()
-        //TODO: check if I can have here the ManagedObjectID as part of addressesArray
-        
-        // query db for specific address
-        // query db for master operation operations (offset = 0) / order by offset
-        
-        
-        
-        
-//        var masterOpAddress = address
-//        masterOpAddress.offset = 0
-//
-        // how do we preload the dict, and when?
-//        masterOp =
-        
-        
-//        let opProxy:CDStringInsertOpProxy = attributedString!.attribute(.opProxy, at: 0  , effectiveRange: nil) as! CDStringInsertOpProxy
-        return CDStringOp()
-
-    }
-
     
     
     // MARK: - rebuild me

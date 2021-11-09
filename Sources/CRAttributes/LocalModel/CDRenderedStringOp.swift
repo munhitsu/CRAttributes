@@ -37,7 +37,7 @@ extension CDRenderedStringOp : Identifiable {
 extension CDRenderedStringOp {
 
     // this is slow to save so user needss to generate lamport synchronously before and run this async/in background
-    convenience init(context: NSManagedObjectContext, containerOp: CDAttributeOp, lamport: Int64, stringSnapshot: String?, addressesSnapshot: [CRStringAddress]?) {
+    convenience init(context: NSManagedObjectContext, containerOp: CDAttributeOp, lamport: Int64, stringSnapshot: String?, addressesSnapshot: [CROperationID]?) {
         self.init(context:context)
         self.container = containerOp
         self.lamport = lamport
@@ -52,7 +52,7 @@ extension CDRenderedStringOp {
         }
     }
     
-    convenience init(context: NSManagedObjectContext, containerOp: CDAttributeOp, in range: NSRange, operationString: String?, operationAddresses: [CRStringAddress]?) {
+    convenience init(context: NSManagedObjectContext, containerOp: CDAttributeOp, in range: NSRange, operationString: String?, operationAddresses: [CROperationID]?) {
         self.init(context:context)
         self.container = containerOp
         self.lamport = getLamport()
@@ -74,11 +74,11 @@ extension CDRenderedStringOp {
         self.stringContributionRaw = try? NSKeyedArchiver.archivedData(withRootObject: newValue, requiringSecureCoding: false)
     }
     
-    func getArrayContribution() -> [CRStringAddress] {
-        let array:[CRStringAddress] = self.arrayContributionRaw?.withUnsafeBytes { (pointer: UnsafePointer<CRStringAddress>) -> [CRStringAddress] in
+    func getArrayContribution() -> [CROperationID] {
+        let array:[CROperationID] = self.arrayContributionRaw?.withUnsafeBytes { (pointer: UnsafePointer<CROperationID>) -> [CROperationID] in
             let buffer = UnsafeBufferPointer(start: pointer,
-                                             count: self.arrayContributionRaw!.count/32)
-            return Array<CRStringAddress>(buffer)
+                                             count: self.arrayContributionRaw!.count/24)
+            return Array<CROperationID>(buffer)
         } ?? []
 
 
@@ -91,7 +91,7 @@ extension CDRenderedStringOp {
 //        return try! decoder.decode([CRStringAddress].self, from: self.arrayContributionRaw!)
 ////        return (try? (NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(self.arrayContributionRaw!) as? [CRStringAddress])!) ?? []
     }
-    func setArrayContribution(newValue: [CRStringAddress]) {
+    func setArrayContribution(newValue: [CROperationID]) {
         self.arrayContributionRaw = newValue.withUnsafeBufferPointer {
             return Data(buffer: $0)
         }
@@ -103,7 +103,7 @@ extension CDRenderedStringOp {
 
 
 extension CDRenderedStringOp {
-    static func stringBundleFor(context: NSManagedObjectContext, container: CDAttributeOp) -> (NSMutableAttributedString, [CRStringAddress]) {
+    static func stringBundleFor(context: NSManagedObjectContext, container: CDAttributeOp) -> (NSMutableAttributedString, [CROperationID]) {
         // get latest snapshot
         let requestSnapshot: NSFetchRequest<CDRenderedStringOp> = CDRenderedStringOp.fetchRequest()
         requestSnapshot.predicate = NSPredicate(format: "container == %@ and isSnapshot == true", argumentArray: [container])
@@ -113,7 +113,7 @@ extension CDRenderedStringOp {
         
         let snapshots:[CDRenderedStringOp] = try! context.fetch(requestSnapshot)
         let string:NSMutableAttributedString = NSMutableAttributedString(string: snapshots.first?.getStringContribution() ?? "")
-        var array:[CRStringAddress] = snapshots.first?.getArrayContribution() ?? []
+        var array:[CROperationID] = snapshots.first?.getArrayContribution() ?? []
         let lamport = snapshots.first?.lamport ?? 0
         print("snapshot lamport: \(lamport)")
 

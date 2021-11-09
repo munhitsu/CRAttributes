@@ -8,7 +8,7 @@
 import Foundation
 
 
-struct CROperationID: Comparable {
+public struct CROperationID: Comparable, Hashable, Codable {
     var lamport: lamportType
     var peerID: UUID
     
