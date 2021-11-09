@@ -26,10 +26,14 @@
 		BB7BD5D526C4732500ADEDD4 /* test-mk-editing-trace.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = BB7BD5D426C4732500ADEDD4 /* test-mk-editing-trace.json */; };
 		BB8D7C8326D831F300B4E83E /* CDRenderedStringOp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB8D7C8226D831F300B4E83E /* CDRenderedStringOp.swift */; };
 		BBA81EBF26C64F430015981B /* CRRemoteOperationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBA81EBE26C64F430015981B /* CRRemoteOperationsTests.swift */; };
+		BBCBAE7927303F26005E7717 /* CRStringAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBCBAE7827303F26005E7717 /* CRStringAddress.swift */; };
+		BBCBAE7B27303F38005E7717 /* CROperationID.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBCBAE7A27303F38005E7717 /* CROperationID.swift */; };
+		BBCBAE7D27303F5F005E7717 /* UUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBCBAE7C27303F5F005E7717 /* UUID.swift */; };
+		BBCBAE7F273042A8005E7717 /* RGAController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBCBAE7E273042A8005E7717 /* RGAController.swift */; };
 		BBFF6B3926C9818E005A6182 /* CDLocalModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBFF6B3826C9818E005A6182 /* CDLocalModel.swift */; };
 		BBFF6B3B26CA7330005A6182 /* ProtoModel.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBFF6B3A26CA7330005A6182 /* ProtoModel.pb.swift */; };
 		BBFF6B3D26CA7DD4005A6182 /* CDReplicatedModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBFF6B3C26CA7DD4005A6182 /* CDReplicatedModel.swift */; };
-		OBJ_150 /* Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* Storage.swift */; };
+		OBJ_150 /* CRStorageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* CRStorageController.swift */; };
 		OBJ_151 /* CoOpMutableStringOperationDelete.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_10 /* CoOpMutableStringOperationDelete.swift */; };
 		OBJ_152 /* CoOpMutableStringOperationInsert.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* CoOpMutableStringOperationInsert.swift */; };
 		OBJ_153 /* CRAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_13 /* CRAttributes.swift */; };
@@ -215,6 +219,10 @@
 		BBA81EBD26C5ACE70015981B /* ProtoModel.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = ProtoModel.proto; sourceTree = "<group>"; };
 		BBA81EBE26C64F430015981B /* CRRemoteOperationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRRemoteOperationsTests.swift; sourceTree = "<group>"; };
 		BBBF0889271F685100493613 /* BENCHMARKS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BENCHMARKS.md; sourceTree = "<group>"; };
+		BBCBAE7827303F26005E7717 /* CRStringAddress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRStringAddress.swift; sourceTree = "<group>"; };
+		BBCBAE7A27303F38005E7717 /* CROperationID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CROperationID.swift; sourceTree = "<group>"; };
+		BBCBAE7C27303F5F005E7717 /* UUID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UUID.swift; sourceTree = "<group>"; };
+		BBCBAE7E273042A8005E7717 /* RGAController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RGAController.swift; sourceTree = "<group>"; };
 		BBFF6B3826C9818E005A6182 /* CDLocalModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDLocalModel.swift; sourceTree = "<group>"; };
 		BBFF6B3A26CA7330005A6182 /* ProtoModel.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProtoModel.pb.swift; sourceTree = "<group>"; };
 		BBFF6B3C26CA7DD4005A6182 /* CDReplicatedModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDReplicatedModel.swift; sourceTree = "<group>"; };
@@ -327,7 +335,7 @@
 		OBJ_87 /* Message.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Message.swift; sourceTree = "<group>"; };
 		OBJ_88 /* MessageExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageExtension.swift; sourceTree = "<group>"; };
 		OBJ_89 /* NameMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NameMap.swift; sourceTree = "<group>"; };
-		OBJ_9 /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
+		OBJ_9 /* CRStorageController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRStorageController.swift; sourceTree = "<group>"; };
 		OBJ_90 /* ProtoNameProviding.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoNameProviding.swift; sourceTree = "<group>"; };
 		OBJ_91 /* ProtobufAPIVersionCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtobufAPIVersionCheck.swift; sourceTree = "<group>"; };
 		OBJ_92 /* ProtobufMap.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtobufMap.swift; sourceTree = "<group>"; };
@@ -391,6 +399,7 @@
 		OBJ_12 /* Interfaces */ = {
 			isa = PBXGroup;
 			children = (
+				OBJ_9 /* CRStorageController.swift */,
 				OBJ_13 /* CRAttributes.swift */,
 				OBJ_14 /* CRAttributeMutableString.swift */,
 				OBJ_15 /* CRObject.swift */,
@@ -638,9 +647,12 @@
 			isa = PBXGroup;
 			children = (
 				BBFF6B3726C7CC60005A6182 /* legacy */,
-				OBJ_9 /* Storage.swift */,
 				OBJ_16 /* Lamport.swift */,
+				BBCBAE7827303F26005E7717 /* CRStringAddress.swift */,
+				BBCBAE7A27303F38005E7717 /* CROperationID.swift */,
+				BBCBAE7C27303F5F005E7717 /* UUID.swift */,
 				OBJ_30 /* Utils.swift */,
+				BBCBAE7E273042A8005E7717 /* RGAController.swift */,
 				OBJ_12 /* Interfaces */,
 				OBJ_17 /* LocalModel */,
 				OBJ_27 /* ReplicatedModel */,
@@ -843,10 +855,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 0;
 			files = (
+				BBCBAE7927303F26005E7717 /* CRStringAddress.swift in Sources */,
 				BB8D7C8326D831F300B4E83E /* CDRenderedStringOp.swift in Sources */,
-				OBJ_150 /* Storage.swift in Sources */,
+				OBJ_150 /* CRStorageController.swift in Sources */,
 				OBJ_151 /* CoOpMutableStringOperationDelete.swift in Sources */,
 				BBFF6B3926C9818E005A6182 /* CDLocalModel.swift in Sources */,
+				BBCBAE7F273042A8005E7717 /* RGAController.swift in Sources */,
 				OBJ_152 /* CoOpMutableStringOperationInsert.swift in Sources */,
 				OBJ_153 /* CRAttributes.swift in Sources */,
 				OBJ_154 /* CRAttributeMutableString.swift in Sources */,
@@ -854,6 +868,7 @@
 				BBFF6B3B26CA7330005A6182 /* ProtoModel.pb.swift in Sources */,
 				OBJ_156 /* Lamport.swift in Sources */,
 				OBJ_157 /* CDAbstractOp.swift in Sources */,
+				BBCBAE7D27303F5F005E7717 /* UUID.swift in Sources */,
 				OBJ_158 /* CDAttributeOp.swift in Sources */,
 				BB382A3E26FA6624006B51FC /* CDStringOpProxy.swift in Sources */,
 				BBFF6B3D26CA7DD4005A6182 /* CDReplicatedModel.swift in Sources */,
@@ -864,6 +879,7 @@
 				OBJ_164 /* CDStringOp.swift in Sources */,
 				OBJ_166 /* CDOperationsForest.swift in Sources */,
 				OBJ_168 /* Utils.swift in Sources */,
+				BBCBAE7B27303F38005E7717 /* CROperationID.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

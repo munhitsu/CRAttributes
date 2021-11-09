@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreData
+import Combine
 
 //TODO: follow iwht https://developer.apple.com/documentation/coredata/consuming_relevant_store_changes
 public class CRStorageController {
@@ -35,8 +36,16 @@ public class CRStorageController {
     
     let localContainer: NSPersistentContainer
     let replicatedContainer: NSPersistentContainer
+    let localContainerBackgroundContext: NSManagedObjectContext
+    
+    let rgaController: RGAController
+    
+    private var observers: [AnyCancellable] = []
     
     init(inMemory: Bool = false) {
+        print("CRStorageController.init")
+        print("thread: \(Thread.current)")
+
         localContainer = NSPersistentContainer(name: "CRLocalModel", managedObjectModel: CRLocalModel)
         replicatedContainer = NSPersistentCloudKitContainer(name: "CRReplicatedModel", managedObjectModel: CRReplicatedModel)
         
@@ -62,6 +71,41 @@ public class CRStorageController {
         let replicatedDescription  = replicatedContainer.persistentStoreDescriptions.first
         replicatedDescription?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         replicatedDescription?.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+        
+        
+        localContainerBackgroundContext = localContainer.newBackgroundContext()
+        localContainerBackgroundContext.automaticallyMergesChangesFromParent = true
+
+        
+        self.rgaController = RGAController(localBackgroundContext: localContainerBackgroundContext)
+        
+//        observers.append(NotificationCenter.default
+//            .publisher(for: .NSManagedObjectContextDidSave, object: localContainer.viewContext)
+//            .sink(receiveValue: {
+//                notification in
+//                print("Received save on viewContext \(notification)")
+//                print("thread is Main: \(Thread.isMainThread)")
+//                print("thread: \(Thread.current)")
+//            }))
+
+        //source: https://www.donnywals.com/observing-changes-to-managed-objects-across-contexts-with-combine/
+        observers.append(NotificationCenter.default
+            .publisher(for: NSManagedObjectContext.didMergeChangesObjectIDsNotification, object: localContainerBackgroundContext)
+            .sink(receiveValue: { [weak self] notification in
+            guard let self = self else { return }
+//            let ids: [NSManagedObjectID] = []
+//            print(notification.userInfo)
+            if let inserted_ids = notification.userInfo?[NSInsertedObjectIDsKey] as? Set<NSManagedObjectID> {
+//                print(notification.userInfo?[NSInsertedObjectIDsKey])
+                self.rgaController.handleContextDidMerge(ids: inserted_ids, context: self.localContainerBackgroundContext)
+            }
+//                     updated.contains(managedObject.objectID)
+//            print("Received merge on backgroundContext \(notification)")
+//            print("thread: \(Thread.current)")
+//            assert(!Thread.isMainThread)
+//
+        }))
+        
     }
 }
 

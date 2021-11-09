@@ -331,6 +331,13 @@ final class CRLocalOperationsTests: XCTestCase {
     }
     
     func testStringSaveRestore() {
+
+        expectation(
+          forNotification: .NSManagedObjectContextDidSave,
+          object: CRStorageController.shared.localContainerBackgroundContext) { _ in
+            return true
+        }
+
         let n1 = CRObject(type: .testNote, container: nil)
         let a5:CRAttributeString = n1.attribute(name: "title", type: .string) as! CRAttributeString
         XCTAssertEqual(a5.operationsCount(), 0)
@@ -378,6 +385,11 @@ final class CRLocalOperationsTests: XCTestCase {
         XCTAssertEqual(string.string, b_a7.textStorage!.string)
 
         // TODO: add snapshot test
+        
+        
+        waitForExpectations(timeout: 2.0) { error in
+            XCTAssertNil(error, "Save wasn't propagated to the backgroundContext")
+          }
     }
     
   

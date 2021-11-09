@@ -8,10 +8,16 @@
 - [x] on string upstream - create delete unprocessed op
 - [x] on string upstream - create insert unprocessed op
 - [] process string upstream op into the RGA
+- [] whye can't I get merged object ID - compare with:
+https://www.donnywals.com/observing-changes-to-managed-objects-across-contexts-with-combine/
 - [] ship string upstream op to the replicated container
 - [] merge downstream string op
 
 
+
+
+
+## old
 
 - [] benchmark fetch using objectID vs fetch using OperationID -> write down results / benchmark as separate project maybe
 - [] benchmark - compare flat object with inheritend one
