@@ -15,6 +15,9 @@ public class RGAController {
         self.localBackgroundContext = localBackgroundContext
     }
     
+    
+    //TODO: check occasionally for .inUpstreamQueueRendered and retry linking
+
     func handleContextDidMerge(ids: Set<NSManagedObjectID>, context: NSManagedObjectContext) {
         assert(!Thread.isMainThread)
         for objectID in ids {
@@ -22,13 +25,9 @@ public class RGAController {
             //no other CDAbstractOp requires processing in the background queue
             if let cdOp = context.object(with: objectID) as? CDStringOp {
                 print(cdOp)
-                if cdOp.state == .inUpstreamQueueRendered {
-                    if cdOp.type == .insert {
-                    // find or create insertion point
-                    // perform insert (link)
-                    } else if cdOp.type == .delete {
-                        fatalNotImplemented()
-                    }
+                if cdOp.linkMe(context: context) {
+                    cdOp.state = .processed
+                    try? context.save()
                 }
             }
         }

@@ -384,12 +384,18 @@ final class CRLocalOperationsTests: XCTestCase {
         let b_a7:CRAttributeMutableString = b_n1.attribute(name: "note2", type: .mutableString) as! CRAttributeMutableString
         XCTAssertEqual(string.string, b_a7.textStorage!.string)
 
+        // test if rga form is correct
+        b_a7.textStorage?.prebuildAttributedStringFromOperations(attributeOp: b_a7.textStorage!.attributeOp)
+        XCTAssertEqual(string.string, b_a7.textStorage!.string)
+
         // TODO: add snapshot test
         
         
         waitForExpectations(timeout: 2.0) { error in
-            XCTAssertNil(error, "Save wasn't propagated to the backgroundContext")
+            XCTAssertNil(error, "backgroundContext should save when performing merge")
           }
+        
+        // TODO: test restored string from RGA form
     }
     
   

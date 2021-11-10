@@ -64,6 +64,20 @@ extension CDAbstractOp : Identifiable {
 
 }
 
+extension CDAbstractOp : Comparable {
+    public static func < (lhs: CDAbstractOp, rhs: CDAbstractOp) -> Bool {
+        if lhs.lamport == rhs.lamport {
+            return lhs.peerID < rhs.peerID
+        } else {
+            return lhs.lamport < rhs.lamport
+        }
+    }
+    
+    public static func == (lhs: CDAbstractOp, rhs: CDAbstractOp) -> Bool {
+        return lhs.lamport == rhs.lamport && lhs.peerID == rhs.peerID
+    }
+}
+
 extension CDAbstractOp {
     convenience init(context: NSManagedObjectContext, container: CDAbstractOp?) {
         self.init(context:context)

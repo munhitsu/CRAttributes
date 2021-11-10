@@ -2,21 +2,17 @@
 
 
 - [x] on string upstream - update rendered form
-
-- [] update model to RGA
-- [] on string upstream - create insert unprocessed op - RGA - use core data batch API
-- [] on string upstream - create delete unprocessed op - RGA
-
+- [x] update model to RGA
+- [x] on string upstream - create insert unprocessed op - RGA - slow
+- [x] on string upstream - create delete unprocessed op - RGA
 
 
 - [] process string upstream op into the RGA
-- [] whye can't I get merged object ID - compare with:
-https://www.donnywals.com/observing-changes-to-managed-objects-across-contexts-with-combine/
 - [] ship string upstream op to the replicated container
 - [] merge downstream string op
 
-
-- [] 2 delete operations.... and protobuf impact
+- [] optimise insert creation on paste - use core data batch API 
+- [] 2 different delete operat type for strings.... and protobuf impact
 
 
 

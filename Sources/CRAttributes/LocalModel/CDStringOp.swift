@@ -125,6 +125,49 @@ extension CDStringOp {
         
     }
     
+    /**
+     does not save
+     returns if linking was a success
+     */
+    func linkMe(context: NSManagedObjectContext) -> Bool {
+        guard let parentOp = CDStringOp.fromStringAddress(context: context, address: CROperationID(lamport: parentLamport, peerID: parentPeerID)) else {
+            return false
+        }
+        self.parent = parentOp
+        
+        switch self.type {
+        case .insert:
+            let children = (parentOp.childOperations?.allObjects as! [CDStringOp]).sorted(by: >)
+            
+            // if no children then insert after parent
+            if children.count == 0 {
+                self.prev = parentOp
+                self.next = parentOp.next
+                parentOp.next = self
+                return true
+            }
+            
+            // let's insert before the 1st older op
+            for op: CDStringOp in children {
+                if self > op {
+                    self.prev = op.prev
+                    self.next = op
+                    op.prev = self
+                    return true
+                }
+            }
+            // let's append after the last
+            let lastChild = children.last
+            self.prev = lastChild
+            self.next = lastChild?.next
+            lastChild?.next = self
+            return true
+        case .delete:
+            parentOp.hasTombstone = true
+            return true
+        }
+    }
+    
     static func restoreLinkedList(context: NSManagedObjectContext, from: [ProtoStringInsertOperation], container: CDAttributeOp?) -> CDStringOp {
         var cdOperations:[CDStringOp] = []
         var prevOp:CDStringOp? = nil
@@ -150,7 +193,7 @@ extension CDStringOp {
     static func fromStringAddress(context: NSManagedObjectContext, address: CROperationID) -> CDStringOp? {
         let request:NSFetchRequest<CDStringOp> = CDStringOp.fetchRequest()
         request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "lamport == %@ and peerId == %@", argumentArray: [address.lamport, address.peerID])
+        request.predicate = NSPredicate(format: "lamport == %@ and peerID == %@", argumentArray: [address.lamport, address.peerID])
         request.fetchLimit = 1
         return try? context.fetch(request).first
     }
