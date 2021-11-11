@@ -332,9 +332,10 @@ final class CRLocalOperationsTests: XCTestCase {
     
     func testStringSaveRestore() {
 
+        let bgContext = CRStorageController.shared.localContainerBackgroundContext
         expectation(
           forNotification: .NSManagedObjectContextDidSave,
-          object: CRStorageController.shared.localContainerBackgroundContext) { _ in
+          object: bgContext) { _ in
             return true
         }
 
@@ -369,6 +370,13 @@ final class CRLocalOperationsTests: XCTestCase {
         XCTAssertEqual(string.string, a7.textStorage!.string)
         XCTAssertEqual(a7.operationsCount(), operationsLimit)
         
+        // TODO: add snapshot test
+        bgContext.performAndWait {
+            print("Blocking for the merge operations to finish")
+        }
+        // test if rga form is correct
+        a7.textStorage?.prebuildAttributedStringFromOperations(attributeOp: a7.textStorage!.attributeOp)
+        XCTAssertEqual(string.string, a7.textStorage!.string)
         
         // Restoring
         let b_n1 = CRObject.allObjects(type: .testNote)[0]
@@ -384,16 +392,21 @@ final class CRLocalOperationsTests: XCTestCase {
         let b_a7:CRAttributeMutableString = b_n1.attribute(name: "note2", type: .mutableString) as! CRAttributeMutableString
         XCTAssertEqual(string.string, b_a7.textStorage!.string)
 
+
+        // TODO: add snapshot test
+        bgContext.performAndWait {
+            print("Should be the last thing in the queue")
+        }
+
+        // not needed anymore, see above
+        waitForExpectations(timeout: 10.0) { error in
+            XCTAssertNil(error, "backgroundContext should save when performing merge")
+        }
+
         // test if rga form is correct
         b_a7.textStorage?.prebuildAttributedStringFromOperations(attributeOp: b_a7.textStorage!.attributeOp)
         XCTAssertEqual(string.string, b_a7.textStorage!.string)
-
-        // TODO: add snapshot test
         
-        
-        waitForExpectations(timeout: 2.0) { error in
-            XCTAssertNil(error, "backgroundContext should save when performing merge")
-          }
         
         // TODO: test restored string from RGA form
     }

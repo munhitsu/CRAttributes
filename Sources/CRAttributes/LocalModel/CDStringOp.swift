@@ -130,10 +130,13 @@ extension CDStringOp {
      returns if linking was a success
      */
     func linkMe(context: NSManagedObjectContext) -> Bool {
-        guard let parentOp = CDStringOp.fromStringAddress(context: context, address: CROperationID(lamport: parentLamport, peerID: parentPeerID)) else {
+        let parentAddress = CROperationID(lamport: parentLamport, peerID: parentPeerID)
+        if parentAddress.isZero() {
+            return true
+        }
+        guard let parentOp = CDStringOp.fromStringAddress(context: context, address: parentAddress) else {
             return false
         }
-        self.parent = parentOp
         
         switch self.type {
         case .insert:
@@ -166,6 +169,7 @@ extension CDStringOp {
             parentOp.hasTombstone = true
             return true
         }
+        self.parent = parentOp
     }
     
     static func restoreLinkedList(context: NSManagedObjectContext, from: [ProtoStringInsertOperation], container: CDAttributeOp?) -> CDStringOp {

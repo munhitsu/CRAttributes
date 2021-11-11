@@ -21,10 +21,10 @@ public class RGAController {
     func handleContextDidMerge(ids: Set<NSManagedObjectID>, context: NSManagedObjectContext) {
         assert(!Thread.isMainThread)
         for objectID in ids {
-            print("merged id: \(objectID)")
             //no other CDAbstractOp requires processing in the background queue
             if let cdOp = context.object(with: objectID) as? CDStringOp {
-                print(cdOp)
+                guard cdOp.state == .inUpstreamQueueRendered else { continue }
+                print("linking: \(cdOp)")
                 if cdOp.linkMe(context: context) {
                     cdOp.state = .processed
                     try? context.save()
