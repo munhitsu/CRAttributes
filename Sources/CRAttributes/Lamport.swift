@@ -34,7 +34,9 @@ func getLamport() -> lamportType {
  exeute on every incoming message unless you create an Id object
 */
 public func newLamportSeen(_ seenLamport: lamportType) {
-    lastLamport = max(lastLamport, seenLamport)
+    lastLamportQueue.sync {
+        lastLamport = max(lastLamport, seenLamport)
+    }
 }
 
 
@@ -45,7 +47,6 @@ public func newLamportSeen(_ seenLamport: lamportType) {
  scans alll operation logs for the maximum known lamport
  */
 public func updateLastLamportFromCoOpLog(in context: NSManagedObjectContext) {
-    //TODO:  deduplicate code through inheritance and maybe even model inheritance to have one query
     let fetchRequestInsert:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
     fetchRequestInsert.sortDescriptors = [NSSortDescriptor(key: "lamport", ascending: false)]
     fetchRequestInsert.fetchLimit = 1

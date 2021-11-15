@@ -350,7 +350,7 @@ final class CRLocalOperationsTests: XCTestCase {
         
         // MutableString handcrafted
         let a6:CRAttributeMutableString = n1.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
-        XCTAssertEqual(a6.operationsCount(), 0)
+        XCTAssertEqual(a6.operationsCount(), 1)
 //        XCTAssertNil(a6.value)
         a6.textStorage!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: "A")
         XCTAssertEqual(a6.textStorage!.string, "A")
@@ -368,16 +368,35 @@ final class CRLocalOperationsTests: XCTestCase {
         let a7:CRAttributeMutableString = n1.attribute(name: "note2", type: .mutableString) as! CRAttributeMutableString
         a7.textStorage!.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
         XCTAssertEqual(string.string, a7.textStorage!.string)
-        XCTAssertEqual(a7.operationsCount(), operationsLimit)
+        XCTAssertEqual(a7.operationsCount(), operationsLimit+1)
+        
+        
+        let a8:CRAttributeMutableString = n1.attribute(name: "note3", type: .mutableString) as! CRAttributeMutableString
+        a8.textStorage!.replaceCharacters(in: .init(location: 0, length: 0), with: "A")
+        XCTAssertEqual(a8.textStorage!.string, "A")
+        a8.textStorage!.replaceCharacters(in: .init(location: 0, length: 0), with: "abc")
+        XCTAssertEqual(a8.textStorage!.string, "abcA")
+        a8.textStorage!.replaceCharacters(in: .init(location: 0, length: 0), with: "123")
+        XCTAssertEqual(a8.textStorage!.string, "123abcA")
+        a8.textStorage!.replaceCharacters(in: .init(location: 4, length: 1), with: "X")
+        XCTAssertEqual(a8.textStorage!.string, "123aXcA")
+
+        
         
         // TODO: add snapshot test
         bgContext.performAndWait {
             print("Blocking for the merge operations to finish")
         }
         // test if rga form is correct
-        a7.textStorage?.prebuildAttributedStringFromOperations(attributeOp: a7.textStorage!.attributeOp)
-        XCTAssertEqual(string.string, a7.textStorage!.string)
+//        a7.textStorage?.prebuildAttributedStringFromOperations(attributeOp: a7.textStorage!.attributeOp)
+//        XCTAssertEqual(string.string, a7.textStorage!.string)
         
+        let fromOp_a7 = a7.textStorage!.stringFromOperations().0
+        XCTAssertEqual(fromOp_a7.string, string.string)
+
+        let fromOp_a8 = a8.textStorage!.stringFromOperations().0
+        XCTAssertEqual(fromOp_a8.string, "123aXcA")
+
         // Restoring
         let b_n1 = CRObject.allObjects(type: .testNote)[0]
         XCTAssertEqual(b_n1.operationObjectID, n1.operationObjectID)
@@ -404,13 +423,41 @@ final class CRLocalOperationsTests: XCTestCase {
         }
 
         // test if rga form is correct
-        b_a7.textStorage?.prebuildAttributedStringFromOperations(attributeOp: b_a7.textStorage!.attributeOp)
-        XCTAssertEqual(string.string, b_a7.textStorage!.string)
-        
+        let fromOp_b_a7 = b_a7.textStorage!.stringFromOperations().0
+        XCTAssertEqual(fromOp_b_a7.string, string.string)
+
         
         // TODO: test restored string from RGA form
     }
     
+    func testMultipleInsertsAtZero() {
+
+        let bgContext = CRStorageController.shared.localContainerBackgroundContext
+
+
+        let n1 = CRObject(type: .testNote, container: nil)
+        
+        let a8:CRAttributeMutableString = n1.attribute(name: "note3", type: .mutableString) as! CRAttributeMutableString
+        a8.textStorage!.replaceCharacters(in: .init(location: 0, length: 0), with: "A")
+        XCTAssertEqual(a8.textStorage!.string, "A")
+        a8.textStorage!.replaceCharacters(in: .init(location: 0, length: 0), with: "abc")
+        XCTAssertEqual(a8.textStorage!.string, "abcA")
+        a8.textStorage!.replaceCharacters(in: .init(location: 0, length: 0), with: "123")
+        XCTAssertEqual(a8.textStorage!.string, "123abcA")
+        a8.textStorage!.replaceCharacters(in: .init(location: 4, length: 1), with: "X")
+        XCTAssertEqual(a8.textStorage!.string, "123aXcA")
+
+        
+        
+        // TODO: add snapshot test
+        bgContext.performAndWait {
+            print("Blocking for the merge operations to finish")
+        }
+
+        let fromOp_a8 = a8.textStorage!.stringFromOperations().0
+        XCTAssertEqual(fromOp_a8.string, "123aXcA")
+
+    }
   
     func testCompareStringPerformanceUpstream() {
         let operationsLimit = 50000 // TODO: bring back to 50K

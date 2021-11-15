@@ -43,8 +43,9 @@ enum CDStringOpState: Int32 {
 }
 
 enum CDStringOpType: Int32 {
-    case insert = 0
-    case delete = 1
+    case head = 0
+    case insert = 1
+    case delete = 2
 }
 
 
@@ -127,27 +128,43 @@ extension CDStringOp {
     
     /**
      does not save
-     returns if linking was a success
+     returns if linking was yet possible
      */
     func linkMe(context: NSManagedObjectContext) -> Bool {
         let parentAddress = CROperationID(lamport: parentLamport, peerID: parentPeerID)
-        if parentAddress.isZero() {
-            return true
-        }
-        guard let parentOp = CDStringOp.fromStringAddress(context: context, address: parentAddress) else {
+//        if parentAddress.isZero() {
+//            //TODO: fix multiple inserts at the start
+//            return true
+//        }
+        guard let container = container else { return false }
+        guard let parentOp = CDStringOp.fromStringAddress(context: context, address: parentAddress, container: container) else {
             return false
         }
+        print("parent: \(parentOp)")
+        assert(parentOp.managedObjectContext == self.managedObjectContext)
         
-        switch self.type {
+    mainSwitch: switch self.type {
+        case .head:
+            return true
         case .insert:
             let children = (parentOp.childOperations?.allObjects as! [CDStringOp]).sorted(by: >)
-            
+            self.parent = parentOp
+
             // if no children then insert after parent
             if children.count == 0 {
-                self.prev = parentOp
-                self.next = parentOp.next
-                parentOp.next = self
-                return true
+                let parentNext = parent?.next
+                print("parent: \(parent?.lamport): parent:\(parent?.parent?.lamport) prev:\(parent?.prev?.lamport) next:\(parent?.next?.lamport)")
+                print("self: \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
+                self.prev = parent
+                print("self: \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
+                self.next = parent?.next
+
+//                self.next = parentNext // it's weird that I can't just: self.next = parent?.next
+                print("self: \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
+                parent?.next = self
+                print("parent: \(parent?.lamport): parent:\(parent?.parent?.lamport) prev:\(parent?.prev?.lamport) next:\(parent?.next?.lamport)")
+                print("self: \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
+                break mainSwitch
             }
             
             // let's insert before the 1st older op
@@ -156,7 +173,7 @@ extension CDStringOp {
                     self.prev = op.prev
                     self.next = op
                     op.prev = self
-                    return true
+                    break mainSwitch
                 }
             }
             // let's append after the last
@@ -164,12 +181,48 @@ extension CDStringOp {
             self.prev = lastChild
             self.next = lastChild?.next
             lastChild?.next = self
-            return true
+            self.parent = parentOp
         case .delete:
             parentOp.hasTombstone = true
-            return true
+            self.parent = parentOp
         }
-        self.parent = parentOp
+
+        print("parent: \(parent?.lamport): parent:\(parent?.parent?.lamport) prev:\(parent?.prev?.lamport) next:\(parent?.next?.lamport)")
+        print("self: \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
+        
+        printRGADebug(context: context)
+        return true
+    }
+    
+    func printRGADebug(context: NSManagedObjectContext) {
+        print("rga form debug:")
+
+        // let's get the first operation
+        let request:NSFetchRequest<CDStringOp> = CDStringOp.fetchRequest()
+        request.returnsObjectsAsFaults = false
+        request.predicate = NSPredicate(format: "container == %@ and rawType == 0", argumentArray: [container!])
+        var response = try! context.fetch(request)
+        assert(response.count == 1)
+        let head:CDStringOp? = response.first
+
+        // build the attributedString
+        var string = ""
+        var node:CDStringOp? = head
+        node = node?.next // let's skip the head
+        while node != nil {
+            if node!.hasTombstone == false {
+                let contribution = String(Character(node!.unicodeScalar))
+                string.append(contribution)
+            }
+            node = node!.next
+        }
+        print(" str: \(string)")
+        
+        request.predicate = NSPredicate(format: "container == %@", argumentArray: [container!])
+        response = try! context.fetch(request)
+        for op in response {
+            print(" op: \(op.lamport): parent:\(op.parent?.lamport) prev:\(op.prev?.lamport) next:\(op.next?.lamport)")
+        }
     }
     
     static func restoreLinkedList(context: NSManagedObjectContext, from: [ProtoStringInsertOperation], container: CDAttributeOp?) -> CDStringOp {
@@ -185,19 +238,10 @@ extension CDStringOp {
         return cdOperations[0]
     }
     
-    /**
-        returns operation that will be previous to the position
-        when required it will cut the string
-     */
-    static func insertionOpFor(operationID: CROperationID, position: Int32) {
-        
-    }
-    
-    
-    static func fromStringAddress(context: NSManagedObjectContext, address: CROperationID) -> CDStringOp? {
+    static func fromStringAddress(context: NSManagedObjectContext, address: CROperationID, container: CDAbstractOp) -> CDStringOp? {
         let request:NSFetchRequest<CDStringOp> = CDStringOp.fetchRequest()
         request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "lamport == %@ and peerID == %@", argumentArray: [address.lamport, address.peerID])
+        request.predicate = NSPredicate(format: "lamport == %@ and peerID == %@ and container == %@", argumentArray: [address.lamport, address.peerID, container])
         request.fetchLimit = 1
         return try? context.fetch(request).first
     }

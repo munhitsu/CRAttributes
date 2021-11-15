@@ -27,6 +27,7 @@ class CRAttributeMutableString: CRAttribute {
         let context = CRStorageController.shared.localContainer.viewContext
         context.performAndWait {
             let attributeOp = context.object(with: operationObjectID!) as? CDAttributeOp
+            
             textStorage = CRTextStorage(attributeOp: attributeOp!)
         }
     }
@@ -206,20 +207,20 @@ class CRTextStorage: NSTextStorage {
         }
     }
     
-    private func operationForPosition(_ position: Int) -> CDStringOp {
-        let opAddress = addressesArray[position]
-        return CDStringOp.fromStringAddress(context: self.context, address: opAddress)!
-    }
+//    private func operationForPosition(_ position: Int) -> CDStringOp {
+//        let opAddress = addressesArray[position]
+//        return CDStringOp.fromStringAddress(context: self.context, address: opAddress)!
+//    }
     
     
     // MARK: - rebuild me
     
-    public func prebuildAttributedStringFromOperations(attributeOp: CDAttributeOp) {
+    public func stringFromOperations() -> (NSMutableAttributedString, [CROperationID]) {
         let context = CRStorageController.shared.localContainer.viewContext
 //        fatalNotImplemented() //TODO - now mix the rendered string snapshots and remote operations
 
         // let's prefetch
-        // there is no need to prefetch delete operations as we have the hasTombstone attribute
+        // BTW: there is no need to prefetch delete operations as we have the hasTombstone attribute
         var request:NSFetchRequest<CDStringOp> = CDStringOp.fetchRequest()
         request.returnsObjectsAsFaults = false
         request.predicate = NSPredicate(format: "container == %@", attributeOp)
@@ -228,13 +229,17 @@ class CRTextStorage: NSTextStorage {
         // let's get the first operation
         request = CDStringOp.fetchRequest()
         request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "container == %@ and prev == nil", attributeOp)
+        request.predicate = NSPredicate(format: "container == %@ and rawType == 0", attributeOp) // and rawType == 0
+//        for op in try! context.fetch(request) {
+//            print("would be adding: \(op)")
+//        }
         let head:CDStringOp? = try? context.fetch(request).first
 
         // build the attributedString
-        attributedString = NSMutableAttributedString(string:"")
-        addressesArray = []
+        let attributedString = NSMutableAttributedString(string:"")
+        var addressesArray:[CROperationID] = []
         var node:CDStringOp? = head
+        node = node?.next // let's skip the head
         while node != nil {
             if node!.hasTombstone == false {
                 let contribution = NSMutableAttributedString(string:String(Character(node!.unicodeScalar)))
@@ -243,6 +248,7 @@ class CRTextStorage: NSTextStorage {
             }
             node = node!.next
         }
+        return (attributedString, addressesArray)
     }
     
     

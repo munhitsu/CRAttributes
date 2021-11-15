@@ -51,17 +51,29 @@ extension CDAttributeOp {
         self.init(context: context, container: container)
         self.type = type
         self.name = name
+        
+        if type == .mutableString {
+            let headOp = CDStringOp(context: context)
+            headOp.lamport = 0
+            headOp.peerID = .zero
+            headOp.container = self
+            headOp.type = .head
+            headOp.state = .processed
+            headOp.insertContribution = 0
+            headOp.hasTombstone = false
+            headOp.parentLamport = .zero
+            headOp.parentPeerID = .zero
+//            self.head = headOp
+        }
+        
     }
 
     convenience init(context: NSManagedObjectContext, from protoForm: ProtoAttributeOperation, container: CDAbstractOp?, waitingForContainer: Bool=false) {
         print("From protobuf AttributeOp(\(protoForm.id.lamport))")
-        self.init(context: context)
+        self.init(context: context, container: container as? CDObjectOp, type: .init(rawValue: protoForm.rawType)!, name: protoForm.name)
         self.version = protoForm.version
         self.peerID = protoForm.id.peerID.object()
         self.lamport = protoForm.id.lamport
-        self.name = protoForm.name
-        self.rawType = protoForm.rawType
-        self.container = container
         self.upstreamQueueOperation = false
 
         

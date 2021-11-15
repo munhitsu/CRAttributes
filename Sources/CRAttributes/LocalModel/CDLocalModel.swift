@@ -41,8 +41,9 @@ let localModelDescription = CoreDataModelDescription(
                 indexes: [
                     .index(name: "lamport", elements: [.property(name: "lamport")]),
                     .index(name: "lamportPeerID", elements: [.property(name: "lamport"),.property(name: "peerID")])
-                ],
-                constraints: ["lamport", "peerID"]
+                ]
+//                ,
+//                constraints: ["lamport", "peerID", "container"]
                ),
         // object parent is an object it is nested within
         // null parent means it's a top level object
