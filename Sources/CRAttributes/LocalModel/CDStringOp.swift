@@ -153,16 +153,17 @@ extension CDStringOp {
             // if no children then insert after parent
             if children.count == 0 {
                 let parentNext = parent?.next
+                assert(parent != self)
                 print("parent: \(parent?.lamport): parent:\(parent?.parent?.lamport) prev:\(parent?.prev?.lamport) next:\(parent?.next?.lamport)")
-                print("self: \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
+                print("baseline ->           self: \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
                 self.prev = parent
-                print("self: \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
+                print("prev=parent ->        self: \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
                 self.next = parent?.next
 
 //                self.next = parentNext // it's weird that I can't just: self.next = parent?.next
-                print("self: \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
+                print("next = parent.next -> self: \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
                 parent?.next = self
-                print("parent: \(parent?.lamport): parent:\(parent?.parent?.lamport) prev:\(parent?.prev?.lamport) next:\(parent?.next?.lamport)")
+                print("parent.next = self -> parent: \(parent?.lamport): parent:\(parent?.parent?.lamport) prev:\(parent?.prev?.lamport) next:\(parent?.next?.lamport)")
                 print("self: \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
                 break mainSwitch
             }
