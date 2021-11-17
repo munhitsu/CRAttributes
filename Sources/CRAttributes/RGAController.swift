@@ -20,6 +20,7 @@ public class RGAController {
 
     func handleContextDidMerge(ids: Set<NSManagedObjectID>, context: NSManagedObjectContext) {
         assert(!Thread.isMainThread)
+        assert(context == localBackgroundContext)
         context.performAndWait {
             for objectID in ids {
                 //no other CDAbstractOp requires processing in the background queue
@@ -28,13 +29,11 @@ public class RGAController {
     //                    print("skipping linking: \(cdOp)")
                         continue
                     }
-                    print("linking: \(cdOp)")
-                    if cdOp.linkMe(context: context) {
-                        cdOp.state = .processed
-                        try? context.save()
-                    }
+                    print("linking: '\(cdOp.unicodeScalar)' \(cdOp)")
+                    _ = cdOp.linkMe(context: context)
                 }
             }
+            try? context.save()
         }
 //        print("merged ids: \(ids)")
         // fetch objects for each id

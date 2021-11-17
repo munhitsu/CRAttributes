@@ -279,7 +279,7 @@ final class CRLocalOperationsTests: XCTestCase {
 
         
         let a6:CRAttributeMutableString = n1.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
-        XCTAssertEqual(a6.operationsCount(), 0)
+        XCTAssertEqual(a6.operationsCount(), 0+1)
 //        XCTAssertNil(a6.value)
         a6.textStorage!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: "A")
         XCTAssertEqual(a6.textStorage!.string, "A")
@@ -296,7 +296,7 @@ final class CRLocalOperationsTests: XCTestCase {
         let a7:CRAttributeMutableString = n1.attribute(name: "note2", type: .mutableString) as! CRAttributeMutableString
         a7.textStorage!.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
         XCTAssertEqual(string.string, a7.textStorage!.string)
-        XCTAssertEqual(a7.operationsCount(), operationsLimit)
+        XCTAssertEqual(a7.operationsCount(), operationsLimit+1)
         
         
         
@@ -391,10 +391,10 @@ final class CRLocalOperationsTests: XCTestCase {
 //        a7.textStorage?.prebuildAttributedStringFromOperations(attributeOp: a7.textStorage!.attributeOp)
 //        XCTAssertEqual(string.string, a7.textStorage!.string)
         
-        let fromOp_a7 = a7.textStorage!.stringFromOperations().0
+        let fromOp_a7 = a7.textStorage!.stringFromRGAList().0
         XCTAssertEqual(fromOp_a7.string, string.string)
 
-        let fromOp_a8 = a8.textStorage!.stringFromOperations().0
+        let fromOp_a8 = a8.textStorage!.stringFromRGAList().0
         XCTAssertEqual(fromOp_a8.string, "123aXcA")
 
         // Restoring
@@ -412,7 +412,6 @@ final class CRLocalOperationsTests: XCTestCase {
         XCTAssertEqual(string.string, b_a7.textStorage!.string)
 
 
-        // TODO: add snapshot test
         bgContext.performAndWait {
             print("Should be the last thing in the queue")
         }
@@ -422,8 +421,7 @@ final class CRLocalOperationsTests: XCTestCase {
             XCTAssertNil(error, "backgroundContext should save when performing merge")
         }
 
-        // test if rga form is correct
-        let fromOp_b_a7 = b_a7.textStorage!.stringFromOperations().0
+        let fromOp_b_a7 = b_a7.textStorage!.stringFromRGAList().0
         XCTAssertEqual(fromOp_b_a7.string, string.string)
 
         
@@ -438,24 +436,25 @@ final class CRLocalOperationsTests: XCTestCase {
         let n1 = CRObject(type: .testNote, container: nil)
         
         let a8:CRAttributeMutableString = n1.attribute(name: "note3", type: .mutableString) as! CRAttributeMutableString
-        a8.textStorage!.replaceCharacters(in: .init(location: 0, length: 0), with: "A")
-        XCTAssertEqual(a8.textStorage!.string, "A")
+        a8.textStorage!.replaceCharacters(in: .init(location: 0, length: 0), with: "ABC")
+        XCTAssertEqual(a8.textStorage!.string, "ABC")
         a8.textStorage!.replaceCharacters(in: .init(location: 0, length: 0), with: "abc")
-        XCTAssertEqual(a8.textStorage!.string, "abcA")
+        XCTAssertEqual(a8.textStorage!.string, "abcABC")
         a8.textStorage!.replaceCharacters(in: .init(location: 0, length: 0), with: "123")
-        XCTAssertEqual(a8.textStorage!.string, "123abcA")
+        XCTAssertEqual(a8.textStorage!.string, "123abcABC")
         a8.textStorage!.replaceCharacters(in: .init(location: 4, length: 1), with: "X")
-        XCTAssertEqual(a8.textStorage!.string, "123aXcA")
+        XCTAssertEqual(a8.textStorage!.string, "123aXcABC")
 
         
         
-        // TODO: add snapshot test
         bgContext.performAndWait {
             print("Blocking for the merge operations to finish")
         }
 
-        let fromOp_a8 = a8.textStorage!.stringFromOperations().0
+        let fromOp_a8 = a8.textStorage!.stringFromRGAList().0
         XCTAssertEqual(fromOp_a8.string, "123aXcA")
+        
+        
 
     }
   
@@ -530,5 +529,23 @@ final class CRLocalOperationsTests: XCTestCase {
             print("Loaded \(noteAttribute.textStorage!.string.count) charactrers")
             XCTAssertEqual((noteAttribute.textStorage!.string), myText)
         }
+    }
+}
+
+
+extension XCTest {
+    func expectToEventually(_ test: @autoclosure () -> Bool, timeout: TimeInterval = 1.0, message: String = "") {
+        let runLoop = RunLoop.current
+        let timeoutDate = Date(timeIntervalSinceNow: timeout)
+        repeat {
+            // 1
+            if test() {
+                return
+            }
+            // 2
+            runLoop.run(until: Date(timeIntervalSinceNow: 0.01))
+        } while Date().compare(timeoutDate) == .orderedAscending // 3
+        // 4
+        XCTFail(message)
     }
 }

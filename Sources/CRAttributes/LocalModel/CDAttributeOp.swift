@@ -97,6 +97,77 @@ extension CDAttributeOp {
         return try! context.fetch(request)
     }
 
+    
+    public func stringFromRGAList(context: NSManagedObjectContext) -> (NSMutableAttributedString, [CROperationID]) {
+        let attributedString = NSMutableAttributedString(string:"")
+        var addressesArray:[CROperationID] = []
+
+        // let's prefetch
+        // BTW: there is no need to prefetch delete operations as we have the hasTombstone attribute
+        var request:NSFetchRequest<CDStringOp> = CDStringOp.fetchRequest()
+        request.returnsObjectsAsFaults = false
+        request.predicate = NSPredicate(format: "container == %@", self)
+        let _ = try! context.fetch(request)
+
+        // let's get the first operation
+        request = CDStringOp.fetchRequest()
+        request.returnsObjectsAsFaults = false
+        request.predicate = NSPredicate(format: "container == %@ and rawType == 0", self) // and rawType == 0
+//        for op in try! context.fetch(request) {
+//            print("would be adding: \(op)")
+//        }
+        let head:CDStringOp? = try? context.fetch(request).first
+
+        // build the attributedString
+        var node:CDStringOp? = head
+        node = node?.next // let's skip the head
+        while node != nil {
+            if node!.hasTombstone == false {
+                let contribution = NSMutableAttributedString(string:String(Character(node!.unicodeScalar)))
+                attributedString.append(contribution)
+                addressesArray.append(node!.operationID())
+            }
+            node = node!.next
+        }
+        return (attributedString, addressesArray)
+    }
+    
+    public func stringFromRGATree(context: NSManagedObjectContext) -> (NSMutableAttributedString, [CROperationID]) {
+        // let's prefetch
+        var request:NSFetchRequest<CDStringOp> = CDStringOp.fetchRequest()
+        request.returnsObjectsAsFaults = false
+        request.predicate = NSPredicate(format: "container == %@", self)
+        let _ = try! context.fetch(request)
+
+        // let's get the first operation
+        request = CDStringOp.fetchRequest()
+        request.returnsObjectsAsFaults = false
+        request.predicate = NSPredicate(format: "container == %@ and rawType == 0", self) // and rawType == 0
+        let head:CDStringOp? = try? context.fetch(request).first
+        
+        guard let head = head else { return (NSMutableAttributedString(string:""), [])}
+        return stringFromRGATreeNode(node: head)
+    }
+    
+    
+    func stringFromRGATreeNode(node: CDStringOp) -> (NSMutableAttributedString, [CROperationID]) {
+        let attributedString = NSMutableAttributedString()
+        var addressesArray:[CROperationID] = []
+        
+        if !node.hasTombstone {
+            attributedString.append(NSMutableAttributedString(string:String(node.unicodeScalar)))
+            addressesArray.append(node.operationID())
+        }
+
+        let children = (node.childOperations?.allObjects as! [CDStringOp]).sorted(by: >)
+        for child in children {
+            let childString = stringFromRGATreeNode(node: child)
+            attributedString.append(childString.0)
+            addressesArray.append(contentsOf: childString.1)
+        }
+        return (attributedString, addressesArray)
+    }
+    
 //    func protoOperation() -> ProtoAttributeOperation {
 //        return ProtoAttributeOperation.with {
 //            $0.base = super.protoOperation()

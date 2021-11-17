@@ -136,16 +136,25 @@ extension CDStringOp {
 //            //TODO: fix multiple inserts at the start
 //            return true
 //        }
+        if self.unicodeScalar == UnicodeScalar("B") {
+            printRGADebug(context: context)
+            print("I'm here")
+        }
+
         guard let container = container else { return false }
         guard let parentOp = CDStringOp.fromStringAddress(context: context, address: parentAddress, container: container) else {
             return false
         }
-        print("parent: \(parentOp)")
+        print("pre:")
+        print("parent: '\(parentOp.unicodeScalar)' \(parentOp.lamport): parent:\(parentOp.parent?.lamport) prev:\(parentOp.prev?.lamport) next:\(parentOp.next?.lamport)")
+        print("self: '\(unicodeScalar)' \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
+
         assert(parentOp.managedObjectContext == self.managedObjectContext)
+        
         
     mainSwitch: switch self.type {
         case .head:
-            return true
+            break
         case .insert:
             let children = (parentOp.childOperations?.allObjects as! [CDStringOp]).sorted(by: >)
             self.parent = parentOp
@@ -154,24 +163,25 @@ extension CDStringOp {
             if children.count == 0 {
                 let parentNext = parent?.next
                 assert(parent != self)
-                print("parent: \(parent?.lamport): parent:\(parent?.parent?.lamport) prev:\(parent?.prev?.lamport) next:\(parent?.next?.lamport)")
-                print("baseline ->           self: \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
-                self.prev = parent
-                print("prev=parent ->        self: \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
-                self.next = parent?.next
 
-//                self.next = parentNext // it's weird that I can't just: self.next = parent?.next
-                print("next = parent.next -> self: \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
-                parent?.next = self
-                print("parent.next = self -> parent: \(parent?.lamport): parent:\(parent?.parent?.lamport) prev:\(parent?.prev?.lamport) next:\(parent?.next?.lamport)")
-                print("self: \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
+                self.parent?.next = self
+                self.prev = parent
+                var lastNode = self
+                while lastNode.next != nil {
+                    lastNode = lastNode.next!
+                }
+                lastNode.next = parentNext
+
+                assert(self.prev == parent)
+                assert(self.parent?.next == self)
                 break mainSwitch
             }
             
             // let's insert before the 1st older op
             for op: CDStringOp in children {
-                if self > op {
-                    self.prev = op.prev
+                if self > op && op.state != .inUpstreamQueueRendered {
+                    let opPrev = op.prev
+                    self.prev = opPrev
                     self.next = op
                     op.prev = self
                     break mainSwitch
@@ -179,19 +189,32 @@ extension CDStringOp {
             }
             // let's append after the last
             let lastChild = children.last
+            let lastChildNext = lastChild?.next
             self.prev = lastChild
-            self.next = lastChild?.next
+            self.next = lastChildNext
             lastChild?.next = self
-            self.parent = parentOp
+            assert(self.next == lastChildNext)
         case .delete:
             parentOp.hasTombstone = true
             self.parent = parentOp
         }
 
-        print("parent: \(parent?.lamport): parent:\(parent?.parent?.lamport) prev:\(parent?.prev?.lamport) next:\(parent?.next?.lamport)")
-        print("self: \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
+        print("post:")
+        print("parent: '\(parent?.unicodeScalar)' \(parent!.lamport): parent:\(parent!.parent?.lamport) prev:\(parent!.prev?.lamport) next:\(parent!.next?.lamport)")
+        print("self: '\(unicodeScalar)' \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
         
+        self.state = .processed
         printRGADebug(context: context)
+        
+        guard let container = container as? CDAttributeOp else {
+            fatalNotImplemented()
+            return false
+        }
+        let listString = container.stringFromRGAList(context: context)
+        let treeString = container.stringFromRGATree(context: context)
+        
+        assert(listString.0 == treeString.0)
+        
         return true
     }
     
@@ -201,7 +224,7 @@ extension CDStringOp {
         // let's get the first operation
         let request:NSFetchRequest<CDStringOp> = CDStringOp.fetchRequest()
         request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "container == %@ and rawType == 0", argumentArray: [container!])
+        request.predicate = NSPredicate(format: "container == %@ and rawType == 0", argumentArray: [container!]) // select head
         var response = try! context.fetch(request)
         assert(response.count == 1)
         let head:CDStringOp? = response.first
@@ -211,6 +234,7 @@ extension CDStringOp {
         var node:CDStringOp? = head
         node = node?.next // let's skip the head
         while node != nil {
+            assert(head!.container == node!.container)
             if node!.hasTombstone == false {
                 let contribution = String(Character(node!.unicodeScalar))
                 string.append(contribution)
@@ -218,11 +242,23 @@ extension CDStringOp {
             node = node!.next
         }
         print(" str: \(string)")
-        
-        request.predicate = NSPredicate(format: "container == %@", argumentArray: [container!])
+                
+        print(" tree:")
+        head?.printRGATree(intention:2)
+        print(" orphaned:")
+        request.predicate = NSPredicate(format: "container == %@ and parent == nil", argumentArray: [container!])
         response = try! context.fetch(request)
         for op in response {
-            print(" op: \(op.lamport): parent:\(op.parent?.lamport) prev:\(op.prev?.lamport) next:\(op.next?.lamport)")
+            if op.type != .head {
+                op.printRGATree(intention: 2)
+            }
+        }
+    }
+    
+    func printRGATree(intention: Int) {
+        print(String(repeating: " ", count: intention) + "[\(lamport)]: '\(unicodeScalar)' prev:\(prev?.lamport) next:\(next?.lamport) state:\(state)")
+        for op in self.childOperations?.allObjects as? [CDStringOp] ?? [] {
+            op.printRGATree(intention: intention+1)
         }
     }
     

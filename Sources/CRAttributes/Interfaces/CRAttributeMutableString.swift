@@ -214,43 +214,7 @@ class CRTextStorage: NSTextStorage {
     
     
     // MARK: - rebuild me
-    
-    public func stringFromOperations() -> (NSMutableAttributedString, [CROperationID]) {
-        let context = CRStorageController.shared.localContainer.viewContext
-//        fatalNotImplemented() //TODO - now mix the rendered string snapshots and remote operations
-
-        // let's prefetch
-        // BTW: there is no need to prefetch delete operations as we have the hasTombstone attribute
-        var request:NSFetchRequest<CDStringOp> = CDStringOp.fetchRequest()
-        request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "container == %@", attributeOp)
-        let _ = try! context.fetch(request)
-
-        // let's get the first operation
-        request = CDStringOp.fetchRequest()
-        request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "container == %@ and rawType == 0", attributeOp) // and rawType == 0
-//        for op in try! context.fetch(request) {
-//            print("would be adding: \(op)")
-//        }
-        let head:CDStringOp? = try? context.fetch(request).first
-
-        // build the attributedString
-        let attributedString = NSMutableAttributedString(string:"")
-        var addressesArray:[CROperationID] = []
-        var node:CDStringOp? = head
-        node = node?.next // let's skip the head
-        while node != nil {
-            if node!.hasTombstone == false {
-                let contribution = NSMutableAttributedString(string:String(Character(node!.unicodeScalar)))
-                attributedString.append(contribution)
-                addressesArray.append(node!.operationID())
-            }
-            node = node!.next
-        }
-        return (attributedString, addressesArray)
-    }
-    
+   
     
     private func firstOp(context: NSManagedObjectContext, attributeOp: CDAttributeOp) -> CDStringOp? {
         // TODO: - replace with address to operation
@@ -272,6 +236,9 @@ class CRTextStorage: NSTextStorage {
         operation.hasTombstone = true
     }
     
+    func stringFromRGAList() -> (NSMutableAttributedString, [CROperationID]) {
+        return attributeOp.stringFromRGAList(context: context)
+    }
     
 }
 
