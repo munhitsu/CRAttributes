@@ -124,7 +124,7 @@ extension CDRenderedStringOp {
         requestOps.returnsObjectsAsFaults = false
         
         let operations:[CDRenderedStringOp] = try! context.fetch(requestOps)
-        print("operations to process: \(operations.count)")
+//        print("operations to process: \(operations.count)")
                 
         for op in operations {
             if op.isSnapshot == true {

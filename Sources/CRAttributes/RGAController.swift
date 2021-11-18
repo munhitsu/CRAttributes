@@ -21,26 +21,34 @@ public class RGAController {
     func handleContextDidMerge(ids: Set<NSManagedObjectID>, context: NSManagedObjectContext) {
         assert(!Thread.isMainThread)
         assert(context == localBackgroundContext)
-        context.performAndWait {
+        context.performAndWait { // I don't think it's needed
             for objectID in ids {
                 //no other CDAbstractOp requires processing in the background queue
-                if let cdOp = context.object(with: objectID) as? CDStringOp {
-                    guard cdOp.state == .inUpstreamQueueRendered else {
-    //                    print("skipping linking: \(cdOp)")
-                        continue
-                    }
-                    print("linking: '\(cdOp.unicodeScalar)' \(cdOp)")
-                    _ = cdOp.linkMe(context: context)
+                if let op = context.object(with: objectID) as? CDStringOp {
+                    guard op.state == .inUpstreamQueueRendered else { continue }
+//                    print("linking: '\(op.unicodeScalar)' \(op)")
+                    _ = op.linkMe(context: context)
                 }
             }
             try? context.save()
         }
-//        print("merged ids: \(ids)")
-        // fetch objects for each id
-        
-        // split based on state
-        // for each state group handle it as a batch
     }
     
-    
+    func linkUnlinked() {
+        localBackgroundContext.performAndWait {
+            let request:NSFetchRequest<CDStringOp> = CDStringOp.fetchRequest()
+            request.returnsObjectsAsFaults = false
+            request.predicate = NSPredicate(format: "rawType == 0 and rawState == 1") // inUpstreamQueueRendered
+            let response = try! localBackgroundContext.fetch(request)
+            for op in response {
+                _ = op.linkMe(context: localBackgroundContext)
+            }
+        }
+    }
+    func linkUnlinkedAsync() {
+        localBackgroundContext.perform { [weak self] in
+            guard let self = self else { return }
+            self.linkUnlinked()
+        }
+    }
 }

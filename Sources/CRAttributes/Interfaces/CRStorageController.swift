@@ -111,7 +111,7 @@ public class CRStorageController {
 //            assert(!Thread.isMainThread)
 //
         }))
-        
+        rgaController.linkUnlinkedAsync()
     }
 }
 

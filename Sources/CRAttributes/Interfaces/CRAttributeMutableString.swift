@@ -145,7 +145,7 @@ class CRTextStorage: NSTextStorage {
             strAddresses.append(charAddress)
             parentAddress = charAddress
         }
-        //TODO: migrate to batch save
+        //TODO: migrate to batch save as we can
         
         // insert
         attributedString.replaceCharacters(in: range, with: strContent)
@@ -205,35 +205,6 @@ class CRTextStorage: NSTextStorage {
             _ = CDRenderedStringOp(context: context, containerOp: attributeOp, lamport: lamport, stringSnapshot: stringSnapshot, addressesSnapshot: addressesSnapshot)
             try! context.save()
         }
-    }
-    
-//    private func operationForPosition(_ position: Int) -> CDStringOp {
-//        let opAddress = addressesArray[position]
-//        return CDStringOp.fromStringAddress(context: self.context, address: opAddress)!
-//    }
-    
-    
-    // MARK: - rebuild me
-   
-    
-    private func firstOp(context: NSManagedObjectContext, attributeOp: CDAttributeOp) -> CDStringOp? {
-        // TODO: - replace with address to operation
-        let request:NSFetchRequest<CDStringOp> = CDStringOp.fetchRequest()
-        request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "container == %@ and prev == nil", attributeOp)
-        return try? context.fetch(request).first
-    }
-    
-    
-
-//    unused
-//    func setOperationForPosition(_ operation: CoOpStringInsert, _ position: Int) {
-//        attributedString.setAttributes([.opObjectID: operation.objectID], range: NSRange(location: position, length: 1))
-//    }
-    
-    private func markDeleted(_ operation: CDAbstractOp) {
-        let _ = CDDeleteOp(context: context, container: operation)
-        operation.hasTombstone = true
     }
     
     func stringFromRGAList() -> (NSMutableAttributedString, [CROperationID]) {

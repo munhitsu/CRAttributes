@@ -36,7 +36,7 @@ extension CDStringOp {
 
 enum CDStringOpState: Int32 {
     case unknown = 0 // should never happen
-    case inUpstreamQueueRendered = 1 // waiting to convert ID to references (linked/merged), waiting to be added for synchronisation, but rendered
+    case inUpstreamQueueRendered = 1 // waiting to convert ID to references (to link/merge), waiting to be added for synchronisation, but rendered
     case inUpstreamQueueRenderedMerged = 2 // merged, rendered, waiting for synchronisation
     case inDownstreamQueueMergedUnrendered = 16 // merged but not yet rendered
     case processed = 128 // rendered, merged, synced
@@ -132,24 +132,16 @@ extension CDStringOp {
      */
     func linkMe(context: NSManagedObjectContext) -> Bool {
         let parentAddress = CROperationID(lamport: parentLamport, peerID: parentPeerID)
-//        if parentAddress.isZero() {
-//            //TODO: fix multiple inserts at the start
-//            return true
-//        }
-        if self.unicodeScalar == UnicodeScalar("B") {
-            printRGADebug(context: context)
-            print("I'm here")
-        }
 
         guard let container = container else { return false }
         guard let parentOp = CDStringOp.fromStringAddress(context: context, address: parentAddress, container: container) else {
             return false
         }
-        print("pre:")
-        print("parent: '\(parentOp.unicodeScalar)' \(parentOp.lamport): parent:\(parentOp.parent?.lamport) prev:\(parentOp.prev?.lamport) next:\(parentOp.next?.lamport)")
-        print("self: '\(unicodeScalar)' \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
-
-        assert(parentOp.managedObjectContext == self.managedObjectContext)
+//        print("pre:")
+//        print("parent: '\(parentOp.unicodeScalar)' \(parentOp.lamport): parent:\(parentOp.parent?.lamport) prev:\(parentOp.prev?.lamport) next:\(parentOp.next?.lamport)")
+//        print("self: '\(unicodeScalar)' \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
+//
+//        assert(parentOp.managedObjectContext == self.managedObjectContext)
         
         
     mainSwitch: switch self.type {
@@ -199,21 +191,21 @@ extension CDStringOp {
             self.parent = parentOp
         }
 
-        print("post:")
-        print("parent: '\(parent?.unicodeScalar)' \(parent!.lamport): parent:\(parent!.parent?.lamport) prev:\(parent!.prev?.lamport) next:\(parent!.next?.lamport)")
-        print("self: '\(unicodeScalar)' \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
+//        print("post:")
+//        print("parent: '\(parent?.unicodeScalar)' \(parent!.lamport): parent:\(parent!.parent?.lamport) prev:\(parent!.prev?.lamport) next:\(parent!.next?.lamport)")
+//        print("self: '\(unicodeScalar)' \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
         
         self.state = .processed
-        printRGADebug(context: context)
+//        printRGADebug(context: context)
         
-        guard let container = container as? CDAttributeOp else {
-            fatalNotImplemented()
-            return false
-        }
-        let listString = container.stringFromRGAList(context: context)
-        let treeString = container.stringFromRGATree(context: context)
-        
-        assert(listString.0 == treeString.0)
+//        guard let container = container as? CDAttributeOp else {
+//            fatalNotImplemented()
+//            return false
+//        }
+//        let listString = container.stringFromRGAList(context: context)
+//        let treeString = container.stringFromRGATree(context: context)
+//
+//        assert(listString.0 == treeString.0)
         
         return true
     }
@@ -262,7 +254,6 @@ extension CDStringOp {
         }
     }
     
-    
     func lastNode() -> CDStringOp {
         guard let lastChild = (childOperations?.allObjects as! [CDStringOp]).sorted(by: >).last else {
             return self
@@ -291,17 +282,4 @@ extension CDStringOp {
         return try? context.fetch(request).first
     }
 
-
-//    private func markDeleted() {
-//        let _ = CDStringOp.initDelete(context: context, container: self, parentAddress: <#T##CRStringAddress#>, length: <#T##Int32#>)
-//        let _ = CDDeleteOp(context: context, container: operation)
-//        self.hasTombstone = true
-//    }
-//
-//    func protoOperation() -> ProtoStringInsertOperation {
-//        return ProtoStringInsertOperation.with {
-//            $0.base = super.protoOperation()
-//            $0.contribution = contribution
-//        }
-//    }
 }
