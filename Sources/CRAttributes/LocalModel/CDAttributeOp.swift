@@ -154,7 +154,7 @@ extension CDAttributeOp {
         let attributedString = NSMutableAttributedString()
         var addressesArray:[CROperationID] = []
         
-        if !node.hasTombstone {
+        if !node.hasTombstone && node.type == .insert {
             attributedString.append(NSMutableAttributedString(string:String(node.unicodeScalar)))
             addressesArray.append(node.operationID())
         }

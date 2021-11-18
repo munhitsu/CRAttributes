@@ -158,6 +158,12 @@ extension CDStringOp {
         case .insert:
             let children = (parentOp.childOperations?.allObjects as! [CDStringOp]).sorted(by: >)
             self.parent = parentOp
+        
+            var lastNode = self
+            while lastNode.next != nil {
+                lastNode = lastNode.next!
+            }
+
 
             // if no children then insert after parent
             if children.count == 0 {
@@ -165,11 +171,6 @@ extension CDStringOp {
                 assert(parent != self)
 
                 self.parent?.next = self
-                self.prev = parent
-                var lastNode = self
-                while lastNode.next != nil {
-                    lastNode = lastNode.next!
-                }
                 lastNode.next = parentNext
 
                 assert(self.prev == parent)
@@ -182,18 +183,17 @@ extension CDStringOp {
                 if self > op && op.state != .inUpstreamQueueRendered {
                     let opPrev = op.prev
                     self.prev = opPrev
-                    self.next = op
-                    op.prev = self
+                    op.prev = lastNode
                     break mainSwitch
                 }
             }
-            // let's append after the last
-            let lastChild = children.last
-            let lastChildNext = lastChild?.next
-            self.prev = lastChild
-            self.next = lastChildNext
-            lastChild?.next = self
-            assert(self.next == lastChildNext)
+
+            
+            let lastChildNode = children.last!.lastNode()
+            let lastChildNodeNext = lastChildNode.next
+            lastChildNode.next = self
+            lastNode.next = lastChildNodeNext
+
         case .delete:
             parentOp.hasTombstone = true
             self.parent = parentOp
@@ -260,6 +260,14 @@ extension CDStringOp {
         for op in self.childOperations?.allObjects as? [CDStringOp] ?? [] {
             op.printRGATree(intention: intention+1)
         }
+    }
+    
+    
+    func lastNode() -> CDStringOp {
+        guard let lastChild = (childOperations?.allObjects as! [CDStringOp]).sorted(by: >).last else {
+            return self
+        }
+        return lastChild.lastNode()
     }
     
     static func restoreLinkedList(context: NSManagedObjectContext, from: [ProtoStringInsertOperation], container: CDAttributeOp?) -> CDStringOp {

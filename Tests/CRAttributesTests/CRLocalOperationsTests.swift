@@ -452,7 +452,7 @@ final class CRLocalOperationsTests: XCTestCase {
         }
 
         let fromOp_a8 = a8.textStorage!.stringFromRGAList().0
-        XCTAssertEqual(fromOp_a8.string, "123aXcA")
+        XCTAssertEqual(fromOp_a8.string, "123aXcABC")
         
         
 
