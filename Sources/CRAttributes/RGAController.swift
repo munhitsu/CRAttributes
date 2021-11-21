@@ -7,12 +7,30 @@
 
 import Foundation
 import CoreData
+import Combine
+
 
 public class RGAController {
-    let localBackgroundContext: NSManagedObjectContext
+    let localContainerBackgroundContext: NSManagedObjectContext
 
-    init(localBackgroundContext: NSManagedObjectContext) {
-        self.localBackgroundContext = localBackgroundContext
+    private var observers: [AnyCancellable] = []
+    
+    /**
+     it will instantly subscribe to the merge events
+     */
+    init(localContainerBackgroundContext: NSManagedObjectContext) {
+        self.localContainerBackgroundContext = localContainerBackgroundContext
+
+        //source: https://www.donnywals.com/observing-changes-to-managed-objects-across-contexts-with-combine/
+        observers.append(NotificationCenter.default
+            .publisher(for: NSManagedObjectContext.didMergeChangesObjectIDsNotification, object: localContainerBackgroundContext)
+            .sink(receiveValue: { [weak self] notification in
+            guard let self = self else { return }
+            if let inserted_ids = notification.userInfo?[NSInsertedObjectIDsKey] as? Set<NSManagedObjectID> {
+                self.handleContextDidMerge(ids: inserted_ids, context: self.localContainerBackgroundContext)
+            }
+        }))
+
     }
     
     
@@ -20,7 +38,7 @@ public class RGAController {
 
     func handleContextDidMerge(ids: Set<NSManagedObjectID>, context: NSManagedObjectContext) {
         assert(!Thread.isMainThread)
-        assert(context == localBackgroundContext)
+        assert(context == localContainerBackgroundContext)
         context.performAndWait { // I don't think it's needed
             for objectID in ids {
                 //no other CDAbstractOp requires processing in the background queue
@@ -35,18 +53,18 @@ public class RGAController {
     }
     
     func linkUnlinked() {
-        localBackgroundContext.performAndWait {
+        localContainerBackgroundContext.performAndWait {
             let request:NSFetchRequest<CDStringOp> = CDStringOp.fetchRequest()
             request.returnsObjectsAsFaults = false
             request.predicate = NSPredicate(format: "rawType == 0 and rawState == 1") // inUpstreamQueueRendered
-            let response = try! localBackgroundContext.fetch(request)
+            let response = try! localContainerBackgroundContext.fetch(request)
             for op in response {
-                _ = op.linkMe(context: localBackgroundContext)
+                _ = op.linkMe(context: localContainerBackgroundContext)
             }
         }
     }
     func linkUnlinkedAsync() {
-        localBackgroundContext.perform { [weak self] in
+        localContainerBackgroundContext.perform { [weak self] in
             guard let self = self else { return }
             self.linkUnlinked()
         }

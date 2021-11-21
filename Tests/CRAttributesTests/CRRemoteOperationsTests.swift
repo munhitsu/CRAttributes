@@ -12,6 +12,7 @@ class CRRemoteOperationsTests: XCTestCase {
 
     override func setUpWithError() throws {
         try super.setUpWithError()
+        CRStorageController.testMode() // in memory db
         // Put setup code here. This method is called before the invocation of each test method in the class.
         flushAllCoreData(CRStorageController.shared.localContainer)
         flushAllCoreData(CRStorageController.shared.replicatedContainer)
