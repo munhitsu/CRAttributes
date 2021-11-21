@@ -212,7 +212,7 @@ attributedStringFor() - done
 # Tasks
 rebuilding model
 ```
-cd Sources/CRAttributes/ReplicatedModel
+cd Sources/CRAttributes/ReplicationModel
 protoc --swift_out=. ProtoModel.proto
 ```
 

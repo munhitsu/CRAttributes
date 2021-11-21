@@ -59,7 +59,7 @@ extension CDObjectOp {
         self.type = type
     }
     
-    convenience init(context: NSManagedObjectContext, from protoForm: ProtoObjectOperation, container: CDAbstractOp?, waitingForContainer: Bool=false) {
+    convenience init(context: NSManagedObjectContext, from protoForm: ProtoObjectOperation, container: CDAbstractOp?) {
         print("From protobuf ObjectOp(\(protoForm.id.lamport))")
         self.init(context: context)
         self.version = protoForm.version
@@ -67,7 +67,7 @@ extension CDObjectOp {
         self.lamport = protoForm.id.lamport
         self.rawType = protoForm.rawType
         self.container = container
-        self.upstreamQueueOperation = false
+        self.state = .inDownstreamQueueMergedUnrendered
 
         
         for protoItem in protoForm.deleteOperations {

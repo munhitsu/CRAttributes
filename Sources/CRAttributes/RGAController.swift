@@ -10,6 +10,10 @@ import CoreData
 import Combine
 
 
+/**
+ manages the RGA Form
+ a placeholder for redered form operations as well
+ */
 public class RGAController {
     let localContainerBackgroundContext: NSManagedObjectContext
 
@@ -43,7 +47,8 @@ public class RGAController {
             for objectID in ids {
                 //no other CDAbstractOp requires processing in the background queue
                 if let op = context.object(with: objectID) as? CDStringOp {
-                    guard op.state == .inUpstreamQueueRendered else { continue }
+                    guard op.state == .inUpstreamQueueRendered ||
+                            op.state == .inDownstreamQueueMergedUnrendered else { continue }
 //                    print("linking: '\(op.unicodeScalar)' \(op)")
                     _ = op.linkMe(context: context)
                 }
@@ -56,7 +61,7 @@ public class RGAController {
         localContainerBackgroundContext.performAndWait {
             let request:NSFetchRequest<CDStringOp> = CDStringOp.fetchRequest()
             request.returnsObjectsAsFaults = false
-            request.predicate = NSPredicate(format: "rawType == 0 and rawState == 1") // inUpstreamQueueRendered
+            request.predicate = NSPredicate(format: "rawType == %@ and rawState == %@", argumentArray: [CDStringOpType.head.rawValue, CDOpState.inUpstreamQueueRendered.rawValue])
             let response = try! localContainerBackgroundContext.fetch(request)
             for op in response {
                 _ = op.linkMe(context: localContainerBackgroundContext)

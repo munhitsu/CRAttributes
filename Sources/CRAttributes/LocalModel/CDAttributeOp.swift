@@ -68,13 +68,13 @@ extension CDAttributeOp {
         
     }
 
-    convenience init(context: NSManagedObjectContext, from protoForm: ProtoAttributeOperation, container: CDAbstractOp?, waitingForContainer: Bool=false) {
+    convenience init(context: NSManagedObjectContext, from protoForm: ProtoAttributeOperation, container: CDAbstractOp?) {
         print("From protobuf AttributeOp(\(protoForm.id.lamport))")
         self.init(context: context, container: container as? CDObjectOp, type: .init(rawValue: protoForm.rawType)!, name: protoForm.name)
         self.version = protoForm.version
         self.peerID = protoForm.id.peerID.object()
         self.lamport = protoForm.id.lamport
-        self.upstreamQueueOperation = false
+        self.state = .inDownstreamQueueMergedUnrendered
 
         
         for protoItem in protoForm.deleteOperations {

@@ -34,7 +34,8 @@ extension CDAbstractOp {
 //    @available(*, deprecated, message: "will be removed")
 //    @NSManaged public var containedOperations: NSSet?
 
-    @NSManaged public var upstreamQueueOperation: Bool
+//    @NSManaged public var upstreamQueueOperation: Bool -> replaced with rawState == inUpstreamQueueRenderedMerged
+    @NSManaged public var rawState: Int32
 
     @nonobjc public func containedOperations() -> [CDAbstractOp] {
         let request:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
@@ -42,6 +43,26 @@ extension CDAbstractOp {
         return try! self.managedObjectContext?.fetch(request) ?? []
     }
 }
+
+enum CDOpState: Int32 {
+    case unknown = 0 // should never happen
+    case inUpstreamQueueRendered = 1 // rendered, but waiting to convert ID to references (to link/merge), and waiting to be added for synchronisation
+    case inUpstreamQueueRenderedMerged = 2 // merged, rendered, but waiting for synchronisation
+    case inDownstreamQueueMergedUnrendered = 16 // merged, but not yet rendered
+    case processed = 128 // rendered, merged, synced
+}
+
+extension CDAbstractOp {
+    var state: CDOpState {
+        get {
+            return CDOpState(rawValue: self.rawState)!
+        }
+        set {
+            self.rawState = newValue.rawValue
+        }
+    }
+}
+
 
 // MARK: Generated accessors for subOperations
 //extension CDAbstractOp {

@@ -54,14 +54,14 @@ extension CDLWWOp {
         try! context.save()
     }
 
-    convenience init(context: NSManagedObjectContext, from protoForm: ProtoLWWOperation, container: CDAbstractOp?, waitingForContainer: Bool=false) {
+    convenience init(context: NSManagedObjectContext, from protoForm: ProtoLWWOperation, container: CDAbstractOp?) {
         print("From protobuf LLWOp(\(protoForm.id.lamport))")
         self.init(context: context)
         self.version = protoForm.version
         self.peerID = protoForm.id.peerID.object()
         self.lamport = protoForm.id.lamport
         self.container = container
-        self.upstreamQueueOperation = false
+        self.state = .inDownstreamQueueMergedUnrendered
 
 
         switch protoForm.value {

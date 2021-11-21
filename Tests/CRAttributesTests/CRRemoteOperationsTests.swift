@@ -15,7 +15,7 @@ class CRRemoteOperationsTests: XCTestCase {
         CRStorageController.testMode() // in memory db
         // Put setup code here. This method is called before the invocation of each test method in the class.
         flushAllCoreData(CRStorageController.shared.localContainer)
-        flushAllCoreData(CRStorageController.shared.replicatedContainer)
+        flushAllCoreData(CRStorageController.shared.replicationContainer)
     }
 
     override func tearDownWithError() throws {
@@ -120,7 +120,7 @@ class CRRemoteOperationsTests: XCTestCase {
 
         var headStringOperation:CDStringOp? = nil
         for operation in cdAttribute.containedOperations() {
-            if operation.upstreamQueueOperation {
+            if operation.state == .inDownstreamQueueMergedUnrendered {
                 switch operation {
                 case _ as CDDeleteOp:
                     print("ignoring Delete")
@@ -147,7 +147,7 @@ class CRRemoteOperationsTests: XCTestCase {
         dummyLocalData()
         
         let context = CRStorageController.shared.localContainer.viewContext
-        var forests = CRStorageController.protoOperationsForests(context: context)
+        var forests = CRStorageController.shared.replicationController.protoOperationsForests()
         XCTAssertEqual(forests.count, 1) //for now that's truth, will change
         
         let forest = forests[0]
@@ -157,20 +157,20 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertGreaterThan(try! forest.serializedData().count, 1400)
 
         // testing in second run returns empty bundle
-        let forests2 = CRStorageController.protoOperationsForests(context: context)
+        let forests2 = CRStorageController.shared.replicationController.protoOperationsForests()
         XCTAssertEqual(forests2.count,0)
         
         context.reset()
         
-        let forests3 = CRStorageController.protoOperationsForests(context: context)
+        let forests3 = CRStorageController.shared.replicationController.protoOperationsForests()
         XCTAssertGreaterThan(try! forests3[0].serializedData().count, 1400)
 
         context.reset()
         
 
-        CRStorageController.processUpsteamOperationsQueue()
+        CRStorageController.shared.processUpsteamOperationsQueue()
         
-        let remoteContext = CRStorageController.shared.replicatedContainer.viewContext
+        let remoteContext = CRStorageController.shared.replicationContainer.viewContext
         var cdForests = CDOperationsForest.allObjects(context: remoteContext)
         XCTAssertEqual(cdForests.count, 1)
 
@@ -178,14 +178,14 @@ class CRRemoteOperationsTests: XCTestCase {
         appendToDummyLocalData()
 
         //let's preview
-        forests = CRStorageController.protoOperationsForests(context: context)
+        forests = CRStorageController.shared.replicationController.protoOperationsForests()
         XCTAssertEqual(forests.count, 1)
         XCTAssertEqual(forests[0].trees.count, 6)
 //        print(try! forests[0].jsonString())
         context.reset()
 
         //formal upload
-        CRStorageController.processUpsteamOperationsQueue()
+        CRStorageController.shared.processUpsteamOperationsQueue()
 
         cdForests = CDOperationsForest.allObjects(context: remoteContext)
         XCTAssertEqual(cdForests.count, 2)
@@ -194,7 +194,7 @@ class CRRemoteOperationsTests: XCTestCase {
         // count trees in the 2nd forest = 2
         
 
-        //TODO: count objects in the replicated / scan proto form of the forest
+        //TODO: count objects in the replication / scan proto form of the forest
 
 //        let protoBundle = CRStorageController.protoOperationsBundle()
 //        XCTAssertEqual(protoBundle.objectOperations.count, CDObjectOp.allObjects().count)
@@ -219,13 +219,13 @@ class CRRemoteOperationsTests: XCTestCase {
         print("created batch 1: \(localCount1)")
         XCTAssertEqual(upstreamOps, localCount1)
 
-        CRStorageController.processUpsteamOperationsQueue()
+        CRStorageController.shared.processUpsteamOperationsQueue()
         XCTAssertEqual(countUpstreamOps(), 0)
 
         // 2nd batch of operations
         appendToDummyLocalData()
         XCTAssertEqual(countUpstreamOps(), 12)
-        CRStorageController.processUpsteamOperationsQueue()
+        CRStorageController.shared.processUpsteamOperationsQueue()
         XCTAssertEqual(countUpstreamOps(), 0)
 
         let localCount2 = opCount()-localCount1
@@ -233,12 +233,12 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(localCount2, 12)
         
         // let's restore the operations in the inverted order to force issues
-        let remoteContext = CRStorageController.shared.replicatedContainer.viewContext
+        let remoteContext = CRStorageController.shared.replicationContainer.viewContext
         let cdForests = CDOperationsForest.allObjects(context: remoteContext)
         XCTAssertEqual(cdForests.count, 2)
         flushAllCoreData(CRStorageController.shared.localContainer)
         
-        CRStorageController.processDownstreamForest(forest: cdForests[1].objectID)
+        CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[1].objectID)
         
         let localCount3 = opCount()
         print("second batch restored: \(localCount3)")
@@ -246,7 +246,7 @@ class CRRemoteOperationsTests: XCTestCase {
 
         print(cdForests[1].protoStructure())
         
-        CRStorageController.processDownstreamForest(forest: cdForests[0].objectID)
+        CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[0].objectID)
 
         let localCount4 = opCount()
         print("1st batch restored: \(localCount4)")

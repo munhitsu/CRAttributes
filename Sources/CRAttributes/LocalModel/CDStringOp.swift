@@ -29,17 +29,7 @@ extension CDStringOp {
     @NSManaged public var next: CDStringOp?
     @NSManaged public var prev: CDStringOp?
 
-    @NSManaged public var rawState: Int32
     @NSManaged public var rawType: Int32
-}
-
-
-enum CDStringOpState: Int32 {
-    case unknown = 0 // should never happen
-    case inUpstreamQueueRendered = 1 // waiting to convert ID to references (to link/merge), waiting to be added for synchronisation, but rendered
-    case inUpstreamQueueRenderedMerged = 2 // merged, rendered, waiting for synchronisation
-    case inDownstreamQueueMergedUnrendered = 16 // merged but not yet rendered
-    case processed = 128 // rendered, merged, synced
 }
 
 enum CDStringOpType: Int32 {
@@ -50,15 +40,6 @@ enum CDStringOpType: Int32 {
 
 
 extension CDStringOp {
-    var state: CDStringOpState {
-        get {
-            return CDStringOpState(rawValue: self.rawState)!
-        }
-        set {
-            self.rawState = newValue.rawValue
-        }
-    }
-    
     var type: CDStringOpType {
         get {
             return CDStringOpType(rawValue: self.rawType)!
@@ -82,7 +63,7 @@ extension CDStringOp {
 extension CDStringOp {
     
 
-    convenience init(context: NSManagedObjectContext, container: CDAttributeOp?, parent: CDStringOp?, contribution: UnicodeScalar = UnicodeScalar(0), type: CDStringOpType, state: CDStringOpState) {
+    convenience init(context: NSManagedObjectContext, container: CDAttributeOp?, parent: CDStringOp?, contribution: UnicodeScalar = UnicodeScalar(0), type: CDStringOpType, state: CDOpState) {
         self.init(context:context, container: container)
         self.unicodeScalar = contribution
         self.parent = parent
@@ -90,7 +71,7 @@ extension CDStringOp {
         self.state = state
     }
 
-    convenience init(context: NSManagedObjectContext, container: CDAttributeOp?, parentAddress: CROperationID, contribution: UnicodeScalar = UnicodeScalar(0), type: CDStringOpType, state: CDStringOpState) {
+    convenience init(context: NSManagedObjectContext, container: CDAttributeOp?, parentAddress: CROperationID, contribution: UnicodeScalar = UnicodeScalar(0), type: CDStringOpType, state: CDOpState) {
         self.init(context:context, container: container)
         self.parentLamport = parentAddress.lamport
         self.parentPeerID = parentAddress.peerID
@@ -117,7 +98,7 @@ extension CDStringOp {
         self.insertContribution = protoForm.contribution
         self.parent = CDStringOp.operation(from: protoForm.parentID, in: context) as? CDStringOp // will be null if parent is not yet with us
         self.container = container
-        self.upstreamQueueOperation = false
+        self.state = .inDownstreamQueueMergedUnrendered
 
 
         for protoItem in protoForm.deleteOperations {
@@ -195,7 +176,14 @@ extension CDStringOp {
 //        print("parent: '\(parent?.unicodeScalar)' \(parent!.lamport): parent:\(parent!.parent?.lamport) prev:\(parent!.prev?.lamport) next:\(parent!.next?.lamport)")
 //        print("self: '\(unicodeScalar)' \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
         
-        self.state = .processed
+        switch state {
+        case .inUpstreamQueueRendered:
+            state = .inUpstreamQueueRenderedMerged
+        case .inDownstreamQueueMergedUnrendered:
+            state = .processed
+        default:
+            fatalNotImplemented()
+        }
 //        printRGADebug(context: context)
         
 //        guard let container = container as? CDAttributeOp else {

@@ -27,7 +27,7 @@ extension CDDeleteOp {
 }
 
 extension CDDeleteOp {
-    convenience init(context: NSManagedObjectContext, from protoForm: ProtoDeleteOperation, container: CDAbstractOp?, waitingForContainer: Bool=false) {
+    convenience init(context: NSManagedObjectContext, from protoForm: ProtoDeleteOperation, container: CDAbstractOp?) {
         print("From protobuf DeleteOp(\(protoForm.id.lamport))")
         self.init(context: context)
         self.version = protoForm.version
@@ -35,7 +35,7 @@ extension CDDeleteOp {
         self.lamport = protoForm.id.lamport
         self.container = container
         self.container?.hasTombstone = true
-        self.upstreamQueueOperation = false
+        self.state = .inDownstreamQueueMergedUnrendered
 
     }
 }

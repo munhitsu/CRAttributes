@@ -15,7 +15,7 @@ CoreData and CoreData CloudKit Sync are the official supported pattern
 
 
 # started from character based RGA
-where all ops are part of a replicated graph already
+where all ops are part of a replication graph already
 with an intention to introduce later node split
 
 ...but core data is a graph serialisation with cross device replication

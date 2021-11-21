@@ -31,7 +31,7 @@
 		BBCBAE7F273042A8005E7717 /* RGAController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBCBAE7E273042A8005E7717 /* RGAController.swift */; };
 		BBFF6B3926C9818E005A6182 /* CDLocalModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBFF6B3826C9818E005A6182 /* CDLocalModel.swift */; };
 		BBFF6B3B26CA7330005A6182 /* ProtoModel.pb.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBFF6B3A26CA7330005A6182 /* ProtoModel.pb.swift */; };
-		BBFF6B3D26CA7DD4005A6182 /* CDReplicatedModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBFF6B3C26CA7DD4005A6182 /* CDReplicatedModel.swift */; };
+		BBFF6B3D26CA7DD4005A6182 /* CDReplicationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBFF6B3C26CA7DD4005A6182 /* CDReplicationModel.swift */; };
 		OBJ_150 /* CRStorageController.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_9 /* CRStorageController.swift */; };
 		OBJ_151 /* CoOpMutableStringOperationDelete.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_10 /* CoOpMutableStringOperationDelete.swift */; };
 		OBJ_152 /* CoOpMutableStringOperationInsert.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_11 /* CoOpMutableStringOperationInsert.swift */; };
@@ -223,7 +223,7 @@
 		BBCBAE7E273042A8005E7717 /* RGAController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RGAController.swift; sourceTree = "<group>"; };
 		BBFF6B3826C9818E005A6182 /* CDLocalModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDLocalModel.swift; sourceTree = "<group>"; };
 		BBFF6B3A26CA7330005A6182 /* ProtoModel.pb.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProtoModel.pb.swift; sourceTree = "<group>"; };
-		BBFF6B3C26CA7DD4005A6182 /* CDReplicatedModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDReplicatedModel.swift; sourceTree = "<group>"; };
+		BBFF6B3C26CA7DD4005A6182 /* CDReplicationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDReplicationModel.swift; sourceTree = "<group>"; };
 		"CRAttributes::CRAttributes::Product" /* CRAttributes.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CRAttributes.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		"CRAttributes::CRAttributesTests::Product" /* CRAttributesTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; path = CRAttributesTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		"CoreDataModelDescription::CoreDataModelDescription::Product" /* CoreDataModelDescription.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = CoreDataModelDescription.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -472,15 +472,15 @@
 			path = LocalModel;
 			sourceTree = "<group>";
 		};
-		OBJ_27 /* ReplicatedModel */ = {
+		OBJ_27 /* ReplicationModel */ = {
 			isa = PBXGroup;
 			children = (
 				OBJ_28 /* CDOperationsForest.swift */,
 				BBA81EBD26C5ACE70015981B /* ProtoModel.proto */,
 				BBFF6B3A26CA7330005A6182 /* ProtoModel.pb.swift */,
-				BBFF6B3C26CA7DD4005A6182 /* CDReplicatedModel.swift */,
+				BBFF6B3C26CA7DD4005A6182 /* CDReplicationModel.swift */,
 			);
-			path = ReplicatedModel;
+			path = ReplicationModel;
 			sourceTree = "<group>";
 		};
 		OBJ_31 /* Tests */ = {
@@ -652,7 +652,7 @@
 				BB6A991A274A5D5400145446 /* ReplicationController.swift */,
 				OBJ_12 /* Interfaces */,
 				OBJ_17 /* LocalModel */,
-				OBJ_27 /* ReplicatedModel */,
+				OBJ_27 /* ReplicationModel */,
 			);
 			name = CRAttributes;
 			path = Sources/CRAttributes;
@@ -867,7 +867,7 @@
 				BB6A991B274A5D5400145446 /* ReplicationController.swift in Sources */,
 				BBCBAE7D27303F5F005E7717 /* UUID.swift in Sources */,
 				OBJ_158 /* CDAttributeOp.swift in Sources */,
-				BBFF6B3D26CA7DD4005A6182 /* CDReplicatedModel.swift in Sources */,
+				BBFF6B3D26CA7DD4005A6182 /* CDReplicationModel.swift in Sources */,
 				OBJ_159 /* CDDeleteOp.swift in Sources */,
 				OBJ_160 /* CDLWWOp.swift in Sources */,
 				OBJ_161 /* CDObjectOp.swift in Sources */,

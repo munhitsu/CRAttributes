@@ -28,7 +28,8 @@ let localModelDescription = CoreDataModelDescription(
                     .attribute(name: "lamport", type: .integer64AttributeType),
                     .attribute(name: "peerID", type: .UUIDAttributeType),
                     .attribute(name: "hasTombstone", type: .booleanAttributeType),
-                    .attribute(name: "upstreamQueueOperation", type: .booleanAttributeType, defaultValue: true), //TODO: remove default as it's implicit
+                    .attribute(name: "rawState", type: .integer32AttributeType, defaultValue: 0), // default: unknown
+//                    .attribute(name: "upstreamQueueOperation", type: .booleanAttributeType, defaultValue: true), //TODO: remove default as it's implicit
                     //TODO: replace with rawSatus from stringOp
                 ],
 //                fetchedProperties: [
@@ -92,7 +93,6 @@ let localModelDescription = CoreDataModelDescription(
                     .attribute(name: "parentLamport", type: .integer64AttributeType),
                     .attribute(name: "parentPeerID", type: .UUIDAttributeType),
                     .attribute(name: "insertContribution", type: .integer32AttributeType, isOptional: true),
-                    .attribute(name: "rawState", type: .integer32AttributeType, defaultValue: 0), // default: unknown
                     .attribute(name: "rawType", type: .integer32AttributeType, defaultValue: 0), // default: insert
                 ],
                 relationships: [

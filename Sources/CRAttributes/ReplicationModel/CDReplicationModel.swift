@@ -8,7 +8,7 @@
 import Foundation
 import CoreDataModelDescription
 
-let replicatedModelDescription = CoreDataModelDescription(
+let replicationModelDescription = CoreDataModelDescription(
     entities: [
         .entity(name: "CDOperationsForest",
                 managedObjectClass: CDOperationsForest.self,
@@ -22,4 +22,4 @@ let replicatedModelDescription = CoreDataModelDescription(
     ]
 )
 
-public let CRReplicatedModel = replicatedModelDescription.makeModel()
+public let CRReplicationModel = replicationModelDescription.makeModel()

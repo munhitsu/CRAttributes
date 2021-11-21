@@ -8,7 +8,7 @@
 
 
 - [] process string upstream op into the RGA
-- [] ship string upstream op to the replicated container
+- [] ship string upstream op to the replication container
 - [] merge downstream string op
 
 - [] optimise insert creation on paste - use core data batch API 
