@@ -61,7 +61,7 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(a5.value, "abc")
 
         let a6:CRAttributeMutableString = n1.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
-        XCTAssertEqual(a6.operationsCount(), 0)
+        XCTAssertEqual(a6.operationsCount(), 1)
 //        XCTAssertNil(a6.value)
         a6.textStorage!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: "A")
         XCTAssertEqual(a6.textStorage!.string, "A")
@@ -81,7 +81,7 @@ class CRRemoteOperationsTests: XCTestCase {
         let a7:CRAttributeMutableString = n1.attribute(name: "note2", type: .mutableString) as! CRAttributeMutableString
         a7.textStorage!.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
         XCTAssertEqual(string.string, a7.textStorage!.string)
-        XCTAssertEqual(a7.operationsCount(), 10) // we don't count deletes anymore as delete container is the deleted operation
+        XCTAssertEqual(a7.operationsCount(), 11) // we don't count deletes anymore as delete container is the deleted operation
     }
 
     func appendToDummyLocalData() {

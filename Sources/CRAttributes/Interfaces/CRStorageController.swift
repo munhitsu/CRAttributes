@@ -91,7 +91,7 @@ public class CRStorageController {
     
     
     func processUpsteamOperationsQueue() {
-        replicationController.processUpsteamOperationsQueue()
+        replicationController.processUpsteamOperationsQueueAsync()
     }
 
 }

@@ -23,6 +23,7 @@
 /* Begin PBXBuildFile section */
 		BB0FC2DD26DB9FFB0033FEC3 /* CRAttributedStringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0FC2DC26DB9FFB0033FEC3 /* CRAttributedStringTests.swift */; };
 		BB6A991B274A5D5400145446 /* ReplicationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB6A991A274A5D5400145446 /* ReplicationController.swift */; };
+		BB6A991D274AAACB00145446 /* MyTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB6A991C274AAACB00145446 /* MyTimer.swift */; };
 		BB7BD5D526C4732500ADEDD4 /* test-mk-editing-trace.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = BB7BD5D426C4732500ADEDD4 /* test-mk-editing-trace.json */; };
 		BB8D7C8326D831F300B4E83E /* CDRenderedStringOp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB8D7C8226D831F300B4E83E /* CDRenderedStringOp.swift */; };
 		BBA81EBF26C64F430015981B /* CRRemoteOperationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBA81EBE26C64F430015981B /* CRRemoteOperationsTests.swift */; };
@@ -213,6 +214,7 @@
 /* Begin PBXFileReference section */
 		BB0FC2DC26DB9FFB0033FEC3 /* CRAttributedStringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRAttributedStringTests.swift; sourceTree = "<group>"; };
 		BB6A991A274A5D5400145446 /* ReplicationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplicationController.swift; sourceTree = "<group>"; };
+		BB6A991C274AAACB00145446 /* MyTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyTimer.swift; sourceTree = "<group>"; };
 		BB7BD5D426C4732500ADEDD4 /* test-mk-editing-trace.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = "test-mk-editing-trace.json"; path = "Data Assets/test-mk-editing-trace.json"; sourceTree = "<group>"; };
 		BB8D7C8226D831F300B4E83E /* CDRenderedStringOp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDRenderedStringOp.swift; sourceTree = "<group>"; };
 		BBA81EBD26C5ACE70015981B /* ProtoModel.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = ProtoModel.proto; sourceTree = "<group>"; };
@@ -653,6 +655,7 @@
 				OBJ_12 /* Interfaces */,
 				OBJ_17 /* LocalModel */,
 				OBJ_27 /* ReplicationModel */,
+				BB6A991C274AAACB00145446 /* MyTimer.swift */,
 			);
 			name = CRAttributes;
 			path = Sources/CRAttributes;
@@ -871,6 +874,7 @@
 				OBJ_159 /* CDDeleteOp.swift in Sources */,
 				OBJ_160 /* CDLWWOp.swift in Sources */,
 				OBJ_161 /* CDObjectOp.swift in Sources */,
+				BB6A991D274AAACB00145446 /* MyTimer.swift in Sources */,
 				OBJ_163 /* CRStringInsertOld.swift in Sources */,
 				OBJ_164 /* CDStringOp.swift in Sources */,
 				OBJ_166 /* CDOperationsForest.swift in Sources */,
