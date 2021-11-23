@@ -1,19 +1,20 @@
 # TODO
 
 
+
+- [] ship string upstream op to the replication container
+- [] 2 different delete operat type for strings.... and protobuf impact
+
+- [] replication container versioning so we can detect remote changes
+- [] merge downstream string op
+
+- [] optimise insert creation on paste - use core data batch API 
+
 - [x] on string upstream - update rendered form
 - [x] update model to RGA
 - [x] on string upstream - create insert unprocessed op - RGA - slow
 - [x] on string upstream - create delete unprocessed op - RGA
-
-
-- [] process string upstream op into the RGA
-- [] ship string upstream op to the replication container
-- [] merge downstream string op
-
-- [] optimise insert creation on paste - use core data batch API 
-- [] 2 different delete operat type for strings.... and protobuf impact
-
+- [x] process string upstream op into the RGA
 
 
 ## deprecated due to pivot to RGA

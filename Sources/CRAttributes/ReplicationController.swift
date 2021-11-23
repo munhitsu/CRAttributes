@@ -29,13 +29,10 @@ public class ReplicationController {
 }
 
 
-
-
-
 //MARK: - Upstream
 extension ReplicationController {
     func processUpsteamOperationsQueueAsync() {
-        //TODO: implement transactions
+        //TODO: implement transactions as current form is unsafe
  
         localContext.perform { [weak self] in
             guard let self = self else { return }

@@ -151,7 +151,7 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(forests.count, 1) //for now that's truth, will change
         
         let forest = forests[0]
-//        print(try! forest.jsonString())
+        print(try! forest.jsonString())
   
         XCTAssertEqual(forest.peerID.object(), localPeerID)
         XCTAssertGreaterThan(try! forest.serializedData().count, 1400)
