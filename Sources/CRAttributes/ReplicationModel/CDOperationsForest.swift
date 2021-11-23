@@ -43,8 +43,10 @@ extension CDOperationsForest : Identifiable {
     }
     
     static func allObjects(context: NSManagedObjectContext) -> [CDOperationsForest] {
-        let request:NSFetchRequest<CDOperationsForest> = CDOperationsForest.fetchRequest()
-        request.sortDescriptors = [NSSortDescriptor(key: "lamport", ascending: true)]
-        return try! context.fetch(request)
+        context.performAndWait {
+            let request:NSFetchRequest<CDOperationsForest> = CDOperationsForest.fetchRequest()
+            request.sortDescriptors = [NSSortDescriptor(key: "lamport", ascending: true)]
+            return try! context.fetch(request)
+        }
     }
 }

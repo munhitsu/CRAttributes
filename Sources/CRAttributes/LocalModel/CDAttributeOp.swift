@@ -51,7 +51,8 @@ extension CDAttributeOp {
         self.init(context: context, container: container)
         self.type = type
         self.name = name
-        
+        self.state = .inUpstreamQueueRenderedMerged
+
         if type == .mutableString {
             let headOp = CDStringOp(context: context)
             headOp.lamport = 0

@@ -13,7 +13,7 @@ public class CRStorageController {
     
     
     static func testMode() {
-        CRStorageController._shared = CRStorageController(inMemory: true)
+        CRStorageController._shared = CRStorageController(inMemory: true, testMode: true)
     }
     
     static var _shared:CRStorageController? = nil
@@ -46,7 +46,7 @@ public class CRStorageController {
     let rgaController: RGAController
     let replicationController: ReplicationController
     
-    init(inMemory: Bool = false) {
+    init(inMemory: Bool = false, testMode: Bool = false) {
         print("CRStorageController.init")
         print("thread: \(Thread.current)")
 
@@ -85,13 +85,15 @@ public class CRStorageController {
         self.rgaController = RGAController(localContainerBackgroundContext: localContainerBackgroundContext)
         rgaController.linkUnlinkedAsync()
         
+        
         self.replicationController = ReplicationController(localContext: localContainerBackgroundContext,
-                                                           replicationContext: replicationContainerBackgroundContext)
+                                                           replicationContext: replicationContainerBackgroundContext,
+                                                           skipTimer: testMode)
     }
     
     
     func processUpsteamOperationsQueue() {
-        replicationController.processUpsteamOperationsQueueAsync()
+        replicationController.processUpsteamOperationsQueue()
     }
 
 }

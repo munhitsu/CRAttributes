@@ -10,6 +10,8 @@
 
 - [] optimise insert creation on paste - use core data batch API 
 
+- [] implement delete object/attribute
+
 - [x] on string upstream - update rendered form
 - [x] update model to RGA
 - [x] on string upstream - create insert unprocessed op - RGA - slow

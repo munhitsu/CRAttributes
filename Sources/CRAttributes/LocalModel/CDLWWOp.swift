@@ -31,26 +31,31 @@ extension CDLWWOp {
     convenience init(context: NSManagedObjectContext, container: CDAttributeOp?, value: Int) {
         self.init(context:context, container: container)
         self.int = Int64(value)
+        self.state = .inUpstreamQueueRenderedMerged
         try! context.save()
     }
     convenience init(context: NSManagedObjectContext, container: CDAttributeOp?, value: Float) {
         self.init(context:context, container: container)
         self.float = value
+        self.state = .inUpstreamQueueRenderedMerged
         try! context.save()
     }
     convenience init(context: NSManagedObjectContext, container: CDAttributeOp?, value: Date) {
         self.init(context:context, container: container)
         self.date = value
+        self.state = .inUpstreamQueueRenderedMerged
         try! context.save()
     }
     convenience init(context: NSManagedObjectContext, container: CDAttributeOp?, value: Bool) {
         self.init(context:context, container: container)
         self.boolean = value
+        self.state = .inUpstreamQueueRenderedMerged
         try! context.save()
     }
     convenience init(context: NSManagedObjectContext, container: CDAttributeOp?, value: String) {
         self.init(context:context, container: container)
         self.string = value
+        self.state = .inUpstreamQueueRenderedMerged
         try! context.save()
     }
 

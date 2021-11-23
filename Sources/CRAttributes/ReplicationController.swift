@@ -17,25 +17,27 @@ public class ReplicationController {
     
     
     init(localContext: NSManagedObjectContext,
-         replicationContext: NSManagedObjectContext) {
+         replicationContext: NSManagedObjectContext,
+         skipTimer: Bool = false) {
         self.localContext = localContext
         self.replicationContext = replicationContext
         
-        observers.append(Publishers.timer(interval: .seconds(1), times: .unlimited).sink { time in //TODO: change to 5s, ensure only one operation at the time, stop at the end of the test
-            print("Processing merged upstream operations: \(time)")
-            self.processUpsteamOperationsQueueAsync()
-        })
+        if !skipTimer {
+            observers.append(Publishers.timer(interval: .seconds(1), times: .unlimited).sink { time in //TODO: change to 5s, ensure only one operation at the time, stop at the end of the test
+                print("Processing merged upstream operations: \(time)")
+                self.processUpsteamOperationsQueueAsync()
+            })
+        }
     }
 }
 
 
 //MARK: - Upstream
 extension ReplicationController {
-    func processUpsteamOperationsQueueAsync() {
+    func processUpsteamOperationsQueue() {
         //TODO: implement transactions as current form is unsafe
  
-        localContext.perform { [weak self] in
-            guard let self = self else { return }
+        localContext.performAndWait {
             let forests = self.protoOperationsForests()
             
             self.replicationContext.performAndWait {
@@ -47,6 +49,13 @@ extension ReplicationController {
             try! self.localContext.save()
         }
     }
+
+    func processUpsteamOperationsQueueAsync() { 
+        localContext.perform { [weak self] in
+            guard let self = self else { return }
+            self.processUpsteamOperationsQueue()
+        }
+    }
     
     
     /**
@@ -55,60 +64,62 @@ extension ReplicationController {
     func protoOperationsForests() -> [ProtoOperationsForest] {
         //        print("protoOperationsForests()")
         let context = localContext
-        let request:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
-        request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "rawState == %@", argumentArray: [CDOpState.inUpstreamQueueRenderedMerged.rawValue])
-        let queuedOperations:[CDAbstractOp] = try! context.fetch(request)
-        
         var forests:[ProtoOperationsForest] = []
-        var forest = ProtoOperationsForest()
-        
-        
-        for queuedOperation in queuedOperations {
-            // we pick operation and build a tree off it
-            // as we progress operations are removed
-            var branchRoot = queuedOperation
-            while branchRoot.container?.state == .inUpstreamQueueRenderedMerged {
-                branchRoot = branchRoot.container!
-            }
-            if branchRoot.state == .inUpstreamQueueRenderedMerged {
-                var tree = ProtoOperationsTree()
-                if let id = branchRoot.container?.protoOperationID() {
-                    tree.containerID = id //TODO: what with the null?
-                } else {
-                    tree.containerID = CROperationID.zero.protoForm()
+        context.performAndWait {
+            let request:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
+            request.returnsObjectsAsFaults = false
+            request.predicate = NSPredicate(format: "rawState == %@", argumentArray: [CDOpState.inUpstreamQueueRenderedMerged.rawValue])
+            let queuedOperations:[CDAbstractOp] = try! context.fetch(request)
+            
+            var forest = ProtoOperationsForest()
+            
+            
+            for queuedOperation in queuedOperations {
+                // we pick operation and build a tree off it
+                // as we progress operations are removed
+                var branchRoot = queuedOperation
+                while branchRoot.container?.state == .inUpstreamQueueRenderedMerged {
+                    branchRoot = branchRoot.container!
                 }
-                switch branchRoot {
-                case let op as CDObjectOp:
-                    tree.objectOperation = ReplicationController.protoObjectOperationRecurse(op)
-                case let op as CDAttributeOp:
-                    tree.attributeOperation = ReplicationController.protoAttributeOperationRecurse(op)
-                case let op as CDDeleteOp:
-                    tree.deleteOperation = ReplicationController.protoDeleteOperationRecurse(op)
-                case let op as CDLWWOp:
-                    tree.lwwOperation = ReplicationController.protoLWWOperationRecurse(op)
-                case let op as CDStringOp:
-                    //                    if op.contribution == "#" {
-                    //                        print("debug")
-                    //                    }
-                    tree.stringInsertOperations.stringInsertOperations = ReplicationController.protoStringInsertOperationsLinkedList(op)
-                default:
-                    fatalNotImplemented()
+                if branchRoot.state == .inUpstreamQueueRenderedMerged {
+                    var tree = ProtoOperationsTree()
+                    if let id = branchRoot.container?.protoOperationID() {
+                        tree.containerID = id //TODO: what with the null?
+                    } else {
+                        tree.containerID = CROperationID.zero.protoForm()
+                    }
+                    switch branchRoot {
+                    case let op as CDObjectOp:
+                        tree.objectOperation = ReplicationController.protoObjectOperationRecurse(op)
+                    case let op as CDAttributeOp:
+                        tree.attributeOperation = ReplicationController.protoAttributeOperationRecurse(op)
+                    case let op as CDDeleteOp:
+                        tree.deleteOperation = ReplicationController.protoDeleteOperationRecurse(op)
+                    case let op as CDLWWOp:
+                        tree.lwwOperation = ReplicationController.protoLWWOperationRecurse(op)
+                    case let op as CDStringOp:
+                        //                    if op.contribution == "#" {
+                        //                        print("debug")
+                        //                    }
+                        tree.stringInsertOperations.stringInsertOperations = ReplicationController.protoStringInsertOperationsLinkedList(op)
+                    default:
+                        fatalNotImplemented()
+                    }
+                    forest.trees.append(tree)
                 }
-                forest.trees.append(tree)
             }
+            if forest.trees.isEmpty == false {
+                forest.version = 0
+                forest.peerID = localPeerID.data
+                forests.append(forest)
+            }
+            // TODO: split into forests when one is getting too big (2 MB is the CloudKit Operation limit but we can still compress - one forrest is one CloudKit record)
+            
+            //        print("forests: \(forests)")
+            //        for forest in forests {
+            //            print("trees: \(forest.trees.count)")
+            //        }
         }
-        if forest.trees.isEmpty == false {
-            forest.version = 0
-            forest.peerID = localPeerID.data
-            forests.append(forest)
-        }
-        // TODO: split into forests when one is getting too big (2 MB is the CloudKit Operation limit but we can still compress - one forrest is one CloudKit record)
-        
-        //        print("forests: \(forests)")
-        //        for forest in forests {
-        //            print("trees: \(forest.trees.count)")
-        //        }
         return forests
     }
     

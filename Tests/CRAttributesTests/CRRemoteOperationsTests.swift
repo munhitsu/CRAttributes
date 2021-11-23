@@ -146,7 +146,7 @@ class CRRemoteOperationsTests: XCTestCase {
     func testBundleCreation() throws {
         dummyLocalData()
         
-        let context = CRStorageController.shared.localContainer.viewContext
+        let context = CRStorageController.shared.localContainerBackgroundContext
         var forests = CRStorageController.shared.replicationController.protoOperationsForests()
         XCTAssertEqual(forests.count, 1) //for now that's truth, will change
         
@@ -154,23 +154,23 @@ class CRRemoteOperationsTests: XCTestCase {
         print(try! forest.jsonString())
   
         XCTAssertEqual(forest.peerID.object(), localPeerID)
-        XCTAssertGreaterThan(try! forest.serializedData().count, 1400)
+        XCTAssertGreaterThan(try! forest.serializedData().count, 1400) // was 1400
 
         // testing in second run returns empty bundle
         let forests2 = CRStorageController.shared.replicationController.protoOperationsForests()
-        XCTAssertEqual(forests2.count,0)
+        XCTAssertEqual(forests2.count, 0, "Consequent forrest building should be empty as no new operations were created")
         
         context.reset()
         
         let forests3 = CRStorageController.shared.replicationController.protoOperationsForests()
-        XCTAssertGreaterThan(try! forests3[0].serializedData().count, 1400)
+        XCTAssertEqual(forests3.count, 1, "After context reset we should get the previous state") //for now that's truth, will change
+        XCTAssertGreaterThan(try! forests3[0].serializedData().count, 1400) // was 1400
 
         context.reset()
         
-
         CRStorageController.shared.processUpsteamOperationsQueue()
         
-        let remoteContext = CRStorageController.shared.replicationContainer.viewContext
+        let remoteContext = CRStorageController.shared.replicationContainerBackgroundContext
         var cdForests = CDOperationsForest.allObjects(context: remoteContext)
         XCTAssertEqual(cdForests.count, 1)
 
@@ -180,6 +180,11 @@ class CRRemoteOperationsTests: XCTestCase {
         //let's preview
         forests = CRStorageController.shared.replicationController.protoOperationsForests()
         XCTAssertEqual(forests.count, 1)
+        for tree in forests[0].trees{
+            print("Tree:")
+            print(try! tree.jsonString())
+        }
+        
         XCTAssertEqual(forests[0].trees.count, 6)
 //        print(try! forests[0].jsonString())
         context.reset()

@@ -57,6 +57,7 @@ extension CDObjectOp {
     convenience init(context: NSManagedObjectContext, container: CDAbstractOp?, type: CRObjectType) {
         self.init(context:context, container: container)
         self.type = type
+        self.state = .inUpstreamQueueRenderedMerged
     }
     
     convenience init(context: NSManagedObjectContext, from protoForm: ProtoObjectOperation, container: CDAbstractOp?) {
