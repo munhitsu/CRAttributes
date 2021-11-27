@@ -50,7 +50,7 @@ extension ReplicationController {
         }
     }
 
-    func processUpsteamOperationsQueueAsync() { 
+    func processUpsteamOperationsQueueAsync() {
         localContext.perform { [weak self] in
             guard let self = self else { return }
             self.processUpsteamOperationsQueue()
@@ -333,8 +333,8 @@ extension ReplicationController {
     
     func processDownstreamForest(forest cdForestObjectID: NSManagedObjectID) {
         fatalNotImplemented()
-        let remoteContext = CRStorageController.shared.replicationContainer.viewContext //TODO: move to background
-        let localContext = CRStorageController.shared.localContainer.viewContext
+        let remoteContext = CRStorageController.shared.replicationContainerBackgroundContext
+        let localContext = CRStorageController.shared.localContainerBackgroundContext
         
         let cdForest = remoteContext.object(with: cdForestObjectID) as! CDOperationsForest
         
@@ -350,10 +350,10 @@ extension ReplicationController {
                     // this means independent tree
                     containerOp = nil
                 } else {
-                    containerOp = CDAbstractOp.operation(from: containerID, in: localContext)
-                    if containerOp == nil {
-                        containerOp = nil
+                    guard let containerOp = CDAbstractOp.fetchOperation(from: containerID, in: localContext) else {
+                        fatalNotImplemented()
                     }
+                    
                 }
                 
             }

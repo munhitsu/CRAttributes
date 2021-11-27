@@ -153,19 +153,19 @@ extension CDAbstractOp {
         return try! context.fetch(request)
     }
 
-    static func operation(fromLamport:lamportType, fromPeerID:UUID, in context: NSManagedObjectContext) -> CDAbstractOp? {
+    static func fetchOperation(fromLamport:lamportType, fromPeerID:UUID, in context: NSManagedObjectContext) -> CDAbstractOp? {
         let request:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
         request.predicate = NSPredicate(format: "lamport = %@ and peerID = %@", argumentArray: [fromLamport, fromPeerID])
         let ops = try? context.fetch(request)
         return ops?.first
     }
 
-    static func operation(from protoID:ProtoOperationID, in context: NSManagedObjectContext) -> CDAbstractOp? {
-        return operation(fromLamport: protoID.lamport, fromPeerID: protoID.peerID.object(), in: context)
+    static func fetchOperation(from protoID:ProtoOperationID, in context: NSManagedObjectContext) -> CDAbstractOp? {
+        return fetchOperation(fromLamport: protoID.lamport, fromPeerID: protoID.peerID.object(), in: context)
     }
 
-    static func operation(from operationID:CROperationID, in context: NSManagedObjectContext) -> CDAbstractOp? {
-        return operation(fromLamport: operationID.lamport, fromPeerID: operationID.peerID, in: context)
+    static func fetchOperation(from operationID:CROperationID, in context: NSManagedObjectContext) -> CDAbstractOp? {
+        return fetchOperation(fromLamport: operationID.lamport, fromPeerID: operationID.peerID, in: context)
     }
 
 //    func protoOperation() -> ProtoBaseOperation {

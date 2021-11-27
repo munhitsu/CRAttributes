@@ -37,7 +37,7 @@ extension CDOperationsForest : Identifiable {
     
     func protoStructure() -> ProtoOperationsForest {
         var options = BinaryDecodingOptions()
-        options.messageDepthLimit = 10000
+        options.messageDepthLimit = 1000
 
         return try! ProtoOperationsForest.init(serializedData: data!, extensions: nil, partial: false, options: options)
     }

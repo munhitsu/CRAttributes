@@ -12,6 +12,7 @@
 
 - [] implement delete object/attribute
 
+- [] remove recursion
 - [x] on string upstream - update rendered form
 - [x] update model to RGA
 - [x] on string upstream - create insert unprocessed op - RGA - slow

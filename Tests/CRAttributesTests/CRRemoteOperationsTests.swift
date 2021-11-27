@@ -110,7 +110,7 @@ class CRRemoteOperationsTests: XCTestCase {
     func countUpstreamOps() -> Int {
         let localContext = CRStorageController.shared.localContainer.viewContext
         let request:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
-        request.predicate = NSPredicate(format: "upstreamQueueOperation == true")
+        request.predicate = NSPredicate(format: "rawState == %@", argumentArray: [CDOpState.inUpstreamQueueRenderedMerged.rawValue])
 
         return try! localContext.count(for: request)
     }
@@ -244,6 +244,8 @@ class CRRemoteOperationsTests: XCTestCase {
         flushAllCoreData(CRStorageController.shared.localContainer)
         
         CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[1].objectID)
+        
+        //TODO: test that doible procesing has no impact
         
         let localCount3 = opCount()
         print("second batch restored: \(localCount3)")
