@@ -352,6 +352,7 @@ extension ReplicationController {
                 } else {
                     guard let containerOp = CDAbstractOp.fetchOperation(from: containerID, in: localContext) else {
                         fatalNotImplemented()
+                        return
                     }
                     
                 }

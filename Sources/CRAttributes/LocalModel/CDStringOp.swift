@@ -96,7 +96,7 @@ extension CDStringOp {
         self.peerID = protoForm.id.peerID.object()
         self.lamport = protoForm.id.lamport
         self.insertContribution = protoForm.contribution
-        self.parent = CDStringOp.operation(from: protoForm.parentID, in: context) as? CDStringOp // will be null if parent is not yet with us
+        self.parent = CDStringOp.fetchOperation(from: protoForm.parentID, in: context) as? CDStringOp // will be null if parent is not yet with us
         self.container = container
         self.state = .inDownstreamQueueMergedUnrendered
 
