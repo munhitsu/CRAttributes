@@ -75,7 +75,7 @@ let localModelDescription = CoreDataModelDescription(
                     // pure delete may store nil here
                 ],
                 relationships: [
-                    .relationship(name: "container", destination: "CDAttributeOp", optional: false, toMany: false)
+                    .relationship(name: "container", destination: "CDOperation", optional: false, toMany: false)
                 ],
                 indexes: [
                     .index(name: "lamport", elements: [

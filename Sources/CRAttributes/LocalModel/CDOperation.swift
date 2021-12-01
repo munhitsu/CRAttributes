@@ -33,7 +33,7 @@ enum CDOperationType: Int32 {
     case attribute = 3
     case lwwInt = 16
     case lwwFloat = 17
-    case lwwBoolean = 18
+    case lwwBool = 18
     case lwwString = 19
     case lwwDate = 20
 
@@ -76,7 +76,7 @@ extension CDOperation {
     @NSManaged public var lwwInt: Int64
     @NSManaged public var lwwFloat: Float
     @NSManaged public var lwwDate: Date?
-    @NSManaged public var lwwBoolean: Bool
+    @NSManaged public var lwwBool: Bool
     @NSManaged public var lwwString: String?
 
     //StringInsert/Delete
@@ -276,8 +276,8 @@ extension CDOperation {
     
     static func createLWW(context: NSManagedObjectContext, container: CDOperation?, value: Bool) -> CDOperation {
         let op = CDOperation(context:context, container: container)
-        op.lwwBoolean = value
-        op.type = .lwwBoolean
+        op.lwwBool = value
+        op.type = .lwwBool
         return op
     }
     
@@ -311,8 +311,8 @@ extension CDOperation {
             fatalNotImplemented()
 //            self.date = protoForm.date
         case .some(.boolean):
-            self.type = .lwwBoolean
-            self.lwwBoolean = protoForm.boolean
+            self.type = .lwwBool
+            self.lwwBool = protoForm.boolean
         case .some(.string):
             self.type = .lwwString
             self.lwwString = protoForm.string
@@ -338,7 +338,7 @@ extension CDOperation {
     }
     
     func lwwValue() -> Bool {
-        return lwwBoolean
+        return lwwBool
     }
 
     func lwwValue() -> String {
@@ -353,10 +353,10 @@ extension CDOperation {
         op.attributeType = type
         op.attributeName = name
         op.type = .attribute
+        op.state = .inUpstreamQueueRenderedMerged
 
         if type == .mutableString {
             let headOp = CDOperation.createStringHead(context: context, container: container)
-            
             headOp.state = .processed
 //            self.head = headOp
         }
@@ -416,7 +416,7 @@ extension CDOperation {
         // let's get the first operation
         request = CDOperation.fetchRequest()
         request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "container == %@ and rawType == %0", argumentArray: [self, CDOperationType.stringHead.rawValue])
+        request.predicate = NSPredicate(format: "container == %@ and rawType == %@", argumentArray: [self, CDOperationType.stringHead.rawValue])
         let head:CDOperation? = try? context.fetch(request).first
 
         // build the attributedString
@@ -443,7 +443,7 @@ extension CDOperation {
         // let's get the first operation
         request = CDOperation.fetchRequest()
         request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "container == %@ and rawType == %0", argumentArray: [self, CDOperationType.stringHead.rawValue])
+        request.predicate = NSPredicate(format: "container == %@ and rawType == %@", argumentArray: [self, CDOperationType.stringHead.rawValue])
         let head:CDOperation? = try? context.fetch(request).first
         
         guard let head = head else { return (NSMutableAttributedString(string:""), [])}
@@ -533,7 +533,7 @@ extension CDOperation {
     static func createStringHead(context: NSManagedObjectContext, container: CDOperation?) -> CDOperation {
         let op = CDOperation(context:context)
         op.lamport = 0
-        op.parentPeerID = .zero
+        op.peerID = .zero
         op.container = container
         op.parentLamport = 0
         op.parentPeerID = .zero

@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreData
+import AppKit
 
 
 //TODO: in a very unlikely event that multiple same name attributes will get crated within the same objects - we should be merging all operations
@@ -201,7 +202,7 @@ class CRAttributeBool: CRAttribute {
             var value:Bool?
             context.performAndWait {
                 guard let op = getLastOperation() else { return }
-                value = op.lwwBoolean
+                value = op.lwwBool
             }
             return value
         }

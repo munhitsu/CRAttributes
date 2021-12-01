@@ -101,7 +101,7 @@ extension ReplicationController {
                         tree.lwwOperation = ReplicationController.protoLWWOperationRecurse(branchRoot)
                     case .lwwDate:
                         tree.lwwOperation = ReplicationController.protoLWWOperationRecurse(branchRoot)
-                    case .lwwBoolean:
+                    case .lwwBool:
                         tree.lwwOperation = ReplicationController.protoLWWOperationRecurse(branchRoot)
                     case .lwwString:
                         tree.lwwOperation = ReplicationController.protoLWWOperationRecurse(branchRoot)
@@ -197,7 +197,7 @@ extension ReplicationController {
                     proto.lwwOperations.append(protoLWWOperationRecurse(operation))
                 case .lwwDate:
                     proto.lwwOperations.append(protoLWWOperationRecurse(operation))
-                case .lwwBoolean:
+                case .lwwBool:
                     proto.lwwOperations.append(protoLWWOperationRecurse(operation))
                 case .lwwString:
                     proto.lwwOperations.append(protoLWWOperationRecurse(operation))
@@ -233,8 +233,8 @@ extension ReplicationController {
                 $0.float = operation.lwwFloat
             case .lwwDate:
                 fatalNotImplemented() //TODO: implement Date
-            case .lwwBoolean:
-                $0.boolean = operation.lwwBoolean
+            case .lwwBool:
+                $0.boolean = operation.lwwBool
             case .lwwString:
                 $0.string = operation.lwwString!
             default:

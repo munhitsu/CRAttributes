@@ -40,9 +40,6 @@
 		OBJ_154 /* CRAttributeMutableString.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_14 /* CRAttributeMutableString.swift */; };
 		OBJ_155 /* CRObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_15 /* CRObject.swift */; };
 		OBJ_156 /* Lamport.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_16 /* Lamport.swift */; };
-		OBJ_157 /* CDAbstractOp.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_18 /* CDAbstractOp.swift */; };
-		OBJ_160 /* CDLWWOp.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_21 /* CDLWWOp.swift */; };
-		OBJ_161 /* CDObjectOp.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_22 /* CDObjectOp.swift */; };
 		OBJ_163 /* CRStringInsertOld.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_24 /* CRStringInsertOld.swift */; };
 		OBJ_164 /* CDOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_25 /* CDOperation.swift */; };
 		OBJ_166 /* CDOperationsForest.swift in Sources */ = {isa = PBXBuildFile; fileRef = OBJ_28 /* CDOperationsForest.swift */; };
@@ -269,9 +266,6 @@
 		OBJ_144 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		OBJ_15 /* CRObject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRObject.swift; sourceTree = "<group>"; };
 		OBJ_16 /* Lamport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Lamport.swift; sourceTree = "<group>"; };
-		OBJ_18 /* CDAbstractOp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDAbstractOp.swift; sourceTree = "<group>"; };
-		OBJ_21 /* CDLWWOp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDLWWOp.swift; sourceTree = "<group>"; };
-		OBJ_22 /* CDObjectOp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDObjectOp.swift; sourceTree = "<group>"; };
 		OBJ_24 /* CRStringInsertOld.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRStringInsertOld.swift; sourceTree = "<group>"; };
 		OBJ_25 /* CDOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDOperation.swift; sourceTree = "<group>"; };
 		OBJ_28 /* CDOperationsForest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDOperationsForest.swift; sourceTree = "<group>"; };
@@ -459,9 +453,6 @@
 			isa = PBXGroup;
 			children = (
 				BBFF6B3826C9818E005A6182 /* CDLocalModel.swift */,
-				OBJ_18 /* CDAbstractOp.swift */,
-				OBJ_21 /* CDLWWOp.swift */,
-				OBJ_22 /* CDObjectOp.swift */,
 				OBJ_25 /* CDOperation.swift */,
 				BB8D7C8226D831F300B4E83E /* CDRenderedStringOp.swift */,
 			);
@@ -860,12 +851,9 @@
 				OBJ_155 /* CRObject.swift in Sources */,
 				BBFF6B3B26CA7330005A6182 /* ProtoModel.pb.swift in Sources */,
 				OBJ_156 /* Lamport.swift in Sources */,
-				OBJ_157 /* CDAbstractOp.swift in Sources */,
 				BB6A991B274A5D5400145446 /* ReplicationController.swift in Sources */,
 				BBCBAE7D27303F5F005E7717 /* UUID.swift in Sources */,
 				BBFF6B3D26CA7DD4005A6182 /* CDReplicationModel.swift in Sources */,
-				OBJ_160 /* CDLWWOp.swift in Sources */,
-				OBJ_161 /* CDObjectOp.swift in Sources */,
 				BB6A991D274AAACB00145446 /* MyTimer.swift in Sources */,
 				OBJ_163 /* CRStringInsertOld.swift in Sources */,
 				OBJ_164 /* CDOperation.swift in Sources */,

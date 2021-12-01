@@ -53,6 +53,7 @@ class CRObject {
         }
 
         context.performAndWait {
+            // let's check if it doesn't exist already
             let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.returnsObjectsAsFaults = false
             let predicate = NSPredicate(format: "container == %@ AND attributeName == %@", context.object(with: operationObjectID!), name)
@@ -62,9 +63,11 @@ class CRObject {
 
             let attribute:CRAttribute
             if cdResults.count > 0 {
+                //it exists
                 assert(cdResults.first!.attributeType == attributeType)
                 attribute = CRAttribute.factory(context: context, from: cdResults.first!, container: self)
             } else {
+                //let's create
                 attribute = CRAttribute.factory(context: context, container:self, name:name, type:attributeType)
             }
             attributesDict[name] = attribute
