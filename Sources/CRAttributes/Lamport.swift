@@ -47,15 +47,15 @@ public func newLamportSeen(_ seenLamport: lamportType) {
  scans alll operation logs for the maximum known lamport
  */
 public func updateLastLamportFromCoOpLog(in context: NSManagedObjectContext) {
-    let fetchRequestInsert:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
-    fetchRequestInsert.sortDescriptors = [NSSortDescriptor(key: "lamport", ascending: false)]
-    fetchRequestInsert.fetchLimit = 1
-    
-    let opsInsert = try? context.fetch(fetchRequestInsert)
-    for op in opsInsert ?? [] {
-        print("Max insert lamport observed: \(op.lamport)")
-        newLamportSeen(op.lamport)
+    context.performAndWait {
+        let fetchRequestInsert:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+        fetchRequestInsert.sortDescriptors = [NSSortDescriptor(key: "lamport", ascending: false)]
+        fetchRequestInsert.fetchLimit = 1
+        
+        let opsInsert = try? context.fetch(fetchRequestInsert)
+        for op in opsInsert ?? [] {
+            print("Max insert lamport observed: \(op.lamport)")
+            newLamportSeen(op.lamport)
+        }
     }
 }
-
-

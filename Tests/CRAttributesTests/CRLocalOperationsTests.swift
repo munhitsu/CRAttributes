@@ -215,7 +215,8 @@ final class CRLocalOperationsTests: XCTestCase {
     
     
     func testAttributeRecovery() {
-        let n1 = CRObject(type: .testNote, container: nil)
+        let viewContext = CRStorageController.shared.localContainer.viewContext
+        let n1 = CRObject(context: viewContext, type: .testNote, container: nil)
         let a1:CRAttributeInt = n1.attribute(name: "count", type: .int) as! CRAttributeInt
         a1.value = 1
         a1.value = 2
@@ -229,7 +230,7 @@ final class CRLocalOperationsTests: XCTestCase {
 //        print("CRLLWOps:")
 //        print(CDLWWOp.allObjects())
 
-        let b_n1 = CRObject.allObjects(type: .testNote)[0]
+        let b_n1 = CRObject.allObjects(context: viewContext, type: .testNote)[0]
         XCTAssertEqual(b_n1.operationObjectID, n1.operationObjectID)
         
         let b_a1:CRAttributeInt = b_n1.attribute(name: "count", type: .int) as! CRAttributeInt
@@ -239,7 +240,8 @@ final class CRLocalOperationsTests: XCTestCase {
     }
     
     func testModeling() {
-        let n1 = CRObject(type: .testNote, container: nil)
+        let viewContext = CRStorageController.shared.localContainer.viewContext
+        let n1 = CRObject(context: viewContext, type: .testNote, container: nil)
         let a1:CRAttributeInt = n1.attribute(name: "count", type: .int) as! CRAttributeInt
         a1.value = 1
         XCTAssertEqual(a1.operationsCount(), 1)
@@ -302,7 +304,7 @@ final class CRLocalOperationsTests: XCTestCase {
         
         //restoring
         
-        let b_n1 = CRObject.allObjects(type: .testNote)[0]
+        let b_n1 = CRObject.allObjects(context: viewContext, type: .testNote)[0]
         XCTAssertEqual(b_n1.operationObjectID, n1.operationObjectID)
         
         let b_a1:CRAttributeInt = b_n1.attribute(name: "count", type: .int) as! CRAttributeInt
@@ -331,15 +333,16 @@ final class CRLocalOperationsTests: XCTestCase {
     }
     
     func testStringSaveRestore() {
-
+        let viewContext = CRStorageController.shared.localContainer.viewContext
         let bgContext = CRStorageController.shared.localContainerBackgroundContext
+
         expectation(
           forNotification: .NSManagedObjectContextDidSave,
           object: bgContext) { _ in
             return true
         }
 
-        let n1 = CRObject(type: .testNote, container: nil)
+        let n1 = CRObject(context: viewContext, type: .testNote, container: nil)
         let a5:CRAttributeString = n1.attribute(name: "title", type: .string) as! CRAttributeString
         XCTAssertEqual(a5.operationsCount(), 0)
         XCTAssertNil(a5.value)
@@ -398,7 +401,7 @@ final class CRLocalOperationsTests: XCTestCase {
         XCTAssertEqual(fromOp_a8.string, "123aXcA")
 
         // Restoring
-        let b_n1 = CRObject.allObjects(type: .testNote)[0]
+        let b_n1 = CRObject.allObjects(context: viewContext, type: .testNote)[0]
         XCTAssertEqual(b_n1.operationObjectID, n1.operationObjectID)
         
         let b_a5:CRAttributeString = b_n1.attribute(name: "title", type: .string) as! CRAttributeString
@@ -429,11 +432,11 @@ final class CRLocalOperationsTests: XCTestCase {
     }
     
     func testMultipleInsertsAtZero() {
-
+        let viewContext = CRStorageController.shared.localContainer.viewContext
         let bgContext = CRStorageController.shared.localContainerBackgroundContext
 
 
-        let n1 = CRObject(type: .testNote, container: nil)
+        let n1 = CRObject(context: viewContext, type: .testNote, container: nil)
         
         let a8:CRAttributeMutableString = n1.attribute(name: "note3", type: .mutableString) as! CRAttributeMutableString
         a8.textStorage!.replaceCharacters(in: .init(location: 0, length: 0), with: "ABC")
@@ -459,7 +462,8 @@ final class CRLocalOperationsTests: XCTestCase {
     }
   
     func testCompareStringPerformanceUpstream() {
-        let operationsLimit = 50000 // TODO: bring back to 50K
+        let viewContext = CRStorageController.shared.localContainer.viewContext
+        let operationsLimit = 50000
         
         printTimeElapsedWhenRunningCode(title: "NSMutableAttributedString") {
             let string = NSMutableAttributedString()
@@ -476,7 +480,7 @@ final class CRLocalOperationsTests: XCTestCase {
             string.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
         }
         printTimeElapsedWhenRunningCode(title: "CRTextStorage") {
-            let noteObject = CRObject(type: .testNote, container: nil)
+            let noteObject = CRObject(context: viewContext, type: .testNote, container: nil)
             let noteAttribute:CRAttributeMutableString = noteObject.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
             noteAttribute.textStorage!.beginEditing()
             noteAttribute.textStorage!.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
@@ -492,10 +496,11 @@ final class CRLocalOperationsTests: XCTestCase {
     }
     
     func testLoadingPerformanceUpstreamOperations() {
+        let viewContext = CRStorageController.shared.localContainer.viewContext
         let operationsLimit = 50000
         
         printTimeElapsedWhenRunningCode(title: "CRTextStorage") {
-            let noteObject = CRObject(type: .testNote, container: nil)
+            let noteObject = CRObject(context: viewContext, type: .testNote, container: nil)
             let noteAttribute:CRAttributeMutableString = noteObject.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
             noteAttribute.textStorage!.beginEditing()
             noteAttribute.textStorage!.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
@@ -504,7 +509,7 @@ final class CRLocalOperationsTests: XCTestCase {
         }
         
         measure {
-            let noteObject = CRObject.allObjects(type: .testNote)[0]
+            let noteObject = CRObject.allObjects(context: viewContext, type: .testNote)[0]
             XCTAssertEqual(noteObject.operationObjectID, noteObject.operationObjectID)
             let noteAttribute = noteObject.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
             print("Loaded \(noteAttribute.textStorage!.string.count) charactrers")
@@ -512,10 +517,12 @@ final class CRLocalOperationsTests: XCTestCase {
     }
     
     func testLoadingPerformanceSinglePaste() {
+        let viewContext = CRStorageController.shared.localContainer.viewContext
         let myText = lorem+lorem+lorem+lorem+lorem
+
         print("String length:\(myText.count)")
         printTimeElapsedWhenRunningCode(title: "CRTextStorage") {
-            let noteObject = CRObject(type: .testNote, container: nil)
+            let noteObject = CRObject(context: viewContext, type: .testNote, container: nil)
             let noteAttribute:CRAttributeMutableString = noteObject.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
             noteAttribute.textStorage!.beginEditing()
             noteAttribute.textStorage!.replaceCharacters(in: NSRange(location: 0, length: 0), with: myText)
@@ -523,7 +530,7 @@ final class CRLocalOperationsTests: XCTestCase {
         }
 //        CRStorageController.shared.localContainer.viewContext.reset()
         measure {
-            let noteObject = CRObject.allObjects(type: .testNote)[0]
+            let noteObject = CRObject.allObjects(context: viewContext, type: .testNote)[0]
             XCTAssertEqual(noteObject.operationObjectID, noteObject.operationObjectID)
             let noteAttribute = noteObject.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
             print("Loaded \(noteAttribute.textStorage!.string.count) charactrers")

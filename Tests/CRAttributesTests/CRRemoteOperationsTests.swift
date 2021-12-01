@@ -25,7 +25,9 @@ class CRRemoteOperationsTests: XCTestCase {
     
     
     func dummyLocalData() {
-        let n1 = CRObject(type: .testNote, container: nil)
+        let viewContext = CRStorageController.shared.localContainer.viewContext
+
+        let n1 = CRObject(context: viewContext, type: .testNote, container: nil)
         let a1:CRAttributeInt = n1.attribute(name: "count", type: .int) as! CRAttributeInt
         a1.value = 1
         XCTAssertEqual(a1.operationsCount(), 1)
@@ -71,7 +73,7 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(a6.textStorage!.string, "ABCdef")
         
         let context = CRStorageController.shared.localContainer.viewContext
-        let cdOp:CDAttributeOp = context.object(with: a6.operationObjectID!) as! CDAttributeOp
+        let cdOp:CDOperation = context.object(with: a6.operationObjectID!) as! CDOperation
         checkStringOperationsCorrectness(cdOp)
 
         let operationsLimit = 10
@@ -85,7 +87,9 @@ class CRRemoteOperationsTests: XCTestCase {
     }
 
     func appendToDummyLocalData() {
-        let note = CRObject.allObjects(type: .testNote)[0]
+        let viewContext = CRStorageController.shared.localContainer.viewContext
+        
+        let note = CRObject.allObjects(context: viewContext, type: .testNote)[0]
 
         let count:CRAttributeInt = note.attribute(name: "count", type: .int) as! CRAttributeInt
         count.value = 4 // operations: 1
@@ -103,32 +107,32 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(text.textStorage!.string, "123def#")
 
         let context = CRStorageController.shared.localContainer.viewContext
-        let textOp:CDAttributeOp = context.object(with: text.operationObjectID!) as! CDAttributeOp
+        let textOp:CDOperation = context.object(with: text.operationObjectID!) as! CDOperation
         checkStringOperationsCorrectness(textOp)
     }
 
     func countUpstreamOps() -> Int {
         let localContext = CRStorageController.shared.localContainer.viewContext
-        let request:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
-        request.predicate = NSPredicate(format: "rawState == %@", argumentArray: [CDOpState.inUpstreamQueueRenderedMerged.rawValue])
+        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+        request.predicate = NSPredicate(format: "rawState == %@", argumentArray: [CDOperationState.inUpstreamQueueRenderedMerged.rawValue])
 
         return try! localContext.count(for: request)
     }
     
-    func checkStringOperationsCorrectness(_ cdAttribute: CDAttributeOp) {
+    func checkStringOperationsCorrectness(_ cdAttribute: CDOperation) {
         var nodesSeen = Set<lamportType>()
 
-        var headStringOperation:CDStringOp? = nil
+        var headStringOperation:CDOperation? = nil
         for operation in cdAttribute.containedOperations() {
             if operation.state == .inDownstreamQueueMergedUnrendered {
-                switch operation {
-                case _ as CDDeleteOp:
+                switch operation.type {
+                case .delete:
                     print("ignoring Delete")
-                case let op as CDStringOp:
+                case .stringInsert:
 //                        print("op(\(op.lamport))=\(op.contribution) prev(\(String(describing: op.prev?.lamport)))")
-                    if op.prev == nil { // it will be only a new string in a new attribute in this scenario
+                    if operation.prev == nil { // it will be only a new string in a new attribute in this scenario
                         assert(headStringOperation == nil)
-                        headStringOperation = op
+                        headStringOperation = operation
                     }
                 default:
                     fatalError("unsupported subOperation")
@@ -210,13 +214,14 @@ class CRRemoteOperationsTests: XCTestCase {
     }
     
     func opCount() -> Int {
-        let localContext = CRStorageController.shared.localContainer.viewContext
-        let request:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
+        let viewContext = CRStorageController.shared.localContainer.viewContext
+        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
         
-        return try! localContext.count(for: request)
+        return try! viewContext.count(for: request)
     }
 
     func testBundleRestore() throws {
+        let viewContext = CRStorageController.shared.localContainer.viewContext
         // 1st batch of operations
         dummyLocalData()
         let upstreamOps = countUpstreamOps()
@@ -264,7 +269,7 @@ class CRRemoteOperationsTests: XCTestCase {
         
         //validate if operations are properly merged
 
-        let b_n1 = CRObject.allObjects(type: .testNote)[0]
+        let b_n1 = CRObject.allObjects(context: viewContext, type: .testNote)[0]
         
         let b_a1:CRAttributeInt = b_n1.attribute(name: "count", type: .int) as! CRAttributeInt
         XCTAssertEqual(b_a1.value, 4)

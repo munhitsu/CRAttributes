@@ -46,7 +46,8 @@ public class RGAController {
         context.performAndWait { // I don't think it's needed
             for objectID in ids {
                 //no other CDAbstractOp requires processing in the background queue
-                if let op = context.object(with: objectID) as? CDStringOp {
+                if let op = context.object(with: objectID) as? CDOperation {
+                    guard op.type == .stringInsert || op.type == .delete else { continue }
                     guard op.state == .inUpstreamQueueRendered ||
                             op.state == .inDownstreamQueueMergedUnrendered else { continue }
 //                    print("linking: '\(op.unicodeScalar)' \(op)")
@@ -59,9 +60,9 @@ public class RGAController {
     
     func linkUnlinked() {
         localContainerBackgroundContext.performAndWait {
-            let request:NSFetchRequest<CDStringOp> = CDStringOp.fetchRequest()
+            let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.returnsObjectsAsFaults = false
-            request.predicate = NSPredicate(format: "rawType == %@ and rawState == %@", argumentArray: [CDStringOpType.head.rawValue, CDOpState.inUpstreamQueueRendered.rawValue])
+            request.predicate = NSPredicate(format: "rawType == %@ and rawState == %@", argumentArray: [CDOperationType.stringHead.rawValue, CDOperationState.inUpstreamQueueRendered.rawValue])
             let response = try! localContainerBackgroundContext.fetch(request)
             for op in response {
                 _ = op.linkMe(context: localContainerBackgroundContext)

@@ -66,10 +66,10 @@ extension ReplicationController {
         let context = localContext
         var forests:[ProtoOperationsForest] = []
         context.performAndWait {
-            let request:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
+            let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.returnsObjectsAsFaults = false
-            request.predicate = NSPredicate(format: "rawState == %@", argumentArray: [CDOpState.inUpstreamQueueRenderedMerged.rawValue])
-            let queuedOperations:[CDAbstractOp] = try! context.fetch(request)
+            request.predicate = NSPredicate(format: "rawState == %@", argumentArray: [CDOperationState.inUpstreamQueueRenderedMerged.rawValue])
+            let queuedOperations:[CDOperation] = try! context.fetch(request)
             
             var forest = ProtoOperationsForest()
             
@@ -88,20 +88,25 @@ extension ReplicationController {
                     } else {
                         tree.containerID = CROperationID.zero.protoForm()
                     }
-                    switch branchRoot {
-                    case let op as CDObjectOp:
-                        tree.objectOperation = ReplicationController.protoObjectOperationRecurse(op)
-                    case let op as CDAttributeOp:
-                        tree.attributeOperation = ReplicationController.protoAttributeOperationRecurse(op)
-                    case let op as CDDeleteOp:
-                        tree.deleteOperation = ReplicationController.protoDeleteOperationRecurse(op)
-                    case let op as CDLWWOp:
-                        tree.lwwOperation = ReplicationController.protoLWWOperationRecurse(op)
-                    case let op as CDStringOp:
-                        //                    if op.contribution == "#" {
-                        //                        print("debug")
-                        //                    }
-                        tree.stringInsertOperations.stringInsertOperations = ReplicationController.protoStringInsertOperationsLinkedList(op)
+                    switch branchRoot.type {
+                    case .object:
+                        tree.objectOperation = ReplicationController.protoObjectOperationRecurse(branchRoot)
+                    case .attribute:
+                        tree.attributeOperation = ReplicationController.protoAttributeOperationRecurse(branchRoot)
+                    case .delete:
+                        tree.deleteOperation = ReplicationController.protoDeleteOperationRecurse(branchRoot)
+                    case .lwwInt:
+                        tree.lwwOperation = ReplicationController.protoLWWOperationRecurse(branchRoot)
+                    case .lwwFloat:
+                        tree.lwwOperation = ReplicationController.protoLWWOperationRecurse(branchRoot)
+                    case .lwwDate:
+                        tree.lwwOperation = ReplicationController.protoLWWOperationRecurse(branchRoot)
+                    case .lwwBoolean:
+                        tree.lwwOperation = ReplicationController.protoLWWOperationRecurse(branchRoot)
+                    case .lwwString:
+                        tree.lwwOperation = ReplicationController.protoLWWOperationRecurse(branchRoot)
+                    case .stringInsert:
+                        tree.stringInsertOperations.stringInsertOperations = ReplicationController.protoStringInsertOperationsLinkedList(branchRoot)
                     default:
                         fatalNotImplemented()
                     }
@@ -123,7 +128,8 @@ extension ReplicationController {
         return forests
     }
     
-    static func protoObjectOperationRecurse(_ operation: CDObjectOp) -> ProtoObjectOperation {
+    static func protoObjectOperationRecurse(_ operation: CDOperation) -> ProtoObjectOperation {
+        assert(operation.type == .object)
         var proto = ProtoObjectOperation.with {
             $0.version = operation.version
             $0.id.lamport = operation.lamport
@@ -136,13 +142,13 @@ extension ReplicationController {
         //        assert(operation.containedOperations as! Set<CDAbstractOp> == Set(operation.containedOps()))
         for operation in operation.containedOperations() {
             if operation.state == .inUpstreamQueueRenderedMerged {
-                switch operation {
-                case let op as CDDeleteOp:
-                    proto.deleteOperations.append(protoDeleteOperationRecurse(op))
-                case let op as CDAttributeOp:
-                    proto.attributeOperations.append(protoAttributeOperationRecurse(op))
-                case let op as CDObjectOp:
-                    proto.objectOperations.append(protoObjectOperationRecurse(op))
+                switch operation.type {
+                case .delete:
+                    proto.deleteOperations.append(protoDeleteOperationRecurse(operation))
+                case .attribute:
+                    proto.attributeOperations.append(protoAttributeOperationRecurse(operation))
+                case .object:
+                    proto.objectOperations.append(protoObjectOperationRecurse(operation))
                 default:
                     fatalError("unsupported subOperation")
                 }
@@ -152,7 +158,8 @@ extension ReplicationController {
         return proto
     }
     
-    static func protoDeleteOperationRecurse(_ operation: CDDeleteOp) -> ProtoDeleteOperation {
+    static func protoDeleteOperationRecurse(_ operation: CDOperation) -> ProtoDeleteOperation {
+        assert(operation.type == .delete)
         let proto = ProtoDeleteOperation.with {
             $0.version = operation.version
             $0.id.lamport = operation.lamport
@@ -165,29 +172,38 @@ extension ReplicationController {
         return proto
     }
     
-    static func protoAttributeOperationRecurse(_ operation: CDAttributeOp) -> ProtoAttributeOperation {
+    static func protoAttributeOperationRecurse(_ operation: CDOperation) -> ProtoAttributeOperation {
+        assert(operation.type == .attribute)
         var proto = ProtoAttributeOperation.with {
             $0.version = operation.version
             $0.id.lamport = operation.lamport
             $0.id.peerID  = operation.peerID.data
-            $0.name = operation.name!
+            $0.name = operation.attributeName!
             $0.rawType = operation.rawType
         }
         //        print("AttributeOperation \(proto.id.lamport)")
         
-        var headStringOperation:CDStringOp? = nil
+        var headStringOperation:CDOperation? = nil
         
         //        assert(operation.containedOperations as! Set<CDAbstractOp> == Set(operation.containedOps()))
         for operation in operation.containedOperations() {
             if operation.state == .inUpstreamQueueRenderedMerged {
-                switch operation {
-                case let op as CDDeleteOp:
-                    proto.deleteOperations.append(protoDeleteOperationRecurse(op))
-                case let op as CDLWWOp:
-                    proto.lwwOperations.append(protoLWWOperationRecurse(op))
-                case let op as CDStringOp:
-                    if op.prev == nil { // it will be only a new string in a new attribute in this scenario
-                        headStringOperation = op
+                switch operation.type {
+                case .delete:
+                    proto.deleteOperations.append(protoDeleteOperationRecurse(operation))
+                case .lwwInt:
+                    proto.lwwOperations.append(protoLWWOperationRecurse(operation))
+                case .lwwFloat:
+                    proto.lwwOperations.append(protoLWWOperationRecurse(operation))
+                case .lwwDate:
+                    proto.lwwOperations.append(protoLWWOperationRecurse(operation))
+                case .lwwBoolean:
+                    proto.lwwOperations.append(protoLWWOperationRecurse(operation))
+                case .lwwString:
+                    proto.lwwOperations.append(protoLWWOperationRecurse(operation))
+                case .stringInsert:
+                    if operation.prev == nil { // it will be only a new string in a new attribute in this scenario
+                        headStringOperation = operation
                     }
                 default:
                     fatalError("unsupported subOperation")
@@ -205,23 +221,23 @@ extension ReplicationController {
         return proto
     }
     
-    static func protoLWWOperationRecurse(_ operation: CDLWWOp) -> ProtoLWWOperation {
+    static func protoLWWOperationRecurse(_ operation: CDOperation) -> ProtoLWWOperation {
         var proto = ProtoLWWOperation.with {
             $0.version = operation.version
             $0.id.lamport = operation.lamport
             $0.id.peerID  = operation.peerID.data
-            switch (operation.container as! CDAttributeOp).type {
-            case .int:
-                $0.int = operation.int
-            case .float:
-                $0.float = operation.float
-            case .date:
+            switch operation.type {
+            case .lwwInt:
+                $0.int = operation.lwwInt
+            case .lwwFloat:
+                $0.float = operation.lwwFloat
+            case .lwwDate:
                 fatalNotImplemented() //TODO: implement Date
-            case .boolean:
-                $0.boolean = operation.boolean
-            case .string:
-                $0.string = operation.string!
-            case .mutableString:
+            case .lwwBoolean:
+                $0.boolean = operation.lwwBoolean
+            case .lwwString:
+                $0.string = operation.lwwString!
+            default:
                 fatalNotImplemented()
             }
         }
@@ -230,9 +246,9 @@ extension ReplicationController {
         //        assert(operation.containedOperations as! Set<CDAbstractOp> == Set(operation.containedOps()))
         for operation in operation.containedOperations() {
             if operation.state == .inUpstreamQueueRenderedMerged {
-                switch operation {
-                case let op as CDDeleteOp:
-                    proto.deleteOperations.append(protoDeleteOperationRecurse(op))
+                switch operation.type {
+                case .delete:
+                    proto.deleteOperations.append(protoDeleteOperationRecurse(operation))
                 default:
                     fatalError("unsupported subOperation")
                 }
@@ -242,13 +258,13 @@ extension ReplicationController {
         return proto
     }
     
-    static func protoStringInsertOperationRecurse(_ operation: CDStringOp) -> ProtoStringInsertOperation? {
-        guard operation.type != .head else { return nil }
+    static func protoStringInsertOperationRecurse(_ operation: CDOperation) -> ProtoStringInsertOperation? {
+        guard operation.type != .stringHead else { return nil }
         var proto = ProtoStringInsertOperation.with {
             $0.version = operation.version
             $0.id.lamport = operation.lamport
             $0.id.peerID  = operation.peerID.data
-            $0.contribution = operation.insertContribution
+            $0.contribution = operation.stringInsertContribution
             $0.parentID.lamport = operation.parent?.lamport ?? 0
             $0.parentID.peerID = operation.parent?.peerID.data ?? UUID.zero.data
         }
@@ -256,12 +272,12 @@ extension ReplicationController {
         //        assert(operation.upstreamQueueOperation)
         //        assert(operation.containedOperations as! Set<CDAbstractOp> == Set(operation.containedOps()))
         for operation in operation.childOperations?.allObjects ?? [] {
-            guard let operation = operation as? CDStringOp else { continue }
+            guard let operation = operation as? CDOperation else { continue }
             if operation.state == .inUpstreamQueueRenderedMerged {
                 switch operation.type {
                 case .delete:
                     proto.deleteOperations.append(protoStringDeleteOperation(operation))
-                case .insert:
+                case .stringInsert:
                     break // we can ignore it as it will be picked up by .next
                 default:
                     print(operation)
@@ -273,7 +289,9 @@ extension ReplicationController {
         return proto
     }
 
-    static func protoStringDeleteOperation(_ operation: CDStringOp) -> ProtoDeleteOperation {
+    //TODO: merge with delete
+    static func protoStringDeleteOperation(_ operation: CDOperation) -> ProtoDeleteOperation {
+        assert(operation.type == .delete)
         let proto = ProtoDeleteOperation.with {
             $0.version = operation.version
             $0.id.lamport = operation.lamport
@@ -287,7 +305,7 @@ extension ReplicationController {
     }
 
     // returns a list of linked string operations (including deletes as sub operations)
-    static func protoStringInsertOperationsLinkedList(_ operation: CDStringOp) -> [ProtoStringInsertOperation] {
+    static func protoStringInsertOperationsLinkedList(_ operation: CDOperation) -> [ProtoStringInsertOperation] {
         assert(operation.state == .inUpstreamQueueRenderedMerged)
         //TODO: don't add head
         var protoOperations:[ProtoStringInsertOperation] = []
@@ -302,7 +320,7 @@ extension ReplicationController {
         //        print("next: \(String(describing: operation.next))")
         
         // going left
-        var node:CDStringOp? = operation.prev
+        var node:CDOperation? = operation.prev
         while node != nil && node!.state == .inUpstreamQueueRenderedMerged {
             if let protoForm = protoStringInsertOperationRecurse(node!) {
                 protoOperations.insert(protoForm, at: 0)
@@ -344,13 +362,13 @@ extension ReplicationController {
                 let containerID = CROperationID(from: tree.containerID)
                 //                let parentID = CROperationID(from: tree.parentID)
                 
-                var containerOp:CDAbstractOp?
+                var containerOp:CDOperation?
                 
                 if containerID.isZero() {
                     // this means independent tree
                     containerOp = nil
                 } else {
-                    guard let containerOp = CDAbstractOp.fetchOperation(from: containerID, in: localContext) else {
+                    guard let containerOp = CDOperation.fetchOperation(from: containerID, in: localContext) else {
                         fatalNotImplemented()
                         return
                     }

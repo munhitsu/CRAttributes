@@ -17,62 +17,79 @@ class CRAttribute {
     let container: CRObject
     let name: String
     let type: CRAttributeType
+    let context: NSManagedObjectContext
     
-    init(container: CRObject, name: String, type: CRAttributeType) {
-        let context = CRStorageController.shared.localContainer.viewContext
+    init(context: NSManagedObjectContext, container: CRObject, name: String, type: CRAttributeType) {
+        self.context = context
         self.container = container
         self.name = name
         self.type = type
         context.performAndWait {
-            let containerObject: CDObjectOp?
-            containerObject = context.object(with: container.operationObjectID!) as? CDObjectOp
-            let operation = CDAttributeOp(context: context, container: containerObject, type: type, name: name)
+            let containerObject: CDOperation?
+            containerObject = context.object(with: container.operationObjectID!) as? CDOperation
+            let operation = CDOperation.createAttribute(context: context, container: containerObject, type: type, name: name)
             try! context.save()
             self.operationObjectID = operation.objectID
         }
     }
     
     // Remember to execute within context.perform {}
-    init(from: CDAttributeOp, container: CRObject) {
-        operationObjectID = from.objectID
+    init(context: NSManagedObjectContext, container: CRObject, from: CDOperation) {
+        self.context = context
+        self.operationObjectID = from.objectID
         self.container = container
-        name = from.name!
-        type = from.type
+        self.name = from.attributeName!
+        self.type = from.attributeType
     }
     
+    internal func getLastOperation() -> CDOperation? {
+        var operations:[CDOperation] = []
+        context.performAndWait {
+            let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+            request.returnsObjectsAsFaults = false
+            request.fetchLimit = 1
+            request.predicate = NSPredicate(format: "container == %@", context.object(with:operationObjectID!))
+            request.sortDescriptors = [NSSortDescriptor(keyPath: \CDOperation.lamport, ascending: false), NSSortDescriptor(keyPath: \CDOperation.peerID, ascending: false)]
+
+            operations = try! context.fetch(request)
+        }
+        return operations.first
+    }
+    
+    
     // Remember to execute within context.perform {}
-    public static func factory(from attributeOperation: CDAttributeOp, container: CRObject) -> CRAttribute {
+    public static func factory(context: NSManagedObjectContext, from attributeOperation: CDOperation, container: CRObject) -> CRAttribute {
         //TODO: (low) make it nicer (e.g. store types classes in CRAttributeType
-        switch attributeOperation.type {
+        switch attributeOperation.attributeType {
         case CRAttributeType.mutableString:
-            return CRAttributeMutableString(from: attributeOperation, container: container)
+            return CRAttributeMutableString(context: context, container: container, from: attributeOperation)
         case .int:
-            return CRAttributeInt(from: attributeOperation, container: container)
+            return CRAttributeInt(context: context, container: container, from: attributeOperation)
         case .float:
-            return CRAttributeFloat(from: attributeOperation, container: container)
+            return CRAttributeFloat(context: context, container: container, from: attributeOperation)
         case .date:
-            return CRAttributeDate(from: attributeOperation, container: container)
+            return CRAttributeDate(context: context, container: container, from: attributeOperation)
         case .boolean:
-            return CRAttributeBool(from: attributeOperation, container: container)
+            return CRAttributeBool(context: context, container: container, from: attributeOperation)
         case .string:
-            return CRAttributeString(from: attributeOperation, container: container)
+            return CRAttributeString(context: context, container: container, from: attributeOperation)
         }
     }
     
-    public static func factory(container: CRObject, name: String, type: CRAttributeType) -> CRAttribute {
+    public static func factory(context: NSManagedObjectContext, container: CRObject, name: String, type: CRAttributeType) -> CRAttribute {
         switch type {
         case CRAttributeType.mutableString:
-            return CRAttributeMutableString(container: container, name: name)
+            return CRAttributeMutableString(context: context, container: container, name: name)
         case CRAttributeType.int:
-            return CRAttributeInt(container: container, name: name)
+            return CRAttributeInt(context: context, container: container, name: name)
         case .float:
-            return CRAttributeFloat(container: container, name: name)
+            return CRAttributeFloat(context: context, container: container, name: name)
         case .date:
-            return CRAttributeDate(container: container, name: name)
+            return CRAttributeDate(context: context, container: container, name: name)
         case .boolean:
-            return CRAttributeBool(container: container, name: name)
+            return CRAttributeBool(context: context, container: container, name: name)
         case .string:
-            return CRAttributeString(container: container, name: name)
+            return CRAttributeString(context: context, container: container, name: name)
         }
     }
     
@@ -80,7 +97,7 @@ class CRAttribute {
         let context = CRStorageController.shared.localContainer.viewContext
         var count = 0
         context.performAndWait {
-            let request:NSFetchRequest<CDAbstractOp> = CDAbstractOp.fetchRequest()
+            let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.predicate = NSPredicate(format: "container == %@", context.object(with: operationObjectID!))
             count = try! context.count(for: request)
         }
@@ -89,196 +106,137 @@ class CRAttribute {
 }
 
 class CRAttributeInt: CRAttribute {
+    init(context: NSManagedObjectContext, container:CRObject, name:String) {
+        super.init(context: context, container: container, name: name, type: .int)
+    }
+
+    override init(context: NSManagedObjectContext, container: CRObject, from: CDOperation) {
+        super.init(context: context, container: container, from: from)
+    }
     
     var value:Int? {
         get {
-            let context = CRStorageController.shared.localContainer.viewContext
             var value:Int?
             context.performAndWait {
-                let request:NSFetchRequest<CDLWWOp> = CDLWWOp.fetchRequest()
-                request.returnsObjectsAsFaults = false
-                request.fetchLimit = 1
-                request.predicate = NSPredicate(format: "container == %@", context.object(with:operationObjectID!))
-                request.sortDescriptors = [NSSortDescriptor(keyPath: \CDLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CDLWWOp.peerID, ascending: false)]
-
-                let operations:[CDLWWOp] = try! context.fetch(request)
-                if operations.isEmpty {
-                    value = nil
-                } else {
-                    value = Int(operations.first!.int)
-                }
+                guard let op = getLastOperation() else { return }
+                value = Int(op.lwwInt)
             }
             return value
         }
         set {
-            let context = CRStorageController.shared.localContainer.viewContext
             context.performAndWait {
-                _ = CDLWWOp(context: context, container: context.object(with:operationObjectID!) as? CDAttributeOp, value: newValue!)
+                let op = CDOperation.createLWW(context: context, container: context.object(with: operationObjectID!) as? CDOperation, value: newValue!)
+                op.state = .inUpstreamQueueRenderedMerged
             }
         }
-    }
-
-    init(container:CRObject, name:String) {
-        super.init(container: container, name: name, type: .int)
-    }
-
-    override init(from: CDAttributeOp, container: CRObject) {
-        super.init(from: from, container: container)
     }
 }
 
 class CRAttributeFloat: CRAttribute {
-    
+    init(context: NSManagedObjectContext, container:CRObject, name:String) {
+        super.init(context: context, container: container, name: name, type: .float)
+    }
+
+    override init(context: NSManagedObjectContext, container: CRObject, from: CDOperation) {
+        super.init(context: context, container: container, from: from)
+    }
+
     var value:Float? {
         get {
-            let context = CRStorageController.shared.localContainer.viewContext
             var value:Float?
             context.performAndWait {
-                let request:NSFetchRequest<CDLWWOp> = CDLWWOp.fetchRequest()
-                request.returnsObjectsAsFaults = false
-                request.fetchLimit = 1
-                request.predicate = NSPredicate(format: "container == %@", context.object(with:operationObjectID!))
-                request.sortDescriptors = [NSSortDescriptor(keyPath: \CDLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CDLWWOp.peerID, ascending: false)]
-
-                let operations:[CDLWWOp] = try! context.fetch(request)
-                if operations.isEmpty {
-                    value = nil
-                } else {
-                    value = operations.first!.float
-                }
+                guard let op = getLastOperation() else { return }
+                value = op.lwwFloat
             }
             return value
         }
         set {
-            let context = CRStorageController.shared.localContainer.viewContext
             context.performAndWait {
-                _ = CDLWWOp(context: context, container: context.object(with: operationObjectID!) as? CDAttributeOp, value: newValue!)
+                let op = CDOperation.createLWW(context: context, container: context.object(with: operationObjectID!) as? CDOperation, value: newValue!)
+                op.state = .inUpstreamQueueRenderedMerged
             }
         }
-    }
-
-    init(container:CRObject, name:String) {
-        super.init(container: container, name: name, type: .float)
-    }
-
-    override init(from: CDAttributeOp, container: CRObject) {
-        super.init(from: from, container: container)
     }
 }
 
 class CRAttributeDate: CRAttribute {
-    
+    init(context: NSManagedObjectContext, container:CRObject, name:String) {
+        super.init(context: context, container: container, name: name, type: .date)
+    }
+
+    override init(context: NSManagedObjectContext, container: CRObject, from: CDOperation) {
+        super.init(context: context, container: container, from: from)
+    }
+
     var value:Date? {
         get {
-            let context = CRStorageController.shared.localContainer.viewContext
             var value:Date?
             context.performAndWait {
-                let request:NSFetchRequest<CDLWWOp> = CDLWWOp.fetchRequest()
-                request.returnsObjectsAsFaults = false
-                request.fetchLimit = 1
-                request.predicate = NSPredicate(format: "container == %@", context.object(with:operationObjectID!))
-                request.sortDescriptors = [NSSortDescriptor(keyPath: \CDLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CDLWWOp.peerID, ascending: false)]
-
-                let operations:[CDLWWOp] = try! context.fetch(request)
-                if operations.isEmpty {
-                    value = nil
-                } else {
-                    value = operations.first!.date
-                }
+                guard let op = getLastOperation() else { return }
+                value = op.lwwDate
             }
             return value
         }
         set {
-            let context = CRStorageController.shared.localContainer.viewContext
             context.performAndWait {
-                _ = CDLWWOp(context: context, container: context.object(with: operationObjectID!) as? CDAttributeOp, value: newValue!)
+                let op = CDOperation.createLWW(context: context, container: context.object(with: operationObjectID!) as? CDOperation, value: newValue!)
+                op.state = .inUpstreamQueueRenderedMerged
             }
         }
-    }
-
-    init(container:CRObject, name:String) {
-        super.init(container: container, name: name, type: .date)
-    }
-
-    override init(from: CDAttributeOp, container: CRObject) {
-        super.init(from: from, container: container)
     }
 }
 
+
 class CRAttributeBool: CRAttribute {
-    
+    init(context: NSManagedObjectContext, container:CRObject, name:String) {
+        super.init(context: context, container: container, name: name, type: .boolean)
+    }
+
+    override init(context: NSManagedObjectContext, container: CRObject, from: CDOperation) {
+        super.init(context: context, container: container, from: from)
+    }
+
     var value:Bool? {
         get {
-            let context = CRStorageController.shared.localContainer.viewContext
             var value:Bool?
             context.performAndWait {
-                let request:NSFetchRequest<CDLWWOp> = CDLWWOp.fetchRequest()
-                request.returnsObjectsAsFaults = false
-                request.fetchLimit = 1
-                request.predicate = NSPredicate(format: "container == %@", context.object(with:operationObjectID!))
-                request.sortDescriptors = [NSSortDescriptor(keyPath: \CDLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CDLWWOp.peerID, ascending: false)]
-
-                let operations:[CDLWWOp] = try! context.fetch(request)
-                if operations.isEmpty {
-                    value = nil
-                } else {
-                    value = operations.first!.boolean
-                }
+                guard let op = getLastOperation() else { return }
+                value = op.lwwBoolean
             }
             return value
         }
         set {
-            let context = CRStorageController.shared.localContainer.viewContext
             context.performAndWait {
-                _ = CDLWWOp(context: context, container: context.object(with: operationObjectID!) as? CDAttributeOp, value: newValue!)
+                let op = CDOperation.createLWW(context: context, container: context.object(with: operationObjectID!) as? CDOperation, value: newValue!)
+                op.state = .inUpstreamQueueRenderedMerged
             }
         }
-    }
-
-    init(container:CRObject, name:String) {
-        super.init(container: container, name: name, type: .boolean)
-    }
-
-    override init(from: CDAttributeOp, container: CRObject) {
-        super.init(from: from, container: container)
     }
 }
 
 class CRAttributeString: CRAttribute {
-    
+    init(context: NSManagedObjectContext, container:CRObject, name:String) {
+        super.init(context: context, container: container, name: name, type: .string)
+    }
+
+    override init(context: NSManagedObjectContext, container: CRObject, from: CDOperation) {
+        super.init(context: context, container: container, from: from)
+    }
+
     var value:String? {
         get {
-            let context = CRStorageController.shared.localContainer.viewContext
             var value:String?
             context.performAndWait {
-                let request:NSFetchRequest<CDLWWOp> = CDLWWOp.fetchRequest()
-                request.returnsObjectsAsFaults = false
-                request.fetchLimit = 1
-                request.predicate = NSPredicate(format: "container == %@", context.object(with:operationObjectID!))
-                request.sortDescriptors = [NSSortDescriptor(keyPath: \CDLWWOp.lamport, ascending: false), NSSortDescriptor(keyPath: \CDLWWOp.peerID, ascending: false)]
-
-                let operations:[CDLWWOp] = try! context.fetch(request)
-                if operations.isEmpty {
-                    value = nil
-                } else {
-                    value = operations.first!.string
-                }
+                guard let op = getLastOperation() else { return }
+                value = op.lwwString
             }
             return value
         }
         set {
-            let context = CRStorageController.shared.localContainer.viewContext
             context.performAndWait {
-                _ = CDLWWOp(context: context, container: context.object(with: operationObjectID!) as? CDAttributeOp, value: newValue!)
+                let op = CDOperation.createLWW(context: context, container: context.object(with: operationObjectID!) as? CDOperation, value: newValue!)
+                op.state = .inUpstreamQueueRenderedMerged
             }
         }
-    }
-
-    init(container:CRObject, name:String) {
-        super.init(container: container, name: name, type: .string)
-    }
-
-    override init(from: CDAttributeOp, container: CRObject) {
-        super.init(from: from, container: container)
     }
 }

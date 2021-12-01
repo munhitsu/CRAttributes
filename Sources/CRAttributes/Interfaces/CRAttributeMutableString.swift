@@ -22,20 +22,19 @@ let stringOptimiseQueueLengthMax = 1234
 class CRAttributeMutableString: CRAttribute {
     var textStorage: CRTextStorage? = nil
 
-    init(container:CRObject, name:String) {
-        super.init(container: container, name: name, type: .mutableString)
+    init(context: NSManagedObjectContext, container:CRObject, name:String) {
+        super.init(context: context, container: container, name: name, type: .mutableString)
         let context = CRStorageController.shared.localContainer.viewContext
         context.performAndWait {
-            let attributeOp = context.object(with: operationObjectID!) as? CDAttributeOp
-            
+            let attributeOp = context.object(with: operationObjectID!) as? CDOperation
             textStorage = CRTextStorage(attributeOp: attributeOp!)
         }
     }
 
     // Remember to execute within context.perform {}
-    override init(from:CDAttributeOp, container: CRObject) {
+    override init(context:NSManagedObjectContext, container: CRObject, from:CDOperation) {
         textStorage = CRTextStorage(attributeOp: from)
-        super.init(from: from, container: container)
+        super.init(context: context, container: container, from: from)
     }
 }
 
@@ -57,20 +56,20 @@ class CRAttributeMutableString: CRAttribute {
 class CRTextStorage: NSTextStorage {
 //    let container: CRObject
 //    let attributeName: String
-    var attributeOp: CDAttributeOp
+    var attributeOp: CDOperation
     var attributedString: NSMutableAttributedString = NSMutableAttributedString(string:"")
     var addressesArray: [CROperationID] = []
     
     var stringOptimiseCountDown = stringOptimiseQueueLengthMax
     
-    var knownOperationForAddress: [CROperationID:CDStringOp] = [:]
+    var knownOperationForAddress: [CROperationID:CDOperation] = [:]
     var context: NSManagedObjectContext
     
     
     // TODO: try later to use the self=NSTextStorage internal storage
     
     //Execute within context.perform of viewContext
-    init(attributeOp: CDAttributeOp) {
+    init(attributeOp: CDOperation) {
         self.attributeOp = attributeOp
         context = CRStorageController.shared.localContainer.viewContext
 //        attributedString = NSMutableAttributedString(string:"")
@@ -93,7 +92,7 @@ class CRTextStorage: NSTextStorage {
     required init?(coder aDecoder: NSCoder) {
         fatalNotImplemented()
         context = CRStorageController.shared.localContainer.viewContext
-        attributeOp = CDAttributeOp()
+        attributeOp = CDOperation()
         super.init(coder: aDecoder)
     }
     
@@ -121,7 +120,8 @@ class CRTextStorage: NSTextStorage {
         if range.length > 0 {
             // TODO: delete operations in the range
             for address in addressesArray[range.location...(range.location+range.length-1)] {
-                let _ = CDStringOp(context: self.context, container: self.attributeOp, parentAddress: address, type:.delete, state: .inUpstreamQueueRendered)
+                let delete = CDOperation.createDelete(context: context, within: self.attributeOp, of: address)
+                delete.state = .inUpstreamQueueRendered
             }
             try! context.save()
         }
@@ -140,7 +140,8 @@ class CRTextStorage: NSTextStorage {
         }
         
         for us in strContent.unicodeScalars {
-            let newOp:CDStringOp = CDStringOp(context: self.context, container: self.attributeOp, parentAddress: parentAddress, contribution: us, type: .insert, state: .inUpstreamQueueRendered)
+            let newOp:CDOperation = CDOperation.createStringInsert(context: context, container: self.attributeOp, parentAddress: parentAddress, contribution: us)
+            newOp.state = .inUpstreamQueueRendered
             let charAddress = newOp.operationID()
             strAddresses.append(charAddress)
             parentAddress = charAddress
@@ -175,7 +176,7 @@ class CRTextStorage: NSTextStorage {
     }
 
     
-    private func prebuildStringBundleFromRenderedString(attributeOp: CDAttributeOp) {
+    private func prebuildStringBundleFromRenderedString(attributeOp: CDOperation) {
         let context = CRStorageController.shared.localContainer.viewContext
         (attributedString, addressesArray) = CDRenderedStringOp.stringBundleFor(context: context, container: attributeOp)
     }
@@ -201,7 +202,7 @@ class CRTextStorage: NSTextStorage {
         let stringSnapshot = attributedString.string
         let addressesSnapshot = addressesArray
         context.perform {
-            let attributeOp:CDAttributeOp = (context.object(with: attributeObjectID) as? CDAttributeOp)!
+            let attributeOp:CDOperation = (context.object(with: attributeObjectID) as? CDOperation)!
             _ = CDRenderedStringOp(context: context, containerOp: attributeOp, lamport: lamport, stringSnapshot: stringSnapshot, addressesSnapshot: addressesSnapshot)
             try! context.save()
         }

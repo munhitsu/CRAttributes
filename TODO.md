@@ -2,6 +2,9 @@
 
 
 
+- [] ensure that every self.state = .inDownstreamQueueMergedUnrendered - defines state
+- [] merge deletes
+- [] flatten CDOperations into one object so we can cahge the type on flight (e.g. have ghost Op whose type materialises when it arrives)
 - [] ship string upstream op to the replication container
 - [] 2 different delete operat type for strings.... and protobuf impact
 

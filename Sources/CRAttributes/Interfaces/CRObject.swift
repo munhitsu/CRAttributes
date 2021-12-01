@@ -18,54 +18,54 @@ class CRObject {
     var operationObjectID: NSManagedObjectID? = nil // CDObjectOp
     let type: CRObjectType
     var attributesDict: [String:CRAttribute] = [:]
+    let context: NSManagedObjectContext
     
     // creates new CRObjects
-    init(type: CRObjectType, container: CRObject?) {
-        let context = CRStorageController.shared.localContainer.viewContext
+    init(context: NSManagedObjectContext, type: CRObjectType, container: CRObject?) {
+        self.context = context
         self.type = type
         context.performAndWait {
-            let containerObject: CDObjectOp?
+            let containerObject: CDOperation?
             if container != nil {
-                containerObject = context.object(with: container!.operationObjectID!) as? CDObjectOp
+                containerObject = context.object(with: container!.operationObjectID!) as? CDOperation
             } else {
                 containerObject = nil
             }
-            let operation = CDObjectOp(context: context, container: containerObject, type: type)
+            let operation = CDOperation.createObject(context: context, container: containerObject, type: type)
             try! context.save()
             self.operationObjectID = operation.objectID
         }
     }
     
     // Remember to execute within context.perform {}
-    init(from: CDObjectOp) {
+    init(context: NSManagedObjectContext, from: CDOperation) {
+        self.context = context
         operationObjectID = from.objectID
-        type = from.type
+        type = from.objectType
         prefetchAttributes()
     }
         
     //getOrCreate
     func attribute(name: String, type attributeType: CRAttributeType) -> CRAttribute {
-        let context = CRStorageController.shared.localContainer.viewContext
-
         if let attribute = self.attributesDict[name] {
             assert(attribute.type == attributeType)
             return attribute
         }
 
         context.performAndWait {
-            let request:NSFetchRequest<CDAttributeOp> = CDAttributeOp.fetchRequest()
+            let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.returnsObjectsAsFaults = false
-            let predicate = NSPredicate(format: "container == %@ AND name == %@", context.object(with: operationObjectID!), name)
+            let predicate = NSPredicate(format: "container == %@ AND attributeName == %@", context.object(with: operationObjectID!), name)
             request.predicate = predicate
 
-            let cdResults:[CDAttributeOp] = try! context.fetch(request)
+            let cdResults:[CDOperation] = try! context.fetch(request)
 
             let attribute:CRAttribute
             if cdResults.count > 0 {
-                assert(cdResults.first!.type == attributeType)
-                attribute = CRAttribute.factory(from: cdResults.first!, container: self)
+                assert(cdResults.first!.attributeType == attributeType)
+                attribute = CRAttribute.factory(context: context, from: cdResults.first!, container: self)
             } else {
-                attribute = CRAttribute.factory(container:self, name:name, type:attributeType)
+                attribute = CRAttribute.factory(context: context, container:self, name:name, type:attributeType)
             }
             attributesDict[name] = attribute
 
@@ -74,36 +74,34 @@ class CRObject {
         return attributesDict[name]!
     }
         
-    static func allObjects(type:CRObjectType) -> [CRObject] {
-        let context = CRStorageController.shared.localContainer.viewContext
+    static func allObjects(context: NSManagedObjectContext, type:CRObjectType) -> [CRObject] {
         var crResults:[CRObject] = []
         
         context.performAndWait {
-            let request:NSFetchRequest<CDObjectOp> = CDObjectOp.fetchRequest()
+            let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.returnsObjectsAsFaults = false
-            request.predicate = NSPredicate(format: "rawType == \(type.rawValue)")
+            request.predicate = NSPredicate(format: "rawObjectType == \(type.rawValue)")
 
-            let cdResults:[CDObjectOp] = try! context.fetch(request)
+            let cdResults:[CDOperation] = try! context.fetch(request)
             
-            crResults = cdResults.map { CRObject(from: $0) }
+            crResults = cdResults.map { CRObject(context: context, from: $0) }
             
         }
         return crResults
     }
 
     func prefetchAttributes() {
-        let context = CRStorageController.shared.localContainer.viewContext
 //        context.performAndWait {
-            let request:NSFetchRequest<CDAttributeOp> = CDAttributeOp.fetchRequest()
+            let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.returnsObjectsAsFaults = false
-            request.predicate = NSPredicate(format: "container == %@", context.object(with: operationObjectID!))
+        request.predicate = NSPredicate(format: "container == %@ AND rawType == %@ ", argumentArray: [context.object(with: operationObjectID!), CDOperationType.attribute.rawValue])
 
     
-            let cdResults:[CDAttributeOp] = try! context.fetch(request)
+            let cdResults:[CDOperation] = try! context.fetch(request)
 
             if cdResults.count > 0 {
                 for attributeOp in cdResults {
-                    attributesDict[attributeOp.name!] = CRAttribute.factory(from:attributeOp, container: self)
+                    attributesDict[attributeOp.attributeName!] = CRAttribute.factory(context: context, from:attributeOp, container: self)
                 }
             }
 //        }
@@ -111,17 +109,16 @@ class CRObject {
     }
         
     func subObjects() -> [CRObject] {
-        let context = CRStorageController.shared.localContainer.viewContext
         var crResults:[CRObject] = []
 
         context.performAndWait {
-            let request:NSFetchRequest<CDObjectOp> = CDObjectOp.fetchRequest()
+            let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.returnsObjectsAsFaults = false
             request.predicate = NSPredicate(format: "container == %@", context.object(with: operationObjectID!))
 
-            let cdResults:[CDObjectOp] = try! context.fetch(request)
+            let cdResults:[CDOperation] = try! context.fetch(request)
             
-            crResults = cdResults.map { CRObject(from: $0) }
+            crResults = cdResults.map { CRObject(context: context, from: $0) }
         }
         return crResults
     }

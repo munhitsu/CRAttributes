@@ -27,7 +27,7 @@ extension CDRenderedStringOp {
     @NSManaged public var arrayContributionRaw: Data?
     // Future: if needing to add attributes then attributes are operations but for this form it might be ok to just make stingContribution into attributedString
 
-    @NSManaged public var container: CDAttributeOp
+    @NSManaged public var container: CDOperation
 }
 
 extension CDRenderedStringOp : Identifiable {
@@ -37,7 +37,7 @@ extension CDRenderedStringOp : Identifiable {
 extension CDRenderedStringOp {
 
     // this is slow to save so user needss to generate lamport synchronously before and run this async/in background
-    convenience init(context: NSManagedObjectContext, containerOp: CDAttributeOp, lamport: Int64, stringSnapshot: String?, addressesSnapshot: [CROperationID]?) {
+    convenience init(context: NSManagedObjectContext, containerOp: CDOperation, lamport: Int64, stringSnapshot: String?, addressesSnapshot: [CROperationID]?) {
         self.init(context:context)
         self.container = containerOp
         self.lamport = lamport
@@ -52,7 +52,7 @@ extension CDRenderedStringOp {
         }
     }
     
-    convenience init(context: NSManagedObjectContext, containerOp: CDAttributeOp, in range: NSRange, operationString: String?, operationAddresses: [CROperationID]?) {
+    convenience init(context: NSManagedObjectContext, containerOp: CDOperation, in range: NSRange, operationString: String?, operationAddresses: [CROperationID]?) {
         self.init(context:context)
         self.container = containerOp
         self.lamport = getLamport()
@@ -103,7 +103,7 @@ extension CDRenderedStringOp {
 
 
 extension CDRenderedStringOp {
-    static func stringBundleFor(context: NSManagedObjectContext, container: CDAttributeOp) -> (NSMutableAttributedString, [CROperationID]) {
+    static func stringBundleFor(context: NSManagedObjectContext, container: CDOperation) -> (NSMutableAttributedString, [CROperationID]) {
         // get latest snapshot
         let requestSnapshot: NSFetchRequest<CDRenderedStringOp> = CDRenderedStringOp.fetchRequest()
         requestSnapshot.predicate = NSPredicate(format: "container == %@ and isSnapshot == true", argumentArray: [container])
