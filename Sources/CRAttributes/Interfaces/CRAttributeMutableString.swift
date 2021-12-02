@@ -26,9 +26,9 @@ class CRAttributeMutableString: CRAttribute {
         super.init(context: context, container: container, name: name, type: .mutableString)
         let context = CRStorageController.shared.localContainer.viewContext
         context.performAndWait {
-            let attributeOp = context.object(with: operationObjectID!) as? CDOperation
-            textStorage = CRTextStorage(attributeOp: attributeOp!)
+            textStorage = CRTextStorage(attributeOp: attributeOperation!)
         }
+        assert(operationsCount() == 1)
     }
 
     // Remember to execute within context.perform {}

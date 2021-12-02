@@ -356,7 +356,7 @@ extension CDOperation {
         op.state = .inUpstreamQueueRenderedMerged
 
         if type == .mutableString {
-            let headOp = CDOperation.createStringHead(context: context, container: container)
+            let headOp = CDOperation.createStringHead(context: context, container: op)
             headOp.state = .processed
 //            self.head = headOp
         }

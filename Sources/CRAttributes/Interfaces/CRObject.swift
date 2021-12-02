@@ -15,10 +15,10 @@ import CoreData
 // ideally object creation should instantly create attributes
 
 class CRObject {
-    var operationObjectID: NSManagedObjectID? = nil // CDObjectOp
+    var objectOperation:CDOperation? = nil
+    let context: NSManagedObjectContext
     let type: CRObjectType
     var attributesDict: [String:CRAttribute] = [:]
-    let context: NSManagedObjectContext
     
     // creates new CRObjects
     init(context: NSManagedObjectContext, type: CRObjectType, container: CRObject?) {
@@ -26,21 +26,15 @@ class CRObject {
         self.type = type
         context.performAndWait {
             let containerObject: CDOperation?
-            if container != nil {
-                containerObject = context.object(with: container!.operationObjectID!) as? CDOperation
-            } else {
-                containerObject = nil
-            }
-            let operation = CDOperation.createObject(context: context, container: containerObject, type: type)
-            try! context.save()
-            self.operationObjectID = operation.objectID
+            containerObject = container?.objectOperation
+            self.objectOperation = CDOperation.createObject(context: context, container: containerObject, type: type)
         }
     }
     
     // Remember to execute within context.perform {}
     init(context: NSManagedObjectContext, from: CDOperation) {
         self.context = context
-        operationObjectID = from.objectID
+        objectOperation = from
         type = from.objectType
         prefetchAttributes()
     }
@@ -56,7 +50,7 @@ class CRObject {
             // let's check if it doesn't exist already
             let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.returnsObjectsAsFaults = false
-            let predicate = NSPredicate(format: "container == %@ AND attributeName == %@", context.object(with: operationObjectID!), name)
+            let predicate = NSPredicate(format: "container == %@ AND attributeName == %@", argumentArray: [objectOperation!, name])
             request.predicate = predicate
 
             let cdResults:[CDOperation] = try! context.fetch(request)
@@ -97,7 +91,7 @@ class CRObject {
 //        context.performAndWait {
             let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "container == %@ AND rawType == %@ ", argumentArray: [context.object(with: operationObjectID!), CDOperationType.attribute.rawValue])
+        request.predicate = NSPredicate(format: "container == %@ AND rawType == %@ ", argumentArray: [objectOperation!, CDOperationType.attribute.rawValue])
 
     
             let cdResults:[CDOperation] = try! context.fetch(request)
@@ -117,7 +111,7 @@ class CRObject {
         context.performAndWait {
             let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.returnsObjectsAsFaults = false
-            request.predicate = NSPredicate(format: "container == %@", context.object(with: operationObjectID!))
+            request.predicate = NSPredicate(format: "container == %@", objectOperation!)
 
             let cdResults:[CDOperation] = try! context.fetch(request)
             
