@@ -14,7 +14,7 @@ import AppKit
 //TODO: CRAttribute should be a template...
 
 class CRAttribute {
-    var attributeOperation: CDOperation? = nil
+    var operation: CDOperation? = nil
     let container: CRObject
     let name: String
     let type: CRAttributeType
@@ -27,15 +27,15 @@ class CRAttribute {
         self.type = type
         context.performAndWait {
             let containerObject: CDOperation?
-            containerObject = container.objectOperation
-            self.attributeOperation = CDOperation.createAttribute(context: context, container: containerObject, type: type, name: name)
+            containerObject = container.operation
+            self.operation = CDOperation.createAttribute(context: context, container: containerObject, type: type, name: name)
         }
     }
     
     // Remember to execute within context.perform {}
     init(context: NSManagedObjectContext, container: CRObject, from: CDOperation) {
         self.context = context
-        self.attributeOperation = from
+        self.operation = from
         self.container = container
         self.name = from.attributeName!
         self.type = from.attributeType
@@ -47,7 +47,7 @@ class CRAttribute {
             let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.returnsObjectsAsFaults = false
             request.fetchLimit = 1
-            request.predicate = NSPredicate(format: "container == %@", attributeOperation!)
+            request.predicate = NSPredicate(format: "container == %@", operation!)
             request.sortDescriptors = [NSSortDescriptor(keyPath: \CDOperation.lamport, ascending: false), NSSortDescriptor(keyPath: \CDOperation.peerID, ascending: false)]
 
             operations = try! context.fetch(request)
@@ -97,7 +97,7 @@ class CRAttribute {
         var count = 0
         context.performAndWait {
             let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
-            request.predicate = NSPredicate(format: "container == %@", attributeOperation!)
+            request.predicate = NSPredicate(format: "container == %@", operation!)
             count = try! context.count(for: request)
         }
         return count
@@ -124,7 +124,7 @@ class CRAttributeInt: CRAttribute {
         }
         set {
             context.performAndWait {
-                let op = CDOperation.createLWW(context: context, container: attributeOperation, value: newValue!)
+                let op = CDOperation.createLWW(context: context, container: operation, value: newValue!)
                 op.state = .inUpstreamQueueRenderedMerged
             }
         }
@@ -151,7 +151,7 @@ class CRAttributeFloat: CRAttribute {
         }
         set {
             context.performAndWait {
-                let op = CDOperation.createLWW(context: context, container: attributeOperation, value: newValue!)
+                let op = CDOperation.createLWW(context: context, container: operation, value: newValue!)
                 op.state = .inUpstreamQueueRenderedMerged
             }
         }
@@ -178,7 +178,7 @@ class CRAttributeDate: CRAttribute {
         }
         set {
             context.performAndWait {
-                let op = CDOperation.createLWW(context: context, container: attributeOperation, value: newValue!)
+                let op = CDOperation.createLWW(context: context, container: operation, value: newValue!)
                 op.state = .inUpstreamQueueRenderedMerged
             }
         }
@@ -206,7 +206,7 @@ class CRAttributeBool: CRAttribute {
         }
         set {
             context.performAndWait {
-                let op = CDOperation.createLWW(context: context, container: attributeOperation, value: newValue!)
+                let op = CDOperation.createLWW(context: context, container: operation, value: newValue!)
                 op.state = .inUpstreamQueueRenderedMerged
             }
         }
@@ -233,7 +233,7 @@ class CRAttributeString: CRAttribute {
         }
         set {
             context.performAndWait {
-                let op = CDOperation.createLWW(context: context, container: attributeOperation, value: newValue!)
+                let op = CDOperation.createLWW(context: context, container: operation, value: newValue!)
                 op.state = .inUpstreamQueueRenderedMerged
             }
         }

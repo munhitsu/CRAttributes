@@ -36,7 +36,7 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(a1.value, 2)
         let a1b:CRAttributeInt = n1.attribute(name: "count", type: .int) as! CRAttributeInt
         XCTAssertEqual(a1.value, a1b.value)
-        XCTAssertEqual(a1.attributeOperation, a1b.attributeOperation)
+        XCTAssertEqual(a1.operation, a1b.operation)
 
         let a2:CRAttributeFloat = n1.attribute(name: "weight", type: .float) as! CRAttributeFloat
         a2.value = 0.1
@@ -73,7 +73,7 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(a6.textStorage!.string, "ABCdef")
         
         let context = CRStorageController.shared.localContainer.viewContext
-        let cdOp:CDOperation = a6.attributeOperation!
+        let cdOp:CDOperation = a6.operation!
         checkStringOperationsCorrectness(cdOp)
 
         let operationsLimit = 10
@@ -107,7 +107,7 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(text.textStorage!.string, "123def#")
 
         let context = CRStorageController.shared.localContainer.viewContext
-        let textOp:CDOperation = text.attributeOperation!
+        let textOp:CDOperation = text.operation!
         checkStringOperationsCorrectness(textOp)
     }
 

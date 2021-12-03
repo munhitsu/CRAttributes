@@ -26,7 +26,7 @@ class CRAttributeMutableString: CRAttribute {
         super.init(context: context, container: container, name: name, type: .mutableString)
         let context = CRStorageController.shared.localContainer.viewContext
         context.performAndWait {
-            textStorage = CRTextStorage(attributeOp: attributeOperation!)
+            textStorage = CRTextStorage(attributeOp: operation!)
         }
         assert(operationsCount() == 1)
     }
@@ -206,12 +206,7 @@ class CRTextStorage: NSTextStorage {
             _ = CDRenderedStringOp(context: context, containerOp: attributeOp, lamport: lamport, stringSnapshot: stringSnapshot, addressesSnapshot: addressesSnapshot)
             try! context.save()
         }
-    }
-    
-    func stringFromRGAList() -> (NSMutableAttributedString, [CROperationID]) {
-        return attributeOp.stringFromRGAList(context: context)
-    }
-    
+    }    
 }
 
 

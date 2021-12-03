@@ -550,6 +550,7 @@ extension CDOperation {
         op.unicodeScalar = UnicodeScalar(0)
         op.type = .stringInsert
         op.state = .inUpstreamQueueRendered
+        op.stringInsertContribution = Int32(contribution.value) //TODO: we need a nice reversible casting of uint32 to int32
         return op
     }
 
@@ -674,11 +675,13 @@ extension CDOperation {
     
     func printRGADebug(context: NSManagedObjectContext) {
         print("rga form debug:")
+        assert(type == .attribute)
+        assert(attributeType == .mutableString)
 
         // let's get the first operation
         let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
         request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "container == %@ and rawType == 0", argumentArray: [container!]) // select head
+        request.predicate = NSPredicate(format: "container == %@ and rawType == %@", argumentArray: [self, CDOperationType.stringHead.rawValue]) // select head
         var response = try! context.fetch(request)
         assert(response.count == 1)
         let head:CDOperation? = response.first
@@ -700,7 +703,7 @@ extension CDOperation {
         print(" tree:")
         head?.printRGATree(intention:2)
         print(" orphaned:")
-        request.predicate = NSPredicate(format: "container == %@ and parent == nil", argumentArray: [container!])
+        request.predicate = NSPredicate(format: "container == %@ and parent == nil", argumentArray: [self])
         response = try! context.fetch(request)
         for op in response {
             if op.type != .stringHead {

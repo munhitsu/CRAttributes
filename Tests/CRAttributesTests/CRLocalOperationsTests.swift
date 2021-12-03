@@ -231,10 +231,10 @@ final class CRLocalOperationsTests: XCTestCase {
 //        print(CDLWWOp.allObjects())
 
         let b_n1 = CRObject.allObjects(context: viewContext, type: .testNote)[0]
-        XCTAssertEqual(b_n1.objectOperation, n1.objectOperation)
+        XCTAssertEqual(b_n1.operation, n1.operation)
         
         let b_a1:CRAttributeInt = b_n1.attribute(name: "count", type: .int) as! CRAttributeInt
-        XCTAssertEqual(b_a1.attributeOperation, a1.attributeOperation)
+        XCTAssertEqual(b_a1.operation, a1.operation)
         XCTAssertEqual(b_a1.value, 2)
 
     }
@@ -254,7 +254,7 @@ final class CRLocalOperationsTests: XCTestCase {
         XCTAssertEqual(a1.value, 4)
         let a1b:CRAttributeInt = n1.attribute(name: "count", type: .int) as! CRAttributeInt
         XCTAssertEqual(a1.value, a1b.value)
-        XCTAssertEqual(a1.attributeOperation, a1b.attributeOperation)
+        XCTAssertEqual(a1.operation, a1b.operation)
 
         let a2:CRAttributeFloat = n1.attribute(name: "weight", type: .float) as! CRAttributeFloat
         a2.value = 0.1
@@ -305,10 +305,10 @@ final class CRLocalOperationsTests: XCTestCase {
         //restoring
         
         let b_n1 = CRObject.allObjects(context: viewContext, type: .testNote)[0]
-        XCTAssertEqual(b_n1.objectOperation, n1.objectOperation)
+        XCTAssertEqual(b_n1.operation, n1.operation)
         
         let b_a1:CRAttributeInt = b_n1.attribute(name: "count", type: .int) as! CRAttributeInt
-        XCTAssertEqual(b_a1.attributeOperation, a1.attributeOperation)
+        XCTAssertEqual(b_a1.operation, a1.operation)
         XCTAssertEqual(b_a1.value, 4)
 
         let b_a2:CRAttributeFloat = b_n1.attribute(name: "weight", type: .float) as! CRAttributeFloat
@@ -394,15 +394,15 @@ final class CRLocalOperationsTests: XCTestCase {
 //        a7.textStorage?.prebuildAttributedStringFromOperations(attributeOp: a7.textStorage!.attributeOp)
 //        XCTAssertEqual(string.string, a7.textStorage!.string)
         
-        let fromOp_a7 = a7.textStorage!.stringFromRGAList().0
+        let fromOp_a7 = a7.operation!.stringFromRGAList(context: viewContext).0
         XCTAssertEqual(fromOp_a7.string, string.string)
 
-        let fromOp_a8 = a8.textStorage!.stringFromRGAList().0
+        let fromOp_a8 = a8.operation!.stringFromRGAList(context: viewContext).0
         XCTAssertEqual(fromOp_a8.string, "123aXcA")
 
         // Restoring
         let b_n1 = CRObject.allObjects(context: viewContext, type: .testNote)[0]
-        XCTAssertEqual(b_n1.objectOperation, n1.objectOperation)
+        XCTAssertEqual(b_n1.operation, n1.operation)
         
         let b_a5:CRAttributeString = b_n1.attribute(name: "title", type: .string) as! CRAttributeString
         XCTAssertEqual(b_a5.value, "abc")
@@ -424,7 +424,7 @@ final class CRLocalOperationsTests: XCTestCase {
             XCTAssertNil(error, "backgroundContext should save when performing merge")
         }
 
-        let fromOp_b_a7 = b_a7.textStorage!.stringFromRGAList().0
+        let fromOp_b_a7 = b_a7.operation!.stringFromRGAList(context: viewContext).0
         XCTAssertEqual(fromOp_b_a7.string, string.string)
 
         
@@ -454,10 +454,11 @@ final class CRLocalOperationsTests: XCTestCase {
             print("Blocking for the merge operations to finish")
         }
 
-        let fromOp_a8 = a8.textStorage!.stringFromRGAList().0
+        let fromOp_a8 = a8.operation!.stringFromRGAList(context: viewContext).0
+        let fromOp_a8b = a8.operation!.stringFromRGATree(context: viewContext).0
+//        a8.operation!.printRGADebug(context: viewContext)
         XCTAssertEqual(fromOp_a8.string, "123aXcABC")
-        
-        
+        XCTAssertEqual(fromOp_a8b.string, "123aXcABC")
 
     }
   
@@ -510,7 +511,7 @@ final class CRLocalOperationsTests: XCTestCase {
         
         measure {
             let noteObject = CRObject.allObjects(context: viewContext, type: .testNote)[0]
-            XCTAssertEqual(noteObject.objectOperation, noteObject.objectOperation)
+            XCTAssertEqual(noteObject.operation, noteObject.operation)
             let noteAttribute = noteObject.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
             print("Loaded \(noteAttribute.textStorage!.string.count) charactrers")
         }
@@ -531,7 +532,7 @@ final class CRLocalOperationsTests: XCTestCase {
 //        CRStorageController.shared.localContainer.viewContext.reset()
         measure {
             let noteObject = CRObject.allObjects(context: viewContext, type: .testNote)[0]
-            XCTAssertEqual(noteObject.objectOperation, noteObject.objectOperation)
+            XCTAssertEqual(noteObject.operation, noteObject.operation)
             let noteAttribute = noteObject.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
             print("Loaded \(noteAttribute.textStorage!.string.count) charactrers")
             XCTAssertEqual((noteAttribute.textStorage!.string), myText)
