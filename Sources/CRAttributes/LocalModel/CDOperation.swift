@@ -22,7 +22,8 @@ enum CDOperationState: Int32 {
     case unknown = 0 // should never happen
     case inUpstreamQueueRendered = 1 // rendered, but waiting to convert ID to references (to link/merge), and waiting to be added for synchronisation
     case inUpstreamQueueRenderedMerged = 2 // merged, rendered, but waiting for synchronisation
-    case inDownstreamQueueMergedUnrendered = 16 // merged, but not yet rendered
+    case inDownstreamQueue = 16 // merged, but not yet rendered
+    case inDownstreamQueueMergedUnrendered = 17 // merged, but not yet rendered
     case processed = 128 // rendered, merged, synced
 }
 
@@ -100,8 +101,25 @@ extension CDOperation {
 
 }
 
-
 extension CDOperation {
+    var type: CDOperationType {
+        get {
+            return CDOperationType(rawValue: self.rawType)!
+        }
+        set {
+            self.rawType = newValue.rawValue
+        }
+    }
+    
+    var unicodeScalar: UnicodeScalar {
+        get {
+            UnicodeScalar(UInt32(stringInsertContribution))!
+        }
+        set {
+            stringInsertContribution = Int32(newValue.value) // there will be loss in UInt32 to Int32 conversion eventually
+        }
+    }
+
     var state: CDOperationState {
         get {
             return CDOperationState(rawValue: self.rawState)!
@@ -166,28 +184,6 @@ extension CDOperation : Comparable {
 }
 
 
-
-extension CDOperation {
-    var type: CDOperationType {
-        get {
-            return CDOperationType(rawValue: self.rawType)!
-        }
-        set {
-            self.rawType = newValue.rawValue
-        }
-    }
-    
-    var unicodeScalar: UnicodeScalar {
-        get {
-            UnicodeScalar(UInt32(stringInsertContribution))!
-        }
-        set {
-            stringInsertContribution = Int32(newValue.value) // there will be loss in UInt32 to Int32 conversion eventually
-        }
-    }
-}
-
-
 extension CDOperation {
     
     convenience init(context: NSManagedObjectContext, container: CDOperation?) {
@@ -224,19 +220,23 @@ extension CDOperation {
         self.state = state
     }
 
-    static func fetchOperation(fromLamport:lamportType, fromPeerID:UUID, in context: NSManagedObjectContext) -> CDOperation? {
+    /** returns operation or a ghost operation for the ID*/
+    static func fetchOperationOrGhost(fromLamport:lamportType, fromPeerID:UUID, in context: NSManagedObjectContext) -> CDOperation? {
         let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
         request.predicate = NSPredicate(format: "lamport = %@ and peerID = %@", argumentArray: [fromLamport, fromPeerID])
         let ops = try? context.fetch(request)
-        return ops?.first
+        guard let op = ops?.first else {
+            return CDOperation.createGhost(context: context, id: CROperationID.init(lamport: fromLamport, peerID: fromPeerID))
+        }
+        return op
     }
 
-    static func fetchOperation(from protoID:ProtoOperationID, in context: NSManagedObjectContext) -> CDOperation? {
-        return fetchOperation(fromLamport: protoID.lamport, fromPeerID: protoID.peerID.object(), in: context)
+    static func fetchOperationOrGhost(from protoID:ProtoOperationID, in context: NSManagedObjectContext) -> CDOperation? {
+        return fetchOperationOrGhost(fromLamport: protoID.lamport, fromPeerID: protoID.peerID.object(), in: context)
     }
 
-    static func fetchOperation(from operationID:CROperationID, in context: NSManagedObjectContext) -> CDOperation? {
-        return fetchOperation(fromLamport: operationID.lamport, fromPeerID: operationID.peerID, in: context)
+    static func fetchOperationOrGhost(from operationID:CROperationID, in context: NSManagedObjectContext) -> CDOperation? {
+        return fetchOperationOrGhost(fromLamport: operationID.lamport, fromPeerID: operationID.peerID, in: context)
     }
     func operationID() -> CROperationID {
         return CROperationID(lamport: lamport, peerID: peerID)
@@ -569,7 +569,7 @@ extension CDOperation {
         self.peerID = protoForm.id.peerID.object()
         self.lamport = protoForm.id.lamport
         self.stringInsertContribution = protoForm.contribution
-        self.parent = CDOperation.fetchOperation(from: protoForm.parentID, in: context) // will be null if parent is not yet with us //TODO: create parent
+        self.parent = CDOperation.fetchOperationOrGhost(from: protoForm.parentID, in: context) // will be null if parent is not yet with us //TODO: create parent
         self.container = container
         self.type = .stringInsert
         self.state = .inDownstreamQueueMergedUnrendered
@@ -787,6 +787,7 @@ extension CDOperation {
         op.peerID = id.peerID
         op.lamport = id.lamport
         op.type = .ghost
+        op.state = .inDownstreamQueue
         return op
     }
     

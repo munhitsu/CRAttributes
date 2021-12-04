@@ -41,7 +41,12 @@ class CRObject {
         
     //getOrCreate
     func attribute(name: String, type attributeType: CRAttributeType) -> CRAttribute {
+        print("attribute")
         if let attribute = self.attributesDict[name] {
+            print("attributesDict:")
+            for (key, value) in attributesDict {
+                print("name:\(key) type:\(value.type)")
+            }
             assert(attribute.type == attributeType)
             return attribute
         }
@@ -64,6 +69,7 @@ class CRObject {
                 //let's create
                 attribute = CRAttribute.factory(context: context, container:self, name:name, type:attributeType)
             }
+            print("caching attribute \(name) of type \(attribute.type)")
             attributesDict[name] = attribute
 
         }
@@ -88,19 +94,22 @@ class CRObject {
     }
 
     func prefetchAttributes() {
+        print("prefetchAttributes")
 //        context.performAndWait {
-            let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
-            request.returnsObjectsAsFaults = false
+        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+        request.returnsObjectsAsFaults = false
         request.predicate = NSPredicate(format: "container == %@ AND rawType == %@ ", argumentArray: [operation!, CDOperationType.attribute.rawValue])
 
     
-            let cdResults:[CDOperation] = try! context.fetch(request)
+        let cdResults:[CDOperation] = try! context.fetch(request)
 
-            if cdResults.count > 0 {
-                for attributeOp in cdResults {
-                    attributesDict[attributeOp.attributeName!] = CRAttribute.factory(context: context, from:attributeOp, container: self)
-                }
+        if cdResults.count > 0 {
+            for attributeOp in cdResults {
+                print(attributeOp)
+                attributesDict[attributeOp.attributeName!] = CRAttribute.factory(context: context, from:attributeOp, container: self)
+                print("caching attribute \(attributeOp.attributeName!) of type \(attributesDict[attributeOp.attributeName!]!.type)")
             }
+        }
 //        }
         //TODO: prefetch string sub deletes
     }

@@ -72,7 +72,6 @@ class CRRemoteOperationsTests: XCTestCase {
         a6.textStorage!.replaceCharacters(in: NSRange.init(location: 3, length: 3), with: "def")
         XCTAssertEqual(a6.textStorage!.string, "ABCdef")
         
-        let context = CRStorageController.shared.localContainer.viewContext
         let cdOp:CDOperation = a6.operation!
         checkStringOperationsCorrectness(cdOp)
 
@@ -213,19 +212,19 @@ class CRRemoteOperationsTests: XCTestCase {
 //        XCTAssertGreaterThan(protoBundle.deleteOperations.count, 0)
     }
     
-    func opCount() -> Int {
-        let viewContext = CRStorageController.shared.localContainer.viewContext
+    func opCount(context: NSManagedObjectContext) -> Int {
         let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
         
-        return try! viewContext.count(for: request)
+        return try! context.count(for: request)
     }
 
     func testBundleRestore() throws {
         let viewContext = CRStorageController.shared.localContainer.viewContext
+        let bgContext = CRStorageController.shared.localContainerBackgroundContext
         // 1st batch of operations
         dummyLocalData()
         let upstreamOps = countUpstreamOps()
-        let localCount1 = opCount()
+        let localCount1 = opCount(context: viewContext)
         print("created batch 1: \(localCount1)")
         XCTAssertEqual(upstreamOps, localCount1)
 
@@ -238,11 +237,11 @@ class CRRemoteOperationsTests: XCTestCase {
         CRStorageController.shared.processUpsteamOperationsQueue()
         XCTAssertEqual(countUpstreamOps(), 0)
 
-        let localCount2 = opCount()-localCount1
+        let localCount2 = opCount(context: viewContext)-localCount1
         print("created batch 2: \(localCount2)")
         XCTAssertEqual(localCount2, 12)
         
-        // let's restore the operations in the inverted order to force issues
+        // let's restore the operations in the inverted order to force issues (e.g. ghost containers)
         let remoteContext = CRStorageController.shared.replicationContainer.viewContext
         let cdForests = CDOperationsForest.allObjects(context: remoteContext)
         XCTAssertEqual(cdForests.count, 2)
@@ -250,9 +249,12 @@ class CRRemoteOperationsTests: XCTestCase {
         
         CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[1].objectID)
         
-        //TODO: test that doible procesing has no impact
+        //TODO: test that inverted procesing has no impact
         
-        let localCount3 = opCount()
+        print("bg Count: \(opCount(context: bgContext))")
+        print("view Count: \(opCount(context: viewContext))")
+
+        let localCount3 = opCount(context: viewContext)
         print("second batch restored: \(localCount3)")
         XCTAssertEqual(localCount3, localCount2)
 
@@ -260,7 +262,7 @@ class CRRemoteOperationsTests: XCTestCase {
         
         CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[0].objectID)
 
-        let localCount4 = opCount()
+        let localCount4 = opCount(context: viewContext)
         print("1st batch restored: \(localCount4)")
         print(localCount4)
         XCTAssertEqual(localCount1+localCount2, localCount4)
@@ -283,7 +285,7 @@ class CRRemoteOperationsTests: XCTestCase {
 //        let b_a4:CRAttributeDate = b_n1.attribute(name: "created_on", type: .date) as! CRAttributeDate
 //        XCTAssertEqual(b_a4.operationsCount(), 2)
         
-        XCTAssertEqual(opCount(), localCount4)
+        XCTAssertEqual(opCount(context: viewContext), localCount4)
 
         let b_a5:CRAttributeString = b_n1.attribute(name: "title", type: .string) as! CRAttributeString
         XCTAssertEqual(b_a5.value, "abc")

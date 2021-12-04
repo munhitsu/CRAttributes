@@ -179,7 +179,7 @@ extension ReplicationController {
             $0.id.lamport = operation.lamport
             $0.id.peerID  = operation.peerID.data
             $0.name = operation.attributeName!
-            $0.rawType = operation.rawType
+            $0.rawType = operation.rawAttributeType
         }
         //        print("AttributeOperation \(proto.id.lamport)")
         
@@ -350,7 +350,6 @@ extension ReplicationController {
     // TODO: (later) introduce RGA Split and consolidate operations here, this will solve the recursion risk
     
     func processDownstreamForest(forest cdForestObjectID: NSManagedObjectID) {
-        fatalNotImplemented()
         let remoteContext = CRStorageController.shared.replicationContainerBackgroundContext
         let localContext = CRStorageController.shared.localContainerBackgroundContext
         
@@ -358,26 +357,8 @@ extension ReplicationController {
         
         localContext.performAndWait {
             let protoForest = cdForest.protoStructure()
-            for tree in protoForest.trees {
-                let containerID = CROperationID(from: tree.containerID)
-                //                let parentID = CROperationID(from: tree.parentID)
-                
-                var containerOp:CDOperation?
-                
-                if containerID.isZero() {
-                    // this means independent tree
-                    containerOp = nil
-                } else {
-                    guard let containerOp = CDOperation.fetchOperation(from: containerID, in: localContext) else {
-                        fatalNotImplemented()
-                        return
-                    }
-                    
-                }
-                
-            }
-            try? localContext.save()
-            fatalNotImplemented()
+            protoForest.restore(context: localContext)
+            try! localContext.save()
         }
     }
 }

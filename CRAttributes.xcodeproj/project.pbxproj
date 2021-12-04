@@ -22,6 +22,7 @@
 
 /* Begin PBXBuildFile section */
 		BB0FC2DD26DB9FFB0033FEC3 /* CRAttributedStringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB0FC2DC26DB9FFB0033FEC3 /* CRAttributedStringTests.swift */; };
+		BB30347A275AD694000F882D /* ProtoModel+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB303479275AD694000F882D /* ProtoModel+Extensions.swift */; };
 		BB6A991B274A5D5400145446 /* ReplicationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB6A991A274A5D5400145446 /* ReplicationController.swift */; };
 		BB6A991D274AAACB00145446 /* MyTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB6A991C274AAACB00145446 /* MyTimer.swift */; };
 		BB7BD5D526C4732500ADEDD4 /* test-mk-editing-trace.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = BB7BD5D426C4732500ADEDD4 /* test-mk-editing-trace.json */; };
@@ -208,6 +209,7 @@
 
 /* Begin PBXFileReference section */
 		BB0FC2DC26DB9FFB0033FEC3 /* CRAttributedStringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRAttributedStringTests.swift; sourceTree = "<group>"; };
+		BB303479275AD694000F882D /* ProtoModel+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ProtoModel+Extensions.swift"; sourceTree = "<group>"; };
 		BB6A991A274A5D5400145446 /* ReplicationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReplicationController.swift; sourceTree = "<group>"; };
 		BB6A991C274AAACB00145446 /* MyTimer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyTimer.swift; sourceTree = "<group>"; };
 		BB7BD5D426C4732500ADEDD4 /* test-mk-editing-trace.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = "test-mk-editing-trace.json"; path = "Data Assets/test-mk-editing-trace.json"; sourceTree = "<group>"; };
@@ -465,6 +467,7 @@
 				OBJ_28 /* CDOperationsForest.swift */,
 				BBA81EBD26C5ACE70015981B /* ProtoModel.proto */,
 				BBFF6B3A26CA7330005A6182 /* ProtoModel.pb.swift */,
+				BB303479275AD694000F882D /* ProtoModel+Extensions.swift */,
 				BBFF6B3C26CA7DD4005A6182 /* CDReplicationModel.swift */,
 			);
 			path = ReplicationModel;
@@ -847,6 +850,7 @@
 				BBCBAE7F273042A8005E7717 /* RGAController.swift in Sources */,
 				OBJ_152 /* CoOpMutableStringOperationInsert.swift in Sources */,
 				OBJ_153 /* CRAttributes.swift in Sources */,
+				BB30347A275AD694000F882D /* ProtoModel+Extensions.swift in Sources */,
 				OBJ_154 /* CRAttributeMutableString.swift in Sources */,
 				OBJ_155 /* CRObject.swift in Sources */,
 				BBFF6B3B26CA7330005A6182 /* ProtoModel.pb.swift in Sources */,
