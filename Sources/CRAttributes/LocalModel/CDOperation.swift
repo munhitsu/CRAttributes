@@ -402,6 +402,7 @@ extension CDOperation {
 }
 
 extension CDOperation {
+    
     public func stringFromRGAList(context: NSManagedObjectContext) -> (NSMutableAttributedString, [CROperationID]) {
         let attributedString = NSMutableAttributedString(string:"")
         var addressesArray:[CROperationID] = []
@@ -539,7 +540,7 @@ extension CDOperation {
         op.parentPeerID = .zero
         op.unicodeScalar = UnicodeScalar(0)
         op.type = .stringHead
-        op.state = .inUpstreamQueueRendered
+        op.state = .inUpstreamQueueRenderedMerged
         return op
     }
     

@@ -335,12 +335,12 @@ final class CRLocalOperationsTests: XCTestCase {
     func testStringSaveRestore() {
         let viewContext = CRStorageController.shared.localContainer.viewContext
         let bgContext = CRStorageController.shared.localContainerBackgroundContext
-
-        expectation(
-          forNotification: .NSManagedObjectContextDidSave,
-          object: bgContext) { _ in
-            return true
-        }
+//
+//        expectation(
+//          forNotification: .NSManagedObjectContextDidSave,
+//          object: bgContext) { _ in
+//            return true
+//        }
 
         let n1 = CRObject(context: viewContext, type: .testNote, container: nil)
         let a5:CRAttributeString = n1.attribute(name: "title", type: .string) as! CRAttributeString
@@ -387,9 +387,9 @@ final class CRLocalOperationsTests: XCTestCase {
         
         
         // TODO: add snapshot test
-        bgContext.performAndWait {
-            print("Blocking for the merge operations to finish")
-        }
+//        bgContext.performAndWait {
+//            print("Blocking for the merge operations to finish")
+//        }
         // test if rga form is correct
 //        a7.textStorage?.prebuildAttributedStringFromOperations(attributeOp: a7.textStorage!.attributeOp)
 //        XCTAssertEqual(string.string, a7.textStorage!.string)
@@ -397,8 +397,9 @@ final class CRLocalOperationsTests: XCTestCase {
         let fromOp_a7 = a7.operation!.stringFromRGAList(context: viewContext).0
         XCTAssertEqual(fromOp_a7.string, string.string)
 
-        let fromOp_a8 = a8.operation!.stringFromRGAList(context: viewContext).0
-        XCTAssertEqual(fromOp_a8.string, "123aXcA")
+//        let fromOp_a8 = a8.operation!.stringFromRGAList(context: viewContext).0
+//        XCTAssertEqual(fromOp_a8.string, "123aXcA")
+        waitForStringAttributeValue(context: viewContext, operation: a8.operation!, value:"123aXcA")
 
         // Restoring
         let b_n1 = CRObject.allObjects(context: viewContext, type: .testNote)[0]
@@ -415,14 +416,10 @@ final class CRLocalOperationsTests: XCTestCase {
         XCTAssertEqual(string.string, b_a7.textStorage!.string)
 
 
-        bgContext.performAndWait {
-            print("Should be the last thing in the queue")
-        }
-
-        // not needed anymore, see above
-        waitForExpectations(timeout: 10.0) { error in
-            XCTAssertNil(error, "backgroundContext should save when performing merge")
-        }
+//        // not needed anymore, see above
+//        waitForExpectations(timeout: 10.0) { error in
+//            XCTAssertNil(error, "backgroundContext should save when performing merge")
+//        }
 
         let fromOp_b_a7 = b_a7.operation!.stringFromRGAList(context: viewContext).0
         XCTAssertEqual(fromOp_b_a7.string, string.string)
@@ -430,6 +427,8 @@ final class CRLocalOperationsTests: XCTestCase {
         
         // TODO: test restored string from RGA form
     }
+    
+    
     
     func testMultipleInsertsAtZero() {
         let viewContext = CRStorageController.shared.localContainer.viewContext
@@ -449,19 +448,27 @@ final class CRLocalOperationsTests: XCTestCase {
         XCTAssertEqual(a8.textStorage!.string, "123aXcABC")
 
         
-        
-        bgContext.performAndWait {
-            print("Blocking for the merge operations to finish")
-        }
+        let expPredicate = NSPredicate(block: { op, _ -> Bool in
+            guard let op = op as? CDOperation else { return false}
+            return op.stringFromRGAList(context: viewContext).0.string == "123aXcABC"
+        })
+        expectation(for: expPredicate, evaluatedWith: a8.operation)
+        waitForExpectations(timeout: 10)
 
-        let fromOp_a8 = a8.operation!.stringFromRGAList(context: viewContext).0
-        let fromOp_a8b = a8.operation!.stringFromRGATree(context: viewContext).0
-//        a8.operation!.printRGADebug(context: viewContext)
-        XCTAssertEqual(fromOp_a8.string, "123aXcABC")
-        XCTAssertEqual(fromOp_a8b.string, "123aXcABC")
+        XCTAssertEqual(a8.operation!.stringFromRGAList(context: viewContext).0.string, "123aXcABC") // w already have it but reads better
+        XCTAssertEqual(a8.operation!.stringFromRGATree(context: viewContext).0.string, "123aXcABC")
 
     }
   
+    func waitForStringAttributeValue(context: NSManagedObjectContext, operation: CDOperation, value: String) {
+        let expPredicate = NSPredicate(block: { operation, _ -> Bool in
+            guard let operation = operation as? CDOperation else { return false}
+            return operation.stringFromRGAList(context: context).0.string == value
+        })
+        expectation(for: expPredicate, evaluatedWith: operation)
+        waitForExpectations(timeout: 10)
+    }
+    
     func testCompareStringPerformanceUpstream() {
         let viewContext = CRStorageController.shared.localContainer.viewContext
         let operationsLimit = 50000

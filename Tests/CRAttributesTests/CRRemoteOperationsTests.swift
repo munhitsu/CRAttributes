@@ -22,10 +22,40 @@ class CRRemoteOperationsTests: XCTestCase {
         try super.tearDownWithError()
         // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
+
+    func waitForStringAttributeValue(context: NSManagedObjectContext, operation: CDOperation, value: String) {
+        let expPredicate = NSPredicate(block: { operation, _ -> Bool in
+            guard let operation = operation as? CDOperation else { return false}
+            return operation.stringFromRGAList(context: context).0.string == value
+        })
+        expectation(for: expPredicate, evaluatedWith: operation)
+        waitForExpectations(timeout: 10)
+    }
     
+    func waitForAllOperationsMergedOrProcessed(context: NSManagedObjectContext) {
+        let expPredicate = NSPredicate(block: { _, _ -> Bool in
+            var success = true
+            context.performAndWait {
+                let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+                request.returnsObjectsAsFaults = false
+                let operations:[CDOperation] = try! context.fetch(request)
+        
+                for op in operations {
+                    if ![CDOperationState.processed, CDOperationState.inUpstreamQueueRenderedMerged].contains(op.state) {
+                        success = false
+                        return
+                    }
+                }
+            }
+            return success
+        })
+        expectation(for: expPredicate, evaluatedWith: nil)
+        waitForExpectations(timeout: 10)
+    }
     
     func dummyLocalData() {
         let viewContext = CRStorageController.shared.localContainer.viewContext
+        let bgContext = CRStorageController.shared.localContainerBackgroundContext
 
         let n1 = CRObject(context: viewContext, type: .testNote, container: nil)
         let a1:CRAttributeInt = n1.attribute(name: "count", type: .int) as! CRAttributeInt
@@ -83,11 +113,21 @@ class CRRemoteOperationsTests: XCTestCase {
         a7.textStorage!.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
         XCTAssertEqual(string.string, a7.textStorage!.string)
         XCTAssertEqual(a7.operationsCount(), 11) // we don't count deletes anymore as delete container is the deleted operation
+        
+        try! viewContext.save() // this will force merging
+        
+        
+//        waitForStringAttributeValue(context: viewContext, operation: a7.operation!, value: string.string)
+        
+//        bgContext.performAndWait {
+//            print("Blocking for the merge operations to finish")
+//        }
     }
 
     func appendToDummyLocalData() {
         let viewContext = CRStorageController.shared.localContainer.viewContext
-        
+        let bgContext = CRStorageController.shared.localContainerBackgroundContext
+
         let note = CRObject.allObjects(context: viewContext, type: .testNote)[0]
 
         let count:CRAttributeInt = note.attribute(name: "count", type: .int) as! CRAttributeInt
@@ -105,19 +145,15 @@ class CRRemoteOperationsTests: XCTestCase {
         text.textStorage!.replaceCharacters(in: NSRange.init(location: 6, length: 2), with: "") // operations: 2
         XCTAssertEqual(text.textStorage!.string, "123def#")
 
-        let context = CRStorageController.shared.localContainer.viewContext
         let textOp:CDOperation = text.operation!
         checkStringOperationsCorrectness(textOp)
+
+        try! viewContext.save() // this will force merging
+        bgContext.performAndWait {
+            print("Blocking for the merge operations to finish")
+        }
     }
 
-    func countUpstreamOps() -> Int {
-        let localContext = CRStorageController.shared.localContainer.viewContext
-        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
-        request.predicate = NSPredicate(format: "rawState == %@", argumentArray: [CDOperationState.inUpstreamQueueRenderedMerged.rawValue])
-
-        return try! localContext.count(for: request)
-    }
-    
     func checkStringOperationsCorrectness(_ cdAttribute: CDOperation) {
         var nodesSeen = Set<lamportType>()
 
@@ -147,10 +183,21 @@ class CRRemoteOperationsTests: XCTestCase {
     }
 
     func testBundleCreation() throws {
+        let viewContext = CRStorageController.shared.localContainer.viewContext
+        let bgContext = CRStorageController.shared.localContainerBackgroundContext
         dummyLocalData()
-        
-        let context = CRStorageController.shared.localContainerBackgroundContext
+//        waitForAllOperationsMergedOrProcessed(context: bgContext)
+//        waitForAllOperationsMergedOrProcessed(context: viewContext)
+//        assertAllOperationsMergedOrProcessed(context: bgContext)
+//        assertAllOperationsMergedOrProcessed(context: viewContext)
+//        CRStorageController.shared.rgaController.linkUnlinked()
+//        waitForAllOperationsMergedOrProcessed(context: bgContext)
+//        waitForAllOperationsMergedOrProcessed(context: viewContext)
+//        assertAllOperationsMergedOrProcessed(context: bgContext)
+//        assertAllOperationsMergedOrProcessed(context: viewContext)
+
         var forests = CRStorageController.shared.replicationController.protoOperationsForests()
+        
         XCTAssertEqual(forests.count, 1) //for now that's truth, will change
         
         let forest = forests[0]
@@ -163,14 +210,18 @@ class CRRemoteOperationsTests: XCTestCase {
         let forests2 = CRStorageController.shared.replicationController.protoOperationsForests()
         XCTAssertEqual(forests2.count, 0, "Consequent forrest building should be empty as no new operations were created")
         
-        context.reset()
+        bgContext.performAndWait {
+            bgContext.reset()
+        }
         
         let forests3 = CRStorageController.shared.replicationController.protoOperationsForests()
         XCTAssertEqual(forests3.count, 1, "After context reset we should get the previous state") //for now that's truth, will change
         XCTAssertGreaterThan(try! forests3[0].serializedData().count, 1400) // was 1400
 
-        context.reset()
-        
+        bgContext.performAndWait {
+            bgContext.reset()
+        }
+
         CRStorageController.shared.processUpsteamOperationsQueue()
         
         let remoteContext = CRStorageController.shared.replicationContainerBackgroundContext
@@ -190,7 +241,9 @@ class CRRemoteOperationsTests: XCTestCase {
         
         XCTAssertEqual(forests[0].trees.count, 6)
 //        print(try! forests[0].jsonString())
-        context.reset()
+        bgContext.performAndWait {
+            bgContext.reset()
+        }
 
         //formal upload
         CRStorageController.shared.processUpsteamOperationsQueue()
@@ -212,41 +265,91 @@ class CRRemoteOperationsTests: XCTestCase {
 //        XCTAssertGreaterThan(protoBundle.deleteOperations.count, 0)
     }
     
-    func opCount(context: NSManagedObjectContext) -> Int {
+    func countUpstreamOps(context: NSManagedObjectContext) -> Int {
+        print("countUpstreamOps")
         let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
-        
-        return try! context.count(for: request)
+        request.predicate = NSPredicate(format: "rawState == %@", argumentArray: [CDOperationState.inUpstreamQueueRenderedMerged.rawValue])
+
+//        let count = try! context.count(for: request)
+        let results = try! context.fetch(request)
+        for op in results {
+            assert(op.state == .inUpstreamQueueRenderedMerged)
+            print("op id:\(op.lamport) type:\(op.type) state:\(op.state)")
+        }
+        return results.count
     }
 
+    
+    func opCount(context: NSManagedObjectContext) -> Int {
+        print("opCount")
+        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+        
+        let count = try! context.count(for: request)
+        for op in try! context.fetch(request) {
+            print("op id:\(op.lamport) type:\(op.type) state:\(op.state)")
+        }
+        return count
+    }
+    
+    func assertAllOperationsMergedOrProcessed(context: NSManagedObjectContext) {
+        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+        for op in try! context.fetch(request) {
+            assert([CDOperationState.processed, CDOperationState.inUpstreamQueueRenderedMerged].contains(op.state))
+        }
+    }
+    
+    func countGhosts(context: NSManagedObjectContext) -> Int {
+        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+        request.predicate = NSPredicate(format: "rawType == %@", argumentArray: [CDOperationType.ghost.rawValue])
+        return try! context.count(for: request)
+    }
+    
+    func debugPrintOps(context: NSManagedObjectContext) {
+        print("debugPrintOps")
+        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+        for op in try! context.fetch(request) {
+            print("op id:\(op.lamport) type:\(op.type) state:\(op.state)")
+        }
+    }
+    
     func testBundleRestore() throws {
         let viewContext = CRStorageController.shared.localContainer.viewContext
         let bgContext = CRStorageController.shared.localContainerBackgroundContext
+        var ghostCount = 0
         // 1st batch of operations
         dummyLocalData()
-        let upstreamOps = countUpstreamOps()
-        let localCount1 = opCount(context: viewContext)
-        print("created batch 1: \(localCount1)")
-        XCTAssertEqual(upstreamOps, localCount1)
+        CRStorageController.shared.rgaController.linkUnlinked()
+        waitForAllOperationsMergedOrProcessed(context: viewContext)
+
+        let localOpsCount0 = opCount(context: viewContext)
+        print("created ops batch 0: \(localOpsCount0)")
+        let upstreamOps0 = countUpstreamOps(context: viewContext)
+        print("waiting ops upstream 0: \(upstreamOps0)")
+
+        XCTAssertEqual(upstreamOps0, localOpsCount0-2) // we are not shipping head operations
 
         CRStorageController.shared.processUpsteamOperationsQueue()
-        XCTAssertEqual(countUpstreamOps(), 0)
+        XCTAssertEqual(countUpstreamOps(context: viewContext), 0)
 
         // 2nd batch of operations
         appendToDummyLocalData()
-        XCTAssertEqual(countUpstreamOps(), 12)
+        CRStorageController.shared.rgaController.linkUnlinked()
+        waitForAllOperationsMergedOrProcessed(context: viewContext)
+        
+        XCTAssertEqual(countUpstreamOps(context: viewContext), 12)
         CRStorageController.shared.processUpsteamOperationsQueue()
-        XCTAssertEqual(countUpstreamOps(), 0)
+        XCTAssertEqual(countUpstreamOps(context: viewContext), 0)
 
-        let localCount2 = opCount(context: viewContext)-localCount1
-        print("created batch 2: \(localCount2)")
-        XCTAssertEqual(localCount2, 12)
+        let localOpsCount1Appended = opCount(context: viewContext)-localOpsCount0
+        print("created ops batch 1: \(localOpsCount1Appended)")
+        XCTAssertEqual(localOpsCount1Appended, 12)
         
         // let's restore the operations in the inverted order to force issues (e.g. ghost containers)
         let remoteContext = CRStorageController.shared.replicationContainer.viewContext
         let cdForests = CDOperationsForest.allObjects(context: remoteContext)
         XCTAssertEqual(cdForests.count, 2)
         flushAllCoreData(CRStorageController.shared.localContainer)
-        
+
         CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[1].objectID)
         
         //TODO: test that inverted procesing has no impact
@@ -256,8 +359,11 @@ class CRRemoteOperationsTests: XCTestCase {
 
         let localCount3 = opCount(context: viewContext)
         print("second batch restored: \(localCount3)")
-        XCTAssertEqual(localCount3, localCount2)
-
+        XCTAssertEqual(localCount3, localOpsCount1Appended+4) //4 ghosts
+        ghostCount = countGhosts(context: viewContext)
+        XCTAssertEqual(ghostCount, 4)
+//        debugPrintOps(context: viewContext)
+        
         print(cdForests[1].protoStructure())
         
         CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[0].objectID)
@@ -265,7 +371,10 @@ class CRRemoteOperationsTests: XCTestCase {
         let localCount4 = opCount(context: viewContext)
         print("1st batch restored: \(localCount4)")
         print(localCount4)
-        XCTAssertEqual(localCount1+localCount2, localCount4)
+        XCTAssertEqual(localOpsCount0+localOpsCount1Appended, localCount4)
+        ghostCount = countGhosts(context: viewContext)
+        XCTAssertEqual(ghostCount, 0)
+        debugPrintOps(context: viewContext)
 
         
         

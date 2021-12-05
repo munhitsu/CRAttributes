@@ -43,7 +43,7 @@ public class RGAController {
     func handleContextDidMerge(ids: Set<NSManagedObjectID>, context: NSManagedObjectContext) {
         assert(!Thread.isMainThread)
         assert(context == localContainerBackgroundContext)
-        context.performAndWait { // I don't think it's needed
+        context.perform { // if we performAndWait then we can't save - it's relying on the merge save
             for objectID in ids {
                 //no other CDAbstractOp requires processing in the background queue
                 if let op = context.object(with: objectID) as? CDOperation {
@@ -51,22 +51,27 @@ public class RGAController {
                     guard op.state == .inUpstreamQueueRendered ||
                             op.state == .inDownstreamQueueMergedUnrendered else { continue }
 //                    print("linking: '\(op.unicodeScalar)' \(op)")
-                    _ = op.linkMe(context: context)
+                    let success = op.linkMe(context: context)
+                    print("linking succeded:\(success)")
                 }
             }
-            try? context.save()
+            try! context.save()
         }
     }
     
     func linkUnlinked() {
+        print("link unlinked")
         localContainerBackgroundContext.performAndWait {
             let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.returnsObjectsAsFaults = false
-            request.predicate = NSPredicate(format: "rawType == %@ and rawState == %@", argumentArray: [CDOperationType.stringHead.rawValue, CDOperationState.inUpstreamQueueRendered.rawValue])
+            request.predicate = NSPredicate(format: "rawState == %@", argumentArray: [CDOperationState.inUpstreamQueueRendered.rawValue])
             let response = try! localContainerBackgroundContext.fetch(request)
             for op in response {
-                _ = op.linkMe(context: localContainerBackgroundContext)
+                assert(op.state == .inUpstreamQueueRendered)
+                let success = op.linkMe(context: localContainerBackgroundContext)
+                print("linking succeded:\(success)")
             }
+            try! localContainerBackgroundContext.save()
         }
     }
     func linkUnlinkedAsync() {

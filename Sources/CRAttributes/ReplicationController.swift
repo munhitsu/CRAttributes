@@ -66,18 +66,19 @@ extension ReplicationController {
         let context = localContext
         var forests:[ProtoOperationsForest] = []
         context.performAndWait {
+            var forest = ProtoOperationsForest()
+
             let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.returnsObjectsAsFaults = false
             request.predicate = NSPredicate(format: "rawState == %@", argumentArray: [CDOperationState.inUpstreamQueueRenderedMerged.rawValue])
             let queuedOperations:[CDOperation] = try! context.fetch(request)
-            
-            var forest = ProtoOperationsForest()
-            
-            
-            for queuedOperation in queuedOperations {
+                        
+            for op in queuedOperations {
+                if op.state == .processed { continue } // we will keep finding operations that we processed as a part of previous branches
+                assert(op.rawState == CDOperationState.inUpstreamQueueRenderedMerged.rawValue)
                 // we pick operation and build a tree off it
                 // as we progress operations are removed
-                var branchRoot = queuedOperation
+                var branchRoot = op
                 while branchRoot.container?.state == .inUpstreamQueueRenderedMerged {
                     branchRoot = branchRoot.container!
                 }
