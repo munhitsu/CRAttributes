@@ -2,6 +2,7 @@
 
 
 
+- [] fix performance of testLoadingPerformanceSinglePaste (5xlorem used to work)
 - [] restoreLinkedList vs linkedlist.restore - 2 implementations
 
 - [] ensure that every self.state = .inDownstreamQueueMergedUnrendered - defines state

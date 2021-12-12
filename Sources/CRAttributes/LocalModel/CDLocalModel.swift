@@ -61,7 +61,8 @@ let localModelDescription = CoreDataModelDescription(
                 indexes: [
                     .index(name: "lamport", elements: [.property(name: "lamport")]),
                     .index(name: "lamportPeerID", elements: [.property(name: "lamport"),.property(name: "peerID")])
-                ]
+                ],
+                constraints: ["lamport", "peerID"]
                ),
         .entity(name: "CDRenderedStringOp",
                 managedObjectClass: CDRenderedStringOp.self,
@@ -90,7 +91,6 @@ let localModelDescription = CoreDataModelDescription(
                         .property(name: "container"),
                         .property(name: "isSnapshot")
                     ]),
-                    //                constraints: ["lamport", "peerID", "container"]
                 ]
                ),
     ]

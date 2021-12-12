@@ -93,7 +93,7 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(a5.value, "abc")
 
         let a6:CRAttributeMutableString = n1.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
-        XCTAssertEqual(a6.operationsCount(), 1)
+        XCTAssertEqual(a6.operationsCount(), 0)
 //        XCTAssertNil(a6.value)
         a6.textStorage!.replaceCharacters(in: NSRange.init(location: 0, length: 0), with: "A")
         XCTAssertEqual(a6.textStorage!.string, "A")
@@ -112,7 +112,7 @@ class CRRemoteOperationsTests: XCTestCase {
         let a7:CRAttributeMutableString = n1.attribute(name: "note2", type: .mutableString) as! CRAttributeMutableString
         a7.textStorage!.loadFromJsonIndexDebug(limiter: operationsLimit, bundle: Bundle(for: type(of: self)))
         XCTAssertEqual(string.string, a7.textStorage!.string)
-        XCTAssertEqual(a7.operationsCount(), 11) // we don't count deletes anymore as delete container is the deleted operation
+        XCTAssertEqual(a7.operationsCount(), 10) // we don't count deletes anymore as delete container is the deleted operation
         
         try! viewContext.save() // this will force merging
         
@@ -332,7 +332,7 @@ class CRRemoteOperationsTests: XCTestCase {
         let upstreamOps0 = countUpstreamOps(context: viewContext)
         print("waiting ops upstream 0: \(upstreamOps0)")
 
-        XCTAssertEqual(upstreamOps0, localOpsCount0-2) // we are not shipping head operations
+        XCTAssertEqual(upstreamOps0, localOpsCount0)
 
         CRStorageController.shared.processUpsteamOperationsQueue()
         XCTAssertEqual(countUpstreamOps(context: viewContext), 0)
@@ -365,9 +365,9 @@ class CRRemoteOperationsTests: XCTestCase {
 
         let localCount3 = opCount(context: viewContext)
         print("second batch restored: \(localCount3)")
-        XCTAssertEqual(localCount3, localOpsCount1Appended+4) //4 ghosts
+        XCTAssertEqual(localCount3, localOpsCount1Appended+3) //3 ghosts
         ghostCount = countGhosts(context: viewContext)
-        XCTAssertEqual(ghostCount, 4)
+        XCTAssertEqual(ghostCount, 3)
 //        debugPrintOps(context: viewContext)
         
         print(cdForests[1].protoStructure())

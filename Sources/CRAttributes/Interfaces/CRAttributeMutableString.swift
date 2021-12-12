@@ -28,7 +28,7 @@ class CRAttributeMutableString: CRAttribute {
         context.performAndWait {
             textStorage = CRTextStorage(attributeOp: operation!)
         }
-        assert(operationsCount() == 1)
+        assert(operationsCount() == 0)
     }
 
     // Remember to execute within context.perform {}
@@ -136,7 +136,7 @@ class CRTextStorage: NSTextStorage {
         if range.location > 0 {
             parentAddress = addressesArray[range.location-1]
         } else {
-            parentAddress = CROperationID.zero
+            parentAddress = self.attributeOp.operationID()
         }
         
         for us in strContent.unicodeScalars {

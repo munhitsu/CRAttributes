@@ -260,7 +260,6 @@ extension ReplicationController {
     }
     
     static func protoStringInsertOperationRecurse(_ operation: CDOperation) -> ProtoStringInsertOperation? {
-        guard operation.type != .stringHead else { return nil }
         var proto = ProtoStringInsertOperation.with {
             $0.version = operation.version
             $0.id.lamport = operation.lamport

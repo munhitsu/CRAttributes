@@ -32,14 +32,14 @@ enum CDOperationType: Int32 {
     case ghost = 0
     case delete = 1
     case object = 2
-    case attribute = 3
+    case attribute = 3 // attribute is a stringHead
     case lwwInt = 16
     case lwwFloat = 17
     case lwwBool = 18
     case lwwString = 19
     case lwwDate = 20
 
-    case stringHead = 32
+//    case stringHead = 32
     case stringInsert = 33
 }
 
@@ -269,10 +269,10 @@ extension CDOperation {
         return fetchOperationOrGhost(fromLamport: operationID.lamport, fromPeerID: operationID.peerID, in: context)
     }
     
-    static func fetchOperation(from address: CROperationID, container: CDOperation, in context: NSManagedObjectContext) -> CDOperation? {
+    static func fetchOperation(from address: CROperationID, in context: NSManagedObjectContext) -> CDOperation? {
         let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
         request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "lamport == %@ and peerID == %@ and container == %@", argumentArray: [address.lamport, address.peerID, container])
+        request.predicate = NSPredicate(format: "lamport == %@ and peerID == %@", argumentArray: [address.lamport, address.peerID])
         request.fetchLimit = 1
         return try? context.fetch(request).first
     }
@@ -442,11 +442,6 @@ extension CDOperation {
         op.type = .attribute
         op.state = .inUpstreamQueueRenderedMerged
 
-        if type == .mutableString {
-            let headOp = CDOperation.createStringHead(context: context, container: op)
-            headOp.state = .processed
-//            self.head = headOp
-        }
         return op
     }
 
@@ -497,16 +492,13 @@ extension CDOperation {
 
         // let's prefetch
         // BTW: there is no need to prefetch delete operations as we have the hasTombstone attribute
-        var request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
         request.returnsObjectsAsFaults = false
         request.predicate = NSPredicate(format: "container == %@", self)
         let _ = try! context.fetch(request)
 
-        // let's get the first operation
-        request = CDOperation.fetchRequest()
-        request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "container == %@ and rawType == %@", argumentArray: [self, CDOperationType.stringHead.rawValue])
-        let head:CDOperation? = try? context.fetch(request).first
+        // the head is the attribute operation for strings
+        let head:CDOperation? = self
 
         // build the attributedString
         var node:CDOperation? = head
@@ -524,17 +516,14 @@ extension CDOperation {
     
     public func stringFromRGATree(context: NSManagedObjectContext) -> (NSMutableAttributedString, [CROperationID]) {
         // let's prefetch
-        var request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
         request.returnsObjectsAsFaults = false
         request.predicate = NSPredicate(format: "container == %@", self)
         let _ = try! context.fetch(request)
 
-        // let's get the first operation
-        request = CDOperation.fetchRequest()
-        request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "container == %@ and rawType == %@", argumentArray: [self, CDOperationType.stringHead.rawValue])
-        let head:CDOperation? = try? context.fetch(request).first
-        
+        // the head is the attribute operation for strings
+        let head:CDOperation? = self
+
         guard let head = head else { return (NSMutableAttributedString(string:""), [])}
         return stringFromRGATreeNode(node: head)
     }
@@ -604,20 +593,6 @@ extension CDOperation {
 
 // MARK: - String
 extension CDOperation {
-    
-    static func createStringHead(context: NSManagedObjectContext, container: CDOperation?) -> CDOperation {
-        let op = CDOperation(context:context)
-        op.lamport = 0
-        op.peerID = .zero
-        op.container = container
-        op.parentLamport = 0
-        op.parentPeerID = .zero
-        op.unicodeScalar = UnicodeScalar(0)
-        op.type = .stringHead
-        op.state = .inUpstreamQueueRenderedMerged
-        return op
-    }
-    
     static func createStringInsert(context: NSManagedObjectContext, container: CDOperation?, parentAddress: CROperationID, contribution: UnicodeScalar = UnicodeScalar(0)) -> CDOperation  {
         let op = CDOperation(context:context, container: container)
         op.parentLamport = parentAddress.lamport
@@ -663,8 +638,8 @@ extension CDOperation {
     func linkMe(context: NSManagedObjectContext) -> Bool {
         let parentAddress = CROperationID(lamport: parentLamport, peerID: parentPeerID)
 
-        guard let container = container else { return false }
-        guard let parentOp = CDOperation.fetchOperation(from: parentAddress, container: container, in: context) else {
+//        guard let container = container else { return false }
+        guard let parentOp = CDOperation.fetchOperation(from: parentAddress, in: context) else {
             return false
         }
 //        print("pre:")
@@ -675,8 +650,6 @@ extension CDOperation {
         
         
     mainSwitch: switch self.type {
-        case .stringHead:
-            break
         case .stringInsert:
             let children:[CDOperation] = (parentOp.childOperations?.allObjects as? [CDOperation] ?? []).sorted(by: >)
             self.parent = parentOp
@@ -754,13 +727,10 @@ extension CDOperation {
         assert(type == .attribute)
         assert(attributeType == .mutableString)
 
-        // let's get the first operation
         let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
-        request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "container == %@ and rawType == %@", argumentArray: [self, CDOperationType.stringHead.rawValue]) // select head
-        var response = try! context.fetch(request)
-        assert(response.count == 1)
-        let head:CDOperation? = response.first
+
+        // the head is the attribute operation for strings
+        let head:CDOperation? = self
 
         // build the attributedString
         var string = ""
@@ -780,11 +750,9 @@ extension CDOperation {
         head?.printRGATree(intention:2)
         print(" orphaned:")
         request.predicate = NSPredicate(format: "container == %@ and parent == nil", argumentArray: [self])
-        response = try! context.fetch(request)
+        let response = try! context.fetch(request)
         for op in response {
-            if op.type != .stringHead {
-                op.printRGATree(intention: 2)
-            }
+            op.printRGATree(intention: 2)
         }
     }
     
