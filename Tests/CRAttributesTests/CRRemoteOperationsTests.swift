@@ -301,7 +301,13 @@ class CRRemoteOperationsTests: XCTestCase {
     func countGhosts(context: NSManagedObjectContext) -> Int {
         let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
         request.predicate = NSPredicate(format: "rawType == %@", argumentArray: [CDOperationType.ghost.rawValue])
-        return try! context.count(for: request)
+        let ops = try! context.fetch(request)
+        print("Ghosts:")
+        for op in ops {
+            print(" \(op.lamport)")
+        }
+        return ops.count
+//        try! context.count(for: request)
     }
     
     func debugPrintOps(context: NSManagedObjectContext) {
@@ -376,10 +382,18 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(ghostCount, 0)
         debugPrintOps(context: viewContext)
 
+        // let's restore again
+        CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[0].objectID)
+
+        let localCount5 = opCount(context: viewContext)
+        XCTAssertEqual(localCount5, localCount4)
+        ghostCount = countGhosts(context: viewContext)
+        XCTAssertEqual(ghostCount, 0)
+
         
         
         //validate if operations are properly merged
-
+ 
         let b_n1 = CRObject.allObjects(context: viewContext, type: .testNote)[0]
         
         let b_a1:CRAttributeInt = b_n1.attribute(name: "count", type: .int) as! CRAttributeInt

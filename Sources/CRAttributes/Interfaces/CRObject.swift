@@ -43,10 +43,10 @@ class CRObject {
     func attribute(name: String, type attributeType: CRAttributeType) -> CRAttribute {
         print("attribute")
         if let attribute = self.attributesDict[name] {
-            print("attributesDict:")
-            for (key, value) in attributesDict {
-                print("name:\(key) type:\(value.type)")
-            }
+//            print("attributesDict:")
+//            for (key, value) in attributesDict {
+//                print("name:\(key) type:\(value.type)")
+//            }
             assert(attribute.type == attributeType)
             return attribute
         }
@@ -55,21 +55,26 @@ class CRObject {
             // let's check if it doesn't exist already
             let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.returnsObjectsAsFaults = false
-            let predicate = NSPredicate(format: "container == %@ AND attributeName == %@", argumentArray: [operation!, name])
+            let predicate = NSPredicate(format: "container == %@ AND attributeName == %@ AND rawType == %@ AND rawAttributeType == %@", argumentArray: [operation!, name, CDOperationType.attribute.rawValue, attributeType.rawValue])
             request.predicate = predicate
 
             let cdResults:[CDOperation] = try! context.fetch(request)
 
-            let attribute:CRAttribute
-            if cdResults.count > 0 {
-                //it exists
-                assert(cdResults.first!.attributeType == attributeType)
-                attribute = CRAttribute.factory(context: context, from: cdResults.first!, container: self)
-            } else {
-                //let's create
+            var attribute:CRAttribute? = nil
+            for op in cdResults {
+                guard op.container == operation && op.attributeName == name && op.type == .attribute && op.attributeType == attributeType else {
+                    continue
+                }
+                print(op)
+                assert(op.type == .attribute)
+                assert(op.attributeType == attributeType)
+                attribute = CRAttribute.factory(context: context, from: op, container: self)
+                break //TODO: make it deterministic in case we have multiple attributes of the same name
+            }
+            if attribute == nil {
                 attribute = CRAttribute.factory(context: context, container:self, name:name, type:attributeType)
             }
-            print("caching attribute \(name) of type \(attribute.type)")
+            print("caching attribute \(name) of type \(attribute?.type)")
             attributesDict[name] = attribute
 
         }
@@ -105,6 +110,7 @@ class CRObject {
 
         if cdResults.count > 0 {
             for attributeOp in cdResults {
+                guard attributeOp.type == .attribute else { continue }
                 print(attributeOp)
                 attributesDict[attributeOp.attributeName!] = CRAttribute.factory(context: context, from:attributeOp, container: self)
                 print("caching attribute \(attributeOp.attributeName!) of type \(attributesDict[attributeOp.attributeName!]!.type)")

@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreData
+import SwiftProtobuf
 
 
 enum CRAttributeType: Int32 {
@@ -42,13 +43,30 @@ enum CDOperationType: Int32 {
     case stringInsert = 33
 }
 
+struct CRObjectType: RawRepresentable, Equatable, Hashable, Comparable {
+    typealias RawValue = Int32
+    
+    var rawValue: Int32
+    
+    static let unknown = CRObjectType(rawValue: 0)
+    
+    var hashValue: Int {
+        return rawValue.hashValue
+    }
+    
+    public static func <(lhs: CRObjectType, rhs: CRObjectType) -> Bool {
+        return lhs.rawValue < rhs.rawValue
+    }
+
+}
+
 // example extansion of CRObjectType
 extension CRObjectType {
     static let reserved = CRObjectType(rawValue: 1)
 }
 
 
-@objc(CDStringOp)
+@objc(CDOperation)
 public class CDOperation: NSManagedObject {
 
 }
@@ -220,24 +238,6 @@ extension CDOperation {
         self.state = state
     }
 
-    /** returns operation or a ghost operation for the ID*/
-    static func fetchOperationOrGhost(fromLamport:lamportType, fromPeerID:UUID, in context: NSManagedObjectContext) -> CDOperation? {
-        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
-        request.predicate = NSPredicate(format: "lamport = %@ and peerID = %@", argumentArray: [fromLamport, fromPeerID])
-        let ops = try? context.fetch(request)
-        guard let op = ops?.first else {
-            return CDOperation.createGhost(context: context, id: CROperationID.init(lamport: fromLamport, peerID: fromPeerID))
-        }
-        return op
-    }
-
-    static func fetchOperationOrGhost(from protoID:ProtoOperationID, in context: NSManagedObjectContext) -> CDOperation? {
-        return fetchOperationOrGhost(fromLamport: protoID.lamport, fromPeerID: protoID.peerID.object(), in: context)
-    }
-
-    static func fetchOperationOrGhost(from operationID:CROperationID, in context: NSManagedObjectContext) -> CDOperation? {
-        return fetchOperationOrGhost(fromLamport: operationID.lamport, fromPeerID: operationID.peerID, in: context)
-    }
     func operationID() -> CROperationID {
         return CROperationID(lamport: lamport, peerID: peerID)
     }
@@ -248,6 +248,93 @@ extension CDOperation {
             $0.peerID = peerID.data
         }
     }
+
+    /** returns operation or a ghost operation for the ID*/
+    static func fetchOperationOrGhost(fromLamport:lamportType, fromPeerID:UUID, in context: NSManagedObjectContext) -> CDOperation {
+        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+        request.returnsObjectsAsFaults = false
+        request.predicate = NSPredicate(format: "lamport = %@ and peerID = %@", argumentArray: [fromLamport, fromPeerID])
+        let ops = try? context.fetch(request)
+        guard let op = ops?.first else {
+            return CDOperation.createGhost(context: context, id: CROperationID.init(lamport: fromLamport, peerID: fromPeerID))
+        }
+        return op
+    }
+
+    static func fetchOperationOrGhost(from protoID:ProtoOperationID, in context: NSManagedObjectContext) -> CDOperation {
+        return fetchOperationOrGhost(fromLamport: protoID.lamport, fromPeerID: protoID.peerID.object(), in: context)
+    }
+
+    static func fetchOperationOrGhost(from operationID:CROperationID, in context: NSManagedObjectContext) -> CDOperation {
+        return fetchOperationOrGhost(fromLamport: operationID.lamport, fromPeerID: operationID.peerID, in: context)
+    }
+    
+    static func fetchOperation(from address: CROperationID, container: CDOperation, in context: NSManagedObjectContext) -> CDOperation? {
+        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+        request.returnsObjectsAsFaults = false
+        request.predicate = NSPredicate(format: "lamport == %@ and peerID == %@ and container == %@", argumentArray: [address.lamport, address.peerID, container])
+        request.fetchLimit = 1
+        return try? context.fetch(request).first
+    }
+
+    //TODO: replace case with some reasonable inheritance of protostructures; if possible
+    static func findOrCreateOperation(context: NSManagedObjectContext, from protoForm: SwiftProtobuf.Message, container: CDOperation?, type: CDOperationType) -> CDOperation {
+        var op:CDOperation?
+
+        switch type {
+        case .stringInsert:
+            op = fetchOperationOrGhost(from: (protoForm as! ProtoStringInsertOperation).id, in: context)
+        case .attribute:
+            op = fetchOperationOrGhost(from: (protoForm as! ProtoAttributeOperation).id, in: context)
+        case .delete:
+            op = fetchOperationOrGhost(from: (protoForm as! ProtoDeleteOperation).id, in: context)
+        case .lwwBool:
+            op = fetchOperationOrGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
+        case .lwwDate:
+            op = fetchOperationOrGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
+        case .lwwFloat:
+            op = fetchOperationOrGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
+        case .lwwInt:
+            op = fetchOperationOrGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
+        case .lwwString:
+            op = fetchOperationOrGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
+        case .object:
+            op = fetchOperationOrGhost(from: (protoForm as! ProtoObjectOperation).id, in: context)
+        default:
+            fatalNotImplemented()
+        }
+        
+        if op!.type != .ghost {
+            return op!
+        }
+        
+        
+        switch type {
+        case .stringInsert:
+            op!.updateObject(context: context, from: protoForm as! ProtoStringInsertOperation, container: container)
+        case .attribute:
+            op!.updateObject(context: context, from: protoForm as! ProtoAttributeOperation, container: container)
+        case .delete:
+            op!.updateObject(context: context, from: protoForm as! ProtoDeleteOperation, container: container)
+        case .lwwBool:
+            op!.updateObject(context: context, from: protoForm as! ProtoLWWOperation, container: container)
+        case .lwwDate:
+            op!.updateObject(context: context, from: protoForm as! ProtoLWWOperation, container: container)
+        case .lwwFloat:
+            op!.updateObject(context: context, from: protoForm as! ProtoLWWOperation, container: container)
+        case .lwwInt:
+            op!.updateObject(context: context, from: protoForm as! ProtoLWWOperation, container: container)
+        case .lwwString:
+            op!.updateObject(context: context, from: protoForm as! ProtoLWWOperation, container: container)
+        case .object:
+            op!.updateObject(context: context, from: protoForm as! ProtoObjectOperation, container: container)
+        default:
+            fatalNotImplemented()
+        }
+        
+        return op!
+    }
+    
 }
 
 // MARK: - LWW
@@ -288,9 +375,8 @@ extension CDOperation {
         return op
     }
 
-    convenience init(context: NSManagedObjectContext, from protoForm: ProtoLWWOperation, container: CDOperation?) {
+    func updateObject(context: NSManagedObjectContext, from protoForm: ProtoLWWOperation, container: CDOperation?) {
         print("From protobuf LLWOp(\(protoForm.id.lamport))")
-        self.init(context: context)
         self.version = protoForm.version
         self.peerID = protoForm.id.peerID.object()
         self.lamport = protoForm.id.lamport
@@ -321,7 +407,8 @@ extension CDOperation {
         }
         
         for protoItem in protoForm.deleteOperations {
-            _ = CDOperation(context: context, from: protoItem, container: self)
+            let _ = CDOperation.findOrCreateOperation(context: context, from: protoItem, container: self, type: .delete)
+//            _ = CDOperation(context: context, from: protoItem, container: self)
         }
     }
     
@@ -366,9 +453,8 @@ extension CDOperation {
     /**
      from protobuf
      */
-    convenience init(context: NSManagedObjectContext, from protoForm: ProtoAttributeOperation, container: CDOperation?) {
+    func updateObject(context: NSManagedObjectContext, from protoForm: ProtoAttributeOperation, container: CDOperation?) {
         print("From protobuf AttributeOp(\(protoForm.id.lamport))")
-        self.init(context: context)
         self.container = container
         self.attributeType = .init(rawValue: protoForm.rawType)!
         self.attributeName = protoForm.name
@@ -380,11 +466,13 @@ extension CDOperation {
 
         
         for protoItem in protoForm.deleteOperations {
-            _ = CDOperation(context: context, from: protoItem, container: self)
+            let _ = CDOperation.findOrCreateOperation(context: context, from: protoItem, container: self, type: .delete)
+//            _ = CDOperation(context: context, from: protoItem, container: self)
         }
         
         for protoItem in protoForm.lwwOperations {
-            _ = CDOperation(context: context, from: protoItem, container: self)
+            let _ = CDOperation.findOrCreateOperation(context: context, from: protoItem, container: self, type: .lwwInt)
+//            _ = CDOperation(context: context, from: protoItem, container: self)
         }
 
         if protoForm.stringInsertOperations.count > 0 {
@@ -484,9 +572,9 @@ extension CDOperation {
     /**
      initialise from the protobuf
      */
-    convenience init(context: NSManagedObjectContext, from protoForm: ProtoObjectOperation, container: CDOperation?) {
+    func updateObject(context: NSManagedObjectContext, from protoForm: ProtoObjectOperation, container: CDOperation?) {
         print("From protobuf ObjectOp(\(protoForm.id.lamport))")
-        self.init(context: context)
+//        self.init(context: context)
         self.version = protoForm.version
         self.peerID = protoForm.id.peerID.object()
         self.lamport = protoForm.id.lamport
@@ -497,34 +585,20 @@ extension CDOperation {
 
         
         for protoItem in protoForm.deleteOperations {
-            _ = CDOperation(context: context, from: protoItem, container: self)
+            let _ = CDOperation.findOrCreateOperation(context: context, from: protoItem, container: self, type: .delete)
+//            _ = CDOperation(context: context, from: protoItem, container: self)
         }
         
         for protoItem in protoForm.attributeOperations {
-            _ = CDOperation(context: context, from: protoItem, container: self)
+            let _ = CDOperation.findOrCreateOperation(context: context, from: protoItem, container: self, type: .attribute)
+//            _ = CDOperation(context: context, from: protoItem, container: self)
         }
         
         for protoItem in protoForm.objectOperations {
-            _ = CDOperation(context: context, from: protoItem, container: self)
+            let _ = CDOperation.findOrCreateOperation(context: context, from: protoItem, container: self, type: .object)
+//            _ = CDOperation(context: context, from: protoItem, container: self)
         }
     }
-}
-
-struct CRObjectType: RawRepresentable, Equatable, Hashable, Comparable {
-    typealias RawValue = Int32
-    
-    var rawValue: Int32
-    
-    static let unknown = CRObjectType(rawValue: 0)
-    
-    var hashValue: Int {
-        return rawValue.hashValue
-    }
-    
-    public static func <(lhs: CRObjectType, rhs: CRObjectType) -> Bool {
-        return lhs.rawValue < rhs.rawValue
-    }
-
 }
 
 
@@ -563,9 +637,9 @@ extension CDOperation {
 //        self.parent = parent
 //    }
 
-    convenience init(context: NSManagedObjectContext, from protoForm: ProtoStringInsertOperation, container: CDOperation?) {
+    func updateObject(context: NSManagedObjectContext, from protoForm: ProtoStringInsertOperation, container: CDOperation?) {
         print("From protobuf StringInsertOp(\(protoForm.id.lamport))")
-        self.init(context: context)
+//        self.init(context: context)
         self.version = protoForm.version
         self.peerID = protoForm.id.peerID.object()
         self.lamport = protoForm.id.lamport
@@ -576,7 +650,8 @@ extension CDOperation {
         self.state = .inDownstreamQueueMergedUnrendered
 
         for protoItem in protoForm.deleteOperations {
-            _ = CDOperation(context: context, from: protoItem, container: self)
+            _ = CDOperation.findOrCreateOperation(context: context, from: protoItem, container: self, type: .delete)
+//            _ = CDOperation(context: context, from: protoItem, container: self)
         }
         
     }
@@ -589,7 +664,7 @@ extension CDOperation {
         let parentAddress = CROperationID(lamport: parentLamport, peerID: parentPeerID)
 
         guard let container = container else { return false }
-        guard let parentOp = CDOperation.fromStringAddress(context: context, address: parentAddress, container: container) else {
+        guard let parentOp = CDOperation.fetchOperation(from: parentAddress, container: container, in: context) else {
             return false
         }
 //        print("pre:")
@@ -731,7 +806,8 @@ extension CDOperation {
         var cdOperations:[CDOperation] = []
         var prevOp:CDOperation? = nil
         for protoOp in from {
-            let op = CDOperation(context: context, from: protoOp, container: container)
+            let op = CDOperation.findOrCreateOperation(context: context, from: protoOp, container: container, type: .stringInsert)
+//            let op = CDOperation(context: context, from: protoOp, container: container)
             cdOperations.append(op)
             op.prev = prevOp
             prevOp?.next = op
@@ -740,14 +816,6 @@ extension CDOperation {
         return cdOperations[0]
     }
     
-    static func fromStringAddress(context: NSManagedObjectContext, address: CROperationID, container: CDOperation) -> CDOperation? {
-        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
-        request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "lamport == %@ and peerID == %@ and container == %@", argumentArray: [address.lamport, address.peerID, container])
-        request.fetchLimit = 1
-        return try? context.fetch(request).first
-    }
-
 }
 
 
@@ -765,9 +833,8 @@ extension CDOperation {
     /**
      initialise from the protobuf
      */
-    convenience init(context: NSManagedObjectContext, from protoForm: ProtoDeleteOperation, container: CDOperation?) {
+    func updateObject(context: NSManagedObjectContext, from protoForm: ProtoDeleteOperation, container: CDOperation?) {
         print("From protobuf DeleteOp(\(protoForm.id.lamport))")
-        self.init(context: context)
         self.version = protoForm.version
         self.peerID = protoForm.id.peerID.object()
         self.lamport = protoForm.id.lamport
@@ -775,7 +842,6 @@ extension CDOperation {
         self.container?.hasTombstone = true
         self.type = .delete
         self.state = .inDownstreamQueueMergedUnrendered
-
     }
 }
 

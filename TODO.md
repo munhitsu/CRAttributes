@@ -2,6 +2,8 @@
 
 
 
+- [] restoreLinkedList vs linkedlist.restore - 2 implementations
+
 - [] ensure that every self.state = .inDownstreamQueueMergedUnrendered - defines state
 - [] merge deletes
 - [] flatten CDOperations into one object so we can cahge the type on flight (e.g. have ghost Op whose type materialises when it arrives)

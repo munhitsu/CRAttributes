@@ -34,6 +34,7 @@ class CRAttribute {
     
     // Remember to execute within context.perform {}
     init(context: NSManagedObjectContext, container: CRObject, from: CDOperation) {
+        assert(from.type == .attribute)
         self.context = context
         self.operation = from
         self.container = container
@@ -58,6 +59,8 @@ class CRAttribute {
     
     // Remember to execute within context.perform {}
     public static func factory(context: NSManagedObjectContext, from attributeOperation: CDOperation, container: CRObject) -> CRAttribute {
+        assert(attributeOperation.type == .attribute)
+//        print(attributeOperation)
         //TODO: (low) make it nicer (e.g. store types classes in CRAttributeType
         switch attributeOperation.attributeType {
         case CRAttributeType.mutableString:
