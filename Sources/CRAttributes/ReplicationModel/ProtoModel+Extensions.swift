@@ -25,7 +25,7 @@ extension ProtoOperationsForest: RestorableProtobuf {
                 // this means independent tree
                 container = nil
             } else {
-                container = CDOperation.fetchOperationOrGhost(from: containerID, in: context)
+                container = CDOperation.findOperationOrCreateGhost(from: containerID, in: context)
             }
             tree.restore(context: context, container: container)
         }
@@ -49,7 +49,7 @@ extension ProtoOperationsTree: RestorableProtobuf {
 //            let _ = CDOperation(context: context, from: deleteOperation, container: container)
         case .some(.lwwOperation(_)):
             print("restoring lww")
-            let _ = CDOperation.findOrCreateOperation(context: context, from: lwwOperation, container: container, type: .lwwInt) // we need any lww type here
+            let _ = CDOperation.findOrCreateOperation(context: context, from: lwwOperation, container: container, type: .lwwBool) // we need any lww type here
 //            let _ = CDOperation(context: context, from: lwwOperation, container: container)
         case .some(.stringInsertOperations(_)):
             print("restoring [stringInsert]")
@@ -63,9 +63,21 @@ extension ProtoOperationsTree: RestorableProtobuf {
 
 extension ProtoStringInsertOperationLinkedList: RestorableProtobuf {
     func restore(context: NSManagedObjectContext, container: CDOperation?) {
-        for op in stringInsertOperations {
-            let _ = CDOperation.findOrCreateOperation(context: context, from: op, container: container, type: .stringInsert) //TODO: this is naivly slow
-//            let _ = CDOperation(context: context, from: op, container: container)
+//        var prevOp:CDOperation? = nil
+        //TODO: this is naivly slow
+        let headOp:CDOperation? = nil
+        for protoOp in stringInsertOperations {
+            let op = CDOperation.findOrCreateOperation(context: context, from: protoOp, container: container, type: .stringInsert)
+//            if op.prev != nil { // it was already linked, it's a re-restore
+//                continue
+//            }
+//            if headOp == nil {
+//                headOp = op
+//            }
+//            prevOp?.next = op
+//            prevOp = op
+            op.mergeDownstream(context: context)
         }
+        headOp?.mergeDownstream(context: context)
     }
 }

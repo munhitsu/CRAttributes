@@ -75,6 +75,7 @@ extension CDRenderedStringOp {
     }
     
     func getArrayContribution() -> [CROperationID] {
+        //TODO: fix deprecation
         let array:[CROperationID] = self.arrayContributionRaw?.withUnsafeBytes { (pointer: UnsafePointer<CROperationID>) -> [CROperationID] in
             let buffer = UnsafeBufferPointer(start: pointer,
                                              count: self.arrayContributionRaw!.count/24)

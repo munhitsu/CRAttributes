@@ -349,13 +349,13 @@ extension ReplicationController {
 extension ReplicationController {
     // TODO: (later) introduce RGA Split and consolidate operations here, this will solve the recursion risk
     
-    func processDownstreamForest(forest cdForestObjectID: NSManagedObjectID) {
+    func backgroundProcessDownstreamForest(forest cdForestObjectID: NSManagedObjectID) {
         let remoteContext = CRStorageController.shared.replicationContainerBackgroundContext
         let localContext = CRStorageController.shared.localContainerBackgroundContext
         
         let cdForest = remoteContext.object(with: cdForestObjectID) as! CDOperationsForest
         
-        localContext.performAndWait {
+        localContext.perform {
             let protoForest = cdForest.protoStructure()
             protoForest.restore(context: localContext)
             try! localContext.save()

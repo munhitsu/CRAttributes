@@ -41,11 +41,27 @@ class CRRemoteOperationsTests: XCTestCase {
                 let operations:[CDOperation] = try! context.fetch(request)
         
                 for op in operations {
-                    if ![CDOperationState.processed, CDOperationState.inUpstreamQueueRenderedMerged].contains(op.state) {
+                    if ![CDOperationState.processed, CDOperationState.inUpstreamQueueRenderedMerged, CDOperationState.inDownstreamQueueMergedUnrendered].contains(op.state) {
                         success = false
                         return
                     }
                 }
+            }
+            return success
+        })
+        expectation(for: expPredicate, evaluatedWith: nil)
+        waitForExpectations(timeout: 10)
+    }
+    
+    func waitForGhosts(context: NSManagedObjectContext, count expectedCount: Int = 0) {
+        let expPredicate = NSPredicate(block: { _, _ -> Bool in
+            var success = true
+            context.performAndWait {
+                let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+                request.returnsObjectsAsFaults = false
+                request.predicate = NSPredicate(format: "rawType == %@", argumentArray: [CDOperationType.ghost.rawValue])
+                let gotCount = try! context.count(for: request)
+                success = (gotCount == expectedCount)
             }
             return success
         })
@@ -310,14 +326,6 @@ class CRRemoteOperationsTests: XCTestCase {
 //        try! context.count(for: request)
     }
     
-    func debugPrintOps(context: NSManagedObjectContext) {
-        print("debugPrintOps")
-        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
-        for op in try! context.fetch(request) {
-            print("op id:\(op.lamport) type:\(op.type) state:\(op.state)")
-        }
-    }
-    
     func testBundleRestore() throws {
         let viewContext = CRStorageController.shared.localContainer.viewContext
         let bgContext = CRStorageController.shared.localContainerBackgroundContext
@@ -356,8 +364,10 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(cdForests.count, 2)
         flushAllCoreData(CRStorageController.shared.localContainer)
 
-        CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[1].objectID)
-        
+        print("let's restore [1]")
+        CRStorageController.shared.replicationController.backgroundProcessDownstreamForest(forest: cdForests[1].objectID)
+        waitForGhosts(context: viewContext, count: 3)
+
         //TODO: test that inverted procesing has no impact
         
         print("bg Count: \(opCount(context: bgContext))")
@@ -372,29 +382,36 @@ class CRRemoteOperationsTests: XCTestCase {
         
         print(cdForests[1].protoStructure())
         
-        CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[0].objectID)
+        print("let's restore [0]")
+        CRStorageController.shared.replicationController.backgroundProcessDownstreamForest(forest: cdForests[0].objectID)
 
         let localCount4 = opCount(context: viewContext)
+        let localCount4bg = opCount(context: bgContext)
+        XCTAssertEqual(localCount4, localCount4bg)
         print("1st batch restored: \(localCount4)")
         print(localCount4)
         XCTAssertEqual(localOpsCount0+localOpsCount1Appended, localCount4)
         ghostCount = countGhosts(context: viewContext)
         XCTAssertEqual(ghostCount, 0)
-        debugPrintOps(context: viewContext)
+        CDOperation.printTreeOfContainers(context: viewContext)
 
         // let's restore again
-        CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[0].objectID)
+        print("let's restore again [0]")
+        CRStorageController.shared.replicationController.backgroundProcessDownstreamForest(forest: cdForests[0].objectID)
+        waitForAllOperationsMergedOrProcessed(context: viewContext)
+        waitForGhosts(context: viewContext, count: 0)
 
         let localCount5 = opCount(context: viewContext)
         XCTAssertEqual(localCount5, localCount4)
         ghostCount = countGhosts(context: viewContext)
         XCTAssertEqual(ghostCount, 0)
 
+        CDOperation.printTreeOfContainers(context: viewContext)
         
         
         //validate if operations are properly merged
  
-        let b_n1 = CRObject.allObjects(context: viewContext, type: .testNote)[0]
+       let b_n1 = CRObject.allObjects(context: viewContext, type: .testNote)[0]
         
         let b_a1:CRAttributeInt = b_n1.attribute(name: "count", type: .int) as! CRAttributeInt
         XCTAssertEqual(b_a1.value, 4)
@@ -415,6 +432,9 @@ class CRRemoteOperationsTests: XCTestCase {
 
         let b_a6:CRAttributeMutableString = b_n1.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
         XCTAssertEqual(b_a6.textStorage!.string, "123def###")
+
+        b_a6.textStorage?.attributeOp.printRGADebug(context: bgContext)
+        b_a6.textStorage?.attributeOp.printRGADebug(context: viewContext)
 
     }
 

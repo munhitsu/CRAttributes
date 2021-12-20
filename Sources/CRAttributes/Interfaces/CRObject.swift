@@ -74,7 +74,7 @@ class CRObject {
             if attribute == nil {
                 attribute = CRAttribute.factory(context: context, container:self, name:name, type:attributeType)
             }
-            print("caching attribute \(name) of type \(attribute?.type)")
+            print("caching attribute \(name) of type \(String(describing: attribute?.type))")
             attributesDict[name] = attribute
 
         }

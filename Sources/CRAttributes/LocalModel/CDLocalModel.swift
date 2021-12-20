@@ -34,6 +34,7 @@ let localModelDescription = CoreDataModelDescription(
                     .attribute(name: "hasTombstone", type: .booleanAttributeType, defaultValue: false),
                     .attribute(name: "rawState", type: .integer32AttributeType), // default: unknown
                     .attribute(name: "rawType", type: .integer32AttributeType),
+                    
 
                     .attribute(name: "rawObjectType", type: .integer32AttributeType, defaultValue: Int32(0)),
 

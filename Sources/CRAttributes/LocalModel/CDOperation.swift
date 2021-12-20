@@ -250,7 +250,7 @@ extension CDOperation {
     }
 
     /** returns operation or a ghost operation for the ID*/
-    static func fetchOperationOrGhost(fromLamport:lamportType, fromPeerID:UUID, in context: NSManagedObjectContext) -> CDOperation {
+    static func findOperationOrCreateGhost(fromLamport:lamportType, fromPeerID:UUID, in context: NSManagedObjectContext) -> CDOperation {
         let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
         request.returnsObjectsAsFaults = false
         request.predicate = NSPredicate(format: "lamport = %@ and peerID = %@", argumentArray: [fromLamport, fromPeerID])
@@ -261,21 +261,21 @@ extension CDOperation {
         return op
     }
 
-    static func fetchOperationOrGhost(from protoID:ProtoOperationID, in context: NSManagedObjectContext) -> CDOperation {
-        return fetchOperationOrGhost(fromLamport: protoID.lamport, fromPeerID: protoID.peerID.object(), in: context)
+    static func findOperationOrCreateGhost(from protoID:ProtoOperationID, in context: NSManagedObjectContext) -> CDOperation {
+        return findOperationOrCreateGhost(fromLamport: protoID.lamport, fromPeerID: protoID.peerID.object(), in: context)
     }
 
-    static func fetchOperationOrGhost(from operationID:CROperationID, in context: NSManagedObjectContext) -> CDOperation {
-        return fetchOperationOrGhost(fromLamport: operationID.lamport, fromPeerID: operationID.peerID, in: context)
+    static func findOperationOrCreateGhost(from operationID:CROperationID, in context: NSManagedObjectContext) -> CDOperation {
+        return findOperationOrCreateGhost(fromLamport: operationID.lamport, fromPeerID: operationID.peerID, in: context)
     }
     
-    static func fetchOperation(from address: CROperationID, in context: NSManagedObjectContext) -> CDOperation? {
-        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
-        request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "lamport == %@ and peerID == %@", argumentArray: [address.lamport, address.peerID])
-        request.fetchLimit = 1
-        return try? context.fetch(request).first
-    }
+//    static func findOperation(from address: CROperationID, in context: NSManagedObjectContext) -> CDOperation? {
+//        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+//        request.returnsObjectsAsFaults = false
+//        request.predicate = NSPredicate(format: "lamport == %@ and peerID == %@", argumentArray: [address.lamport, address.peerID])
+//        request.fetchLimit = 1
+//        return try? context.fetch(request).first
+//    }
 
     //TODO: replace case with some reasonable inheritance of protostructures; if possible
     static func findOrCreateOperation(context: NSManagedObjectContext, from protoForm: SwiftProtobuf.Message, container: CDOperation?, type: CDOperationType) -> CDOperation {
@@ -283,23 +283,23 @@ extension CDOperation {
 
         switch type {
         case .stringInsert:
-            op = fetchOperationOrGhost(from: (protoForm as! ProtoStringInsertOperation).id, in: context)
+            op = findOperationOrCreateGhost(from: (protoForm as! ProtoStringInsertOperation).id, in: context)
         case .attribute:
-            op = fetchOperationOrGhost(from: (protoForm as! ProtoAttributeOperation).id, in: context)
+            op = findOperationOrCreateGhost(from: (protoForm as! ProtoAttributeOperation).id, in: context)
         case .delete:
-            op = fetchOperationOrGhost(from: (protoForm as! ProtoDeleteOperation).id, in: context)
+            op = findOperationOrCreateGhost(from: (protoForm as! ProtoDeleteOperation).id, in: context)
         case .lwwBool:
-            op = fetchOperationOrGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
+            op = findOperationOrCreateGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
         case .lwwDate:
-            op = fetchOperationOrGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
+            op = findOperationOrCreateGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
         case .lwwFloat:
-            op = fetchOperationOrGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
+            op = findOperationOrCreateGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
         case .lwwInt:
-            op = fetchOperationOrGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
+            op = findOperationOrCreateGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
         case .lwwString:
-            op = fetchOperationOrGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
+            op = findOperationOrCreateGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
         case .object:
-            op = fetchOperationOrGhost(from: (protoForm as! ProtoObjectOperation).id, in: context)
+            op = findOperationOrCreateGhost(from: (protoForm as! ProtoObjectOperation).id, in: context)
         default:
             fatalNotImplemented()
         }
@@ -334,497 +334,85 @@ extension CDOperation {
         
         return op!
     }
+
     
-}
-
-// MARK: - LWW
-extension CDOperation {
- 
-    static func createLWW(context: NSManagedObjectContext, container: CDOperation?, value: Int) -> CDOperation {
-        let op = CDOperation(context:context, container: container)
-        op.lwwInt = Int64(value)
-        op.type = .lwwInt
-        return op
-    }
-
-    static func createLWW(context: NSManagedObjectContext, container: CDOperation?, value: Float) -> CDOperation {
-        let op = CDOperation(context:context, container: container)
-        op.lwwFloat = value
-        op.type = .lwwFloat
-        return op
-    }
-    
-    static func createLWW(context: NSManagedObjectContext, container: CDOperation?, value: Date) -> CDOperation {
-        let op = CDOperation(context:context, container: container)
-        op.lwwDate = value
-        op.type = .lwwDate
-        return op
-    }
-    
-    static func createLWW(context: NSManagedObjectContext, container: CDOperation?, value: Bool) -> CDOperation {
-        let op = CDOperation(context:context, container: container)
-        op.lwwBool = value
-        op.type = .lwwBool
-        return op
-    }
-    
-    static func createLWW(context: NSManagedObjectContext, container: CDOperation?, value: String) -> CDOperation {
-        let op = CDOperation(context:context, container: container)
-        op.lwwString = value
-        op.type = .lwwString
-        return op
-    }
-
-    func updateObject(context: NSManagedObjectContext, from protoForm: ProtoLWWOperation, container: CDOperation?) {
-        print("From protobuf LLWOp(\(protoForm.id.lamport))")
-        self.version = protoForm.version
-        self.peerID = protoForm.id.peerID.object()
-        self.lamport = protoForm.id.lamport
-        self.container = container
-        self.state = .inDownstreamQueueMergedUnrendered
-
-
-        switch protoForm.value {
-        case .some(.int):
-            self.type = .lwwInt
-            self.lwwInt = protoForm.int
-        case .some(.float):
-            self.type = .lwwFloat
-            self.lwwFloat = protoForm.float
-        case .some(.date):
-            //TODO: implement me
-            self.type = .lwwDate
-            fatalNotImplemented()
-//            self.date = protoForm.date
-        case .some(.boolean):
-            self.type = .lwwBool
-            self.lwwBool = protoForm.boolean
-        case .some(.string):
-            self.type = .lwwString
-            self.lwwString = protoForm.string
-        case .none:
-            fatalError("unknown LWW type")
-        }
-        
-        for protoItem in protoForm.deleteOperations {
-            let _ = CDOperation.findOrCreateOperation(context: context, from: protoItem, container: self, type: .delete)
-//            _ = CDOperation(context: context, from: protoItem, container: self)
+    static func printTreeOfContainers(context: NSManagedObjectContext) {
+        print("nil")
+        let indent = "  "
+        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+        request.returnsObjectsAsFaults = false
+        request.predicate = NSPredicate(format: "container == nil")
+        for op in try! context.fetch(request) {
+            op.printTreeOfContainers(indent: indent)
         }
     }
     
-    func lwwValue() -> Int64 {
-        return lwwInt
-    }
-
-    func lwwValue() -> Float {
-        return lwwFloat
-    }
-
-    func lwwValue() -> Date {
-        return lwwDate!
-    }
-    
-    func lwwValue() -> Bool {
-        return lwwBool
-    }
-
-    func lwwValue() -> String {
-        return lwwString!
-    }
-}
-
-// MARK: - Attribute
-extension CDOperation {
-    static func createAttribute(context: NSManagedObjectContext, container: CDOperation?, type: CRAttributeType, name: String) -> CDOperation {
-        let op = CDOperation(context: context, container: container)
-        op.attributeType = type
-        op.attributeName = name
-        op.type = .attribute
-        op.state = .inUpstreamQueueRenderedMerged
-
-        return op
-    }
-
-    /**
-     from protobuf
-     */
-    func updateObject(context: NSManagedObjectContext, from protoForm: ProtoAttributeOperation, container: CDOperation?) {
-        print("From protobuf AttributeOp(\(protoForm.id.lamport))")
-        self.container = container
-        self.attributeType = .init(rawValue: protoForm.rawType)!
-        self.attributeName = protoForm.name
-        self.version = protoForm.version
-        self.peerID = protoForm.id.peerID.object()
-        self.lamport = protoForm.id.lamport
-        self.type = .attribute
-        self.state = .inDownstreamQueueMergedUnrendered
-
-        
-        for protoItem in protoForm.deleteOperations {
-            let _ = CDOperation.findOrCreateOperation(context: context, from: protoItem, container: self, type: .delete)
-//            _ = CDOperation(context: context, from: protoItem, container: self)
-        }
-        
-        for protoItem in protoForm.lwwOperations {
-            let _ = CDOperation.findOrCreateOperation(context: context, from: protoItem, container: self, type: .lwwInt)
-//            _ = CDOperation(context: context, from: protoItem, container: self)
-        }
-
-        if protoForm.stringInsertOperations.count > 0 {
-            _ = CDOperation.restoreLinkedList(context: context, from: protoForm.stringInsertOperations, container: self)
-        }
-    }
-
-//    static func allObjects() -> [CDAttributeOp]{
-//        let context = CRStorageController.shared.localContainer.viewContext
-//        let request:NSFetchRequest<CDAttributeOp> = CDAttributeOp.fetchRequest()
-//        request.returnsObjectsAsFaults = false
-//        return try! context.fetch(request)
-//    }
-
-}
-
-extension CDOperation {
-    
-    public func stringFromRGAList(context: NSManagedObjectContext) -> (NSMutableAttributedString, [CROperationID]) {
-        let attributedString = NSMutableAttributedString(string:"")
-        var addressesArray:[CROperationID] = []
-
-        // let's prefetch
-        // BTW: there is no need to prefetch delete operations as we have the hasTombstone attribute
+    func printTreeOfContainers(indent: String) {
+        print("\(indent)\(self.shortDescrption())")
+        let indent = indent + "  "
         let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
         request.returnsObjectsAsFaults = false
         request.predicate = NSPredicate(format: "container == %@", self)
-        let _ = try! context.fetch(request)
-
-        // the head is the attribute operation for strings
-        let head:CDOperation? = self
-
-        // build the attributedString
-        var node:CDOperation? = head
-        node = node?.next // let's skip the head
-        while node != nil {
-            if node!.hasTombstone == false {
-                let contribution = NSMutableAttributedString(string:String(Character(node!.unicodeScalar)))
-                attributedString.append(contribution)
-                addressesArray.append(node!.operationID())
-            }
-            node = node!.next
+        for op in try! managedObjectContext!.fetch(request) {
+            op.printTreeOfContainers(indent: indent)
         }
-        return (attributedString, addressesArray)
     }
     
-    public func stringFromRGATree(context: NSManagedObjectContext) -> (NSMutableAttributedString, [CROperationID]) {
-        // let's prefetch
-        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
-        request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "container == %@", self)
-        let _ = try! context.fetch(request)
-
-        // the head is the attribute operation for strings
-        let head:CDOperation? = self
-
-        guard let head = head else { return (NSMutableAttributedString(string:""), [])}
-        return stringFromRGATreeNode(node: head)
-    }
-    
-    
-    func stringFromRGATreeNode(node: CDOperation) -> (NSMutableAttributedString, [CROperationID]) {
-        let attributedString = NSMutableAttributedString()
-        var addressesArray:[CROperationID] = []
-        
-        if !node.hasTombstone && node.type == .stringInsert {
-            attributedString.append(NSMutableAttributedString(string:String(node.unicodeScalar)))
-            addressesArray.append(node.operationID())
-        }
-
-        let children = (node.childOperations?.allObjects as! [CDOperation]).sorted(by: >)
-        for child in children {
-            let childString = stringFromRGATreeNode(node: child)
-            attributedString.append(childString.0)
-            addressesArray.append(contentsOf: childString.1)
-        }
-        return (attributedString, addressesArray)
-    }
-}
-
-// MARK: - Object
-extension CDOperation {
-    static func createObject(context: NSManagedObjectContext, container: CDOperation?, type: CRObjectType) -> CDOperation {
-        let op = CDOperation(context:context, container: container)
-        op.objectType = type
-        op.type = .object
-        op.state = .inUpstreamQueueRenderedMerged
-        return op
-    }
-    
-    /**
-     initialise from the protobuf
-     */
-    func updateObject(context: NSManagedObjectContext, from protoForm: ProtoObjectOperation, container: CDOperation?) {
-        print("From protobuf ObjectOp(\(protoForm.id.lamport))")
-//        self.init(context: context)
-        self.version = protoForm.version
-        self.peerID = protoForm.id.peerID.object()
-        self.lamport = protoForm.id.lamport
-        self.rawObjectType = protoForm.rawType
-        self.container = container
-        self.type = .object
-        self.state = .inDownstreamQueueMergedUnrendered
-
-        
-        for protoItem in protoForm.deleteOperations {
-            let _ = CDOperation.findOrCreateOperation(context: context, from: protoItem, container: self, type: .delete)
-//            _ = CDOperation(context: context, from: protoItem, container: self)
-        }
-        
-        for protoItem in protoForm.attributeOperations {
-            let _ = CDOperation.findOrCreateOperation(context: context, from: protoItem, container: self, type: .attribute)
-//            _ = CDOperation(context: context, from: protoItem, container: self)
-        }
-        
-        for protoItem in protoForm.objectOperations {
-            let _ = CDOperation.findOrCreateOperation(context: context, from: protoItem, container: self, type: .object)
-//            _ = CDOperation(context: context, from: protoItem, container: self)
-        }
+    func shortDescrption() -> String {
+//        , state:\(state)
+        return "op(peer=\(peerID), lamport=\(lamport), type=\(type))"
     }
 }
 
 
-// MARK: - String
+
 extension CDOperation {
-    static func createStringInsert(context: NSManagedObjectContext, container: CDOperation?, parentAddress: CROperationID, contribution: UnicodeScalar = UnicodeScalar(0)) -> CDOperation  {
-        let op = CDOperation(context:context, container: container)
-        op.parentLamport = parentAddress.lamport
-        op.parentPeerID = parentAddress.peerID
-        op.unicodeScalar = UnicodeScalar(0)
-        op.type = .stringInsert
-        op.state = .inUpstreamQueueRendered
-        op.stringInsertContribution = Int32(contribution.value) //TODO: we need a nice reversible casting of uint32 to int32
-        return op
-    }
-
-    
-//    convenience init(context: NSManagedObjectContext, parent: CDStringOp?, container: CDAttributeOp?, contribution: unichar) {
-//        self.init(context:context, container: container)
-//        var uc = contribution
-//        self.contribution = NSString(characters: &uc, length: 1) as String //TODO: migrate to init(utf16CodeUnits: UnsafePointer<unichar>, count: Int)
-//        self.parent = parent
-//    }
-
-    func updateObject(context: NSManagedObjectContext, from protoForm: ProtoStringInsertOperation, container: CDOperation?) {
-        print("From protobuf StringInsertOp(\(protoForm.id.lamport))")
-//        self.init(context: context)
-        self.version = protoForm.version
-        self.peerID = protoForm.id.peerID.object()
-        self.lamport = protoForm.id.lamport
-        self.stringInsertContribution = protoForm.contribution
-        self.parent = CDOperation.fetchOperationOrGhost(from: protoForm.parentID, in: context) // will be null if parent is not yet with us //TODO: create parent
-        self.container = container
-        self.type = .stringInsert
-        self.state = .inDownstreamQueueMergedUnrendered
-
-        for protoItem in protoForm.deleteOperations {
-            _ = CDOperation.findOrCreateOperation(context: context, from: protoItem, container: self, type: .delete)
-//            _ = CDOperation(context: context, from: protoItem, container: self)
-        }
-        
-    }
-    
-    /**
-     does not save
-     returns if linking was yet possible
-     */
-    func linkMe(context: NSManagedObjectContext) -> Bool {
-        let parentAddress = CROperationID(lamport: parentLamport, peerID: parentPeerID)
-
-//        guard let container = container else { return false }
-        guard let parentOp = CDOperation.fetchOperation(from: parentAddress, in: context) else {
-            return false
-        }
-//        print("pre:")
-//        print("parent: '\(parentOp.unicodeScalar)' \(parentOp.lamport): parent:\(parentOp.parent?.lamport) prev:\(parentOp.prev?.lamport) next:\(parentOp.next?.lamport)")
-//        print("self: '\(unicodeScalar)' \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
-//
-//        assert(parentOp.managedObjectContext == self.managedObjectContext)
-        
-        
-    mainSwitch: switch self.type {
-        case .stringInsert:
-            let children:[CDOperation] = (parentOp.childOperations?.allObjects as? [CDOperation] ?? []).sorted(by: >)
-            self.parent = parentOp
-        
-            var lastNode = self
-            while lastNode.next != nil {
-                lastNode = lastNode.next!
-            }
-
-
-            // if no children then insert after parent
-            if children.count == 0 {
-                let parentNext = parent?.next
-                assert(parent != self)
-
-                self.parent?.next = self
-                lastNode.next = parentNext
-
-                assert(self.prev == parent)
-                assert(self.parent?.next == self)
-                break mainSwitch
-            }
-            
-            // let's insert before the 1st older op
-            for op: CDOperation in children {
-                if self > op && op.state != .inUpstreamQueueRendered {
-                    let opPrev = op.prev
-                    self.prev = opPrev
-                    op.prev = lastNode
-                    break mainSwitch
-                }
-            }
-
-            
-            let lastChildNode = children.last!.lastNode()
-            let lastChildNodeNext = lastChildNode.next
-            lastChildNode.next = self
-            lastNode.next = lastChildNodeNext
-
-        case .delete:
-            parentOp.hasTombstone = true
-            self.parent = parentOp
+    func mergeUpstream(context: NSManagedObjectContext) {
+        switch state {
+        case .inUpstreamQueueRendered:
+            break
+        case .processed:
+            return
         default:
             fatalNotImplemented()
         }
-
-//        print("post:")
-//        print("parent: '\(parent?.unicodeScalar)' \(parent!.lamport): parent:\(parent!.parent?.lamport) prev:\(parent!.prev?.lamport) next:\(parent!.next?.lamport)")
-//        print("self: '\(unicodeScalar)' \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
+        
+        switch type {
+        case .stringInsert:
+            stringInsertLinking(context: context)
+        case .delete:
+            deleteLinking(context: context)
+        default:
+            break
+        }
+        
         
         switch state {
         case .inUpstreamQueueRendered:
             state = .inUpstreamQueueRenderedMerged
-        case .inDownstreamQueueMergedUnrendered:
-            state = .processed
         default:
             fatalNotImplemented()
         }
-//        printRGADebug(context: context)
+
+    }
+    
+    func mergeDownstream(context: NSManagedObjectContext) {
+        switch state {
+        case .inDownstreamQueue:
+            break
+        case .processed:
+            return
+        default:
+            fatalNotImplemented()
+        }
         
-//        guard let container = container as? CDAttributeOp else {
-//            fatalNotImplemented()
-//            return false
-//        }
-//        let listString = container.stringFromRGAList(context: context)
-//        let treeString = container.stringFromRGATree(context: context)
-//
-//        assert(listString.0 == treeString.0)
-        
-        return true
-    }
-    
-    func printRGADebug(context: NSManagedObjectContext) {
-        print("rga form debug:")
-        assert(type == .attribute)
-        assert(attributeType == .mutableString)
-
-        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
-
-        // the head is the attribute operation for strings
-        let head:CDOperation? = self
-
-        // build the attributedString
-        var string = ""
-        var node:CDOperation? = head
-        node = node?.next // let's skip the head
-        while node != nil {
-            assert(head!.container == node!.container)
-            if node!.hasTombstone == false {
-                let contribution = String(Character(node!.unicodeScalar))
-                string.append(contribution)
-            }
-            node = node!.next
-        }
-        print(" str: \(string)")
-                
-        print(" tree:")
-        head?.printRGATree(intention:2)
-        print(" orphaned:")
-        request.predicate = NSPredicate(format: "container == %@ and parent == nil", argumentArray: [self])
-        let response = try! context.fetch(request)
-        for op in response {
-            op.printRGATree(intention: 2)
+        switch type {
+        case .stringInsert:
+            stringInsertLinking(context: context)
+        case .delete:
+            deleteLinking(context: context)
+        default:
+            break
         }
     }
-    
-    func printRGATree(intention: Int) {
-        print(String(repeating: " ", count: intention) + "[\(lamport)]: '\(unicodeScalar)' prev:\(prev?.lamport) next:\(next?.lamport) state:\(state)")
-        for op in self.childOperations?.allObjects as? [CDOperation] ?? [] {
-            op.printRGATree(intention: intention+1)
-        }
-    }
-    
-    func lastNode() -> CDOperation {
-        guard let lastChild = (childOperations?.allObjects as! [CDOperation]).sorted(by: >).last else {
-            return self
-        }
-        return lastChild.lastNode()
-    }
-    
-    static func restoreLinkedList(context: NSManagedObjectContext, from: [ProtoStringInsertOperation], container: CDOperation?) -> CDOperation {
-        var cdOperations:[CDOperation] = []
-        var prevOp:CDOperation? = nil
-        for protoOp in from {
-            let op = CDOperation.findOrCreateOperation(context: context, from: protoOp, container: container, type: .stringInsert)
-//            let op = CDOperation(context: context, from: protoOp, container: container)
-            cdOperations.append(op)
-            op.prev = prevOp
-            prevOp?.next = op
-            prevOp = op
-        }
-        return cdOperations[0]
-    }
-    
-}
-
-
-// MARK: - Delete
-extension CDOperation {
-    
-    static func createDelete(context: NSManagedObjectContext, within container: CDOperation?, of parent: CDOperation) -> CDOperation {
-        return CDOperation(context: context, container: container, parent: parent, type: .delete)
-    }
-    
-    static func createDelete(context: NSManagedObjectContext, within container: CDOperation?, of parentId: CROperationID) -> CDOperation {
-        return CDOperation(context: context, container: container, parentId: parentId, type: .delete)
-    }
-
-    /**
-     initialise from the protobuf
-     */
-    func updateObject(context: NSManagedObjectContext, from protoForm: ProtoDeleteOperation, container: CDOperation?) {
-        print("From protobuf DeleteOp(\(protoForm.id.lamport))")
-        self.version = protoForm.version
-        self.peerID = protoForm.id.peerID.object()
-        self.lamport = protoForm.id.lamport
-        self.container = container
-        self.container?.hasTombstone = true
-        self.type = .delete
-        self.state = .inDownstreamQueueMergedUnrendered
-    }
-}
-
-
-// MARK: - Ghost
-extension CDOperation {
-    static func createGhost(context: NSManagedObjectContext, id: CROperationID) -> CDOperation {
-        let op = CDOperation(context: context)
-        op.version = 0
-        op.peerID = id.peerID
-        op.lamport = id.lamport
-        op.type = .ghost
-        op.state = .inDownstreamQueue
-        return op
-    }
-    
-    // there is no protobuf init as protobuf existence makes ghost materialise
 }
