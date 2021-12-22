@@ -76,3 +76,9 @@ extension ProtoStringInsertOperationLinkedList: RestorableProtobuf {
         headOp?.mergeDownstream(context: context)
     }
 }
+
+extension ProtoOperationID {
+    func crOperationID() -> CROperationID {
+        return CROperationID(from: self)
+    }
+}

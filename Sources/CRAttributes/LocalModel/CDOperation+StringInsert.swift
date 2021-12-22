@@ -9,11 +9,22 @@ import Foundation
 import CoreData
 
 
-extension CDOperation {
-    static func createStringInsert(context: NSManagedObjectContext, container: CDOperation?, parentAddress: CROperationID, contribution: UnicodeScalar = UnicodeScalar(0)) -> CDOperation  {
+extension CDOperation { // StringInsert
+
+    static func createStringInsert(context: NSManagedObjectContext, container: CDOperation?, parent: CDOperation?, contribution: UnicodeScalar = UnicodeScalar(0)) -> CDOperation  {
         let op = CDOperation(context:context, container: container)
-        op.parentLamport = parentAddress.lamport
-        op.parentPeerID = parentAddress.peerID
+        op.parent = parent
+        op.unicodeScalar = UnicodeScalar(0)
+        op.type = .stringInsert
+        op.state = .inUpstreamQueueRendered
+        op.stringInsertContribution = Int32(contribution.value) //TODO: we need a nice reversible casting of uint32 to int32
+        return op
+    }
+
+    static func createStringInsert(context: NSManagedObjectContext, container: CDOperation?, parentID: CROperationID, contribution: UnicodeScalar = UnicodeScalar(0)) -> CDOperation  {
+        let op = CDOperation(context:context, container: container)
+        op.parentLamport = parentID.lamport
+        op.parentPeerID = parentID.peerID
         op.unicodeScalar = UnicodeScalar(0)
         op.type = .stringInsert
         op.state = .inUpstreamQueueRendered
@@ -35,7 +46,7 @@ extension CDOperation {
 
         
         for protoItem in protoForm.deleteOperations {
-            _ = CDOperation.findOrCreateOperation(context: context, from: protoItem, container: self, type: .delete)
+            _ = CDOperation.findOrCreateOperation(context: context, from: protoItem, container: container, type: .delete)
         }
     }
     
@@ -52,7 +63,7 @@ extension CDOperation {
                 parent = CDOperation.findOperationOrCreateGhost(from: parentAddress, in: context)
             }
             guard let parent = parent else { fatalError() }
-            
+             
             
 //            print("linking:")
 //            print("pre:")
@@ -129,3 +140,61 @@ extension CDOperation {
     
 }
 
+extension CDOperation {
+    // returns a list of linked string operations (including deletes as sub operations)
+    func protoStringInsertOperationsLinkedList() -> [ProtoStringInsertOperation] {
+        assert(self.state == .inUpstreamQueueRenderedMerged)
+        
+        var protoOperations:[ProtoStringInsertOperation] = []
+        if let protoForm = self.protoStringInsertOperationRecurse() {
+            protoOperations.append(protoForm)
+        }
+        
+        // going left
+        var node:CDOperation? = self.prev
+        while node != nil && node!.state == .inUpstreamQueueRenderedMerged && node!.type == .stringInsert{
+            if let protoForm = node!.protoStringInsertOperationRecurse() {
+                protoOperations.insert(protoForm, at: 0)
+            }
+            node = node?.prev
+        }
+        
+        // going right
+        node = self.next
+        while node != nil && node!.state == .inUpstreamQueueRenderedMerged && node!.type == .stringInsert {
+            if let protoForm = node!.protoStringInsertOperationRecurse() {
+                protoOperations.append(protoForm)
+            }
+            node = node?.next
+        }
+        return protoOperations
+    }
+
+    func protoStringInsertOperationRecurse() -> ProtoStringInsertOperation? {
+        var proto = ProtoStringInsertOperation.with {
+            $0.version = self.version
+            $0.id.lamport = self.lamport
+            $0.id.peerID  = self.peerID.data
+            $0.contribution = self.stringInsertContribution
+            $0.parentID.lamport = self.parent?.lamport ?? 0
+            $0.parentID.peerID = self.parent?.peerID.data ?? UUID.zero.data
+        }
+
+        for operation in self.childOperations?.allObjects ?? [] {
+            guard let operation = operation as? CDOperation else { continue }
+            if operation.state == .inUpstreamQueueRenderedMerged {
+                switch operation.type {
+                case .delete:
+                    proto.deleteOperations.append(operation.protoDeleteOperationRecurse())
+                case .stringInsert:
+                    break // we can ignore it as it will be picked up by .next
+                default:
+                    print(operation)
+                    fatalError("unsupported subOperation")
+                }
+            }
+        }
+        self.state = .processed
+        return proto
+    }
+}

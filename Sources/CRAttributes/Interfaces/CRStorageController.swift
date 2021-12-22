@@ -38,7 +38,6 @@ public class CRStorageController {
     
     init(inMemory: Bool = false, testMode: Bool = false) {
         print("CRStorageController.init")
-        print("thread: \(Thread.current)")
 
         localContainer = NSPersistentContainer(name: "CRLocalModel", managedObjectModel: CRLocalModel)
         replicationContainer = NSPersistentCloudKitContainer(name: "CRReplicationModel", managedObjectModel: CRReplicationModel)

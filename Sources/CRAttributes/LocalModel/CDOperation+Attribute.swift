@@ -169,3 +169,51 @@ extension CDOperation {
     }
 }
 
+extension CDOperation {
+    func protoAttributeOperationRecurse() -> ProtoAttributeOperation {
+        assert(self.type == .attribute)
+        var proto = ProtoAttributeOperation.with {
+            $0.version = self.version
+            $0.id.lamport = self.lamport
+            $0.id.peerID  = self.peerID.data
+            $0.name = self.attributeName!
+            $0.rawType = self.rawAttributeType
+        }
+        
+        var headStringOperation:CDOperation? = nil
+        
+        for operation in self.containedOperations() {
+            if operation.state == .inUpstreamQueueRenderedMerged {
+                switch operation.type {
+                case .delete:
+                    proto.deleteOperations.append(operation.protoDeleteOperationRecurse())
+                case .lwwInt:
+                    proto.lwwOperations.append(operation.protoLWWOperationRecurse())
+                case .lwwFloat:
+                    proto.lwwOperations.append(operation.protoLWWOperationRecurse())
+                case .lwwDate:
+                    proto.lwwOperations.append(operation.protoLWWOperationRecurse())
+                case .lwwBool:
+                    proto.lwwOperations.append(operation.protoLWWOperationRecurse())
+                case .lwwString:
+                    proto.lwwOperations.append(operation.protoLWWOperationRecurse())
+                case .stringInsert:
+                    if operation.prev == nil { // it will be only a new string in a new attribute in this scenario
+                        headStringOperation = operation
+                    }
+                default:
+                    fatalError("unsupported subOperation")
+                }
+            }
+        }
+        var node = headStringOperation
+        while node != nil {
+            if let protoForm = node!.protoStringInsertOperationRecurse() {
+                proto.stringInsertOperationsList.stringInsertOperations.append(protoForm)
+            }
+            node = node!.next
+        }
+        self.state = .processed
+        return proto
+    }
+}

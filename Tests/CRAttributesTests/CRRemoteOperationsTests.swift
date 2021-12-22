@@ -402,9 +402,9 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(b_a5.value, "abc")
 
         let b_a6:CRAttributeMutableString = b_n1.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
-        XCTAssertEqual(b_a6.operation?.stringFromRGATree().0.string, "123def###")
-        XCTAssertEqual(b_a6.operation?.stringFromRGAList().0.string, "123def###")
-        XCTAssertEqual(b_a6.textStorage!.string, "123def###") //FIXME: this won't be real until string form is updated
+        XCTAssertEqual(b_a6.operation?.stringFromRGATree().0.string, "123def#")
+        XCTAssertEqual(b_a6.operation?.stringFromRGAList().0.string, "123def#")
+        XCTAssertEqual(b_a6.textStorage!.string, "123def#") //FIXME: this won't be real until string form is updated
 
         b_a6.textStorage?.attributeOp.printRGADebug()
 
@@ -515,9 +515,9 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(b_a5.value, "abc")
 
         let b_a6:CRAttributeMutableString = b_n1.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
-        XCTAssertEqual(b_a6.operation?.stringFromRGATree().0.string, "123def###")
-        XCTAssertEqual(b_a6.operation?.stringFromRGAList().0.string, "123def###")
-        XCTAssertEqual(b_a6.textStorage!.string, "123def###") //FIXME: this won't be real until string form is updated
+        XCTAssertEqual(b_a6.operation?.stringFromRGATree().0.string, "123def#")
+        XCTAssertEqual(b_a6.operation?.stringFromRGAList().0.string, "123def#")
+        XCTAssertEqual(b_a6.textStorage!.string, "123def#") //FIXME: this won't be real until string form is updated
 
         b_a6.textStorage?.attributeOp.printRGADebug()
 

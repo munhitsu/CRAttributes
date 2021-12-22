@@ -107,6 +107,7 @@ struct ProtoAttributeOperation {
   fileprivate var _stringInsertOperationsList: ProtoStringInsertOperationLinkedList? = nil
 }
 
+/// if entity has a delete operation then it's deleted
 struct ProtoDeleteOperation {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -123,11 +124,21 @@ struct ProtoDeleteOperation {
   /// Clears the value of `id`. Subsequent reads from it will return its default value.
   mutating func clearID() {self._id = nil}
 
+  var parentID: ProtoOperationID {
+    get {return _parentID ?? ProtoOperationID()}
+    set {_parentID = newValue}
+  }
+  /// Returns true if `parentID` has been explicitly set.
+  var hasParentID: Bool {return self._parentID != nil}
+  /// Clears the value of `parentID`. Subsequent reads from it will return its default value.
+  mutating func clearParentID() {self._parentID = nil}
+
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
   fileprivate var _id: ProtoOperationID? = nil
+  fileprivate var _parentID: ProtoOperationID? = nil
 }
 
 struct ProtoLWWOperation {
@@ -591,6 +602,7 @@ extension ProtoDeleteOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "version"),
     2: .same(proto: "id"),
+    3: .same(proto: "parentID"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -601,6 +613,7 @@ extension ProtoDeleteOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
       switch fieldNumber {
       case 1: try { try decoder.decodeSingularInt32Field(value: &self.version) }()
       case 2: try { try decoder.decodeSingularMessageField(value: &self._id) }()
+      case 3: try { try decoder.decodeSingularMessageField(value: &self._parentID) }()
       default: break
       }
     }
@@ -617,12 +630,16 @@ extension ProtoDeleteOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     try { if let v = self._id {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
     } }()
+    try { if let v = self._parentID {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
   static func ==(lhs: ProtoDeleteOperation, rhs: ProtoDeleteOperation) -> Bool {
     if lhs.version != rhs.version {return false}
     if lhs._id != rhs._id {return false}
+    if lhs._parentID != rhs._parentID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

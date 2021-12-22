@@ -208,11 +208,11 @@ extension CDOperation {
         self.type = type
         self.state = state
     }
-    
-    convenience init(context: NSManagedObjectContext, container: CDOperation?, parentId: CROperationID, type: CDOperationType, state: CDOperationState = .unknown) {
+
+    convenience init(context: NSManagedObjectContext, container: CDOperation?, parentID: CROperationID, type: CDOperationType, state: CDOperationState = .unknown) {
         self.init(context:context, container: container)
-        self.parentLamport = parentId.lamport
-        self.parentPeerID = parentId.peerID
+        self.parentLamport = parentID.lamport
+        self.parentPeerID = parentID.peerID
         self.type = type
         self.state = state
     }
@@ -328,6 +328,9 @@ extension CDOperation {
     func printTreeOfContainers(indent: String) {
         managedObjectContext?.performAndWait {
             print("\(indent)\(self.shortDescrption())")
+            if self.type == .attribute && self.attributeType == .mutableString {
+                self.printRGADebug()
+            }
             let indent = indent + "  "
             let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.returnsObjectsAsFaults = false

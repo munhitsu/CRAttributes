@@ -90,23 +90,23 @@ extension ReplicationController {
                     }
                     switch branchRoot.type {
                     case .object:
-                        tree.objectOperation = ReplicationController.protoObjectOperationRecurse(branchRoot)
+                        tree.objectOperation = branchRoot.protoObjectOperationRecurse()
                     case .attribute:
-                        tree.attributeOperation = ReplicationController.protoAttributeOperationRecurse(branchRoot)
+                        tree.attributeOperation = branchRoot.protoAttributeOperationRecurse()
                     case .delete:
-                        tree.deleteOperation = ReplicationController.protoDeleteOperationRecurse(branchRoot)
+                        tree.deleteOperation = branchRoot.protoDeleteOperationRecurse()
                     case .lwwInt:
-                        tree.lwwOperation = ReplicationController.protoLWWOperationRecurse(branchRoot)
+                        tree.lwwOperation = branchRoot.protoLWWOperationRecurse()
                     case .lwwFloat:
-                        tree.lwwOperation = ReplicationController.protoLWWOperationRecurse(branchRoot)
+                        tree.lwwOperation = branchRoot.protoLWWOperationRecurse()
                     case .lwwDate:
-                        tree.lwwOperation = ReplicationController.protoLWWOperationRecurse(branchRoot)
+                        tree.lwwOperation = branchRoot.protoLWWOperationRecurse()
                     case .lwwBool:
-                        tree.lwwOperation = ReplicationController.protoLWWOperationRecurse(branchRoot)
+                        tree.lwwOperation = branchRoot.protoLWWOperationRecurse()
                     case .lwwString:
-                        tree.lwwOperation = ReplicationController.protoLWWOperationRecurse(branchRoot)
+                        tree.lwwOperation = branchRoot.protoLWWOperationRecurse()
                     case .stringInsert:
-                        tree.stringInsertOperationsList.stringInsertOperations = ReplicationController.protoStringInsertOperationsLinkedList(branchRoot)
+                        tree.stringInsertOperationsList.stringInsertOperations = branchRoot.protoStringInsertOperationsLinkedList()
                     default:
                         fatalNotImplemented()
                     }
@@ -122,183 +122,7 @@ extension ReplicationController {
         }
         return forests
     }
-    
-    static func protoObjectOperationRecurse(_ operation: CDOperation) -> ProtoObjectOperation {
-        assert(operation.type == .object)
-        var proto = ProtoObjectOperation.with {
-            $0.version = operation.version
-            $0.id.lamport = operation.lamport
-            $0.id.peerID  = operation.peerID.data
-            $0.rawType = operation.rawType
-        }
-        for operation in operation.containedOperations() {
-            if operation.state == .inUpstreamQueueRenderedMerged {
-                switch operation.type {
-                case .delete:
-                    proto.deleteOperations.append(protoDeleteOperationRecurse(operation))
-                case .attribute:
-                    proto.attributeOperations.append(protoAttributeOperationRecurse(operation))
-                case .object:
-                    proto.objectOperations.append(protoObjectOperationRecurse(operation))
-                default:
-                    fatalError("unsupported subOperation")
-                }
-            }
-        }
-        operation.state = .processed
-        return proto
-    }
-    
-    static func protoDeleteOperationRecurse(_ operation: CDOperation) -> ProtoDeleteOperation {
-        assert(operation.type == .delete)
-        let proto = ProtoDeleteOperation.with {
-            $0.version = operation.version
-            $0.id.lamport = operation.lamport
-            $0.id.peerID  = operation.peerID.data
-        }
-        
-        operation.state = .processed
-        return proto
-    }
-    
-    static func protoAttributeOperationRecurse(_ operation: CDOperation) -> ProtoAttributeOperation {
-        assert(operation.type == .attribute)
-        var proto = ProtoAttributeOperation.with {
-            $0.version = operation.version
-            $0.id.lamport = operation.lamport
-            $0.id.peerID  = operation.peerID.data
-            $0.name = operation.attributeName!
-            $0.rawType = operation.rawAttributeType
-        }
-        
-        var headStringOperation:CDOperation? = nil
-        
-        for operation in operation.containedOperations() {
-            if operation.state == .inUpstreamQueueRenderedMerged {
-                switch operation.type {
-                case .delete:
-                    proto.deleteOperations.append(protoDeleteOperationRecurse(operation))
-                case .lwwInt:
-                    proto.lwwOperations.append(protoLWWOperationRecurse(operation))
-                case .lwwFloat:
-                    proto.lwwOperations.append(protoLWWOperationRecurse(operation))
-                case .lwwDate:
-                    proto.lwwOperations.append(protoLWWOperationRecurse(operation))
-                case .lwwBool:
-                    proto.lwwOperations.append(protoLWWOperationRecurse(operation))
-                case .lwwString:
-                    proto.lwwOperations.append(protoLWWOperationRecurse(operation))
-                case .stringInsert:
-                    if operation.prev == nil { // it will be only a new string in a new attribute in this scenario
-                        headStringOperation = operation
-                    }
-                default:
-                    fatalError("unsupported subOperation")
-                }
-            }
-        }
-        var node = headStringOperation
-        while node != nil {
-            if let protoForm = protoStringInsertOperationRecurse(node!) {
-                proto.stringInsertOperationsList.stringInsertOperations.append(protoForm)
-            }
-            node = node!.next
-        }
-        operation.state = .processed
-        return proto
-    }
-    
-    static func protoLWWOperationRecurse(_ operation: CDOperation) -> ProtoLWWOperation {
-        var proto = ProtoLWWOperation.with {
-            $0.version = operation.version
-            $0.id.lamport = operation.lamport
-            $0.id.peerID  = operation.peerID.data
-            switch operation.type {
-            case .lwwInt:
-                $0.int = operation.lwwInt
-            case .lwwFloat:
-                $0.float = operation.lwwFloat
-            case .lwwDate:
-                fatalNotImplemented() //TODO: implement Date
-            case .lwwBool:
-                $0.boolean = operation.lwwBool
-            case .lwwString:
-                $0.string = operation.lwwString!
-            default:
-                fatalNotImplemented()
-            }
-        }
 
-        for operation in operation.containedOperations() {
-            if operation.state == .inUpstreamQueueRenderedMerged {
-                switch operation.type {
-                case .delete:
-                    proto.deleteOperations.append(protoDeleteOperationRecurse(operation))
-                default:
-                    fatalError("unsupported subOperation")
-                }
-            }
-        }
-        operation.state = .processed
-        return proto
-    }
-    
-    static func protoStringInsertOperationRecurse(_ operation: CDOperation) -> ProtoStringInsertOperation? {
-        var proto = ProtoStringInsertOperation.with {
-            $0.version = operation.version
-            $0.id.lamport = operation.lamport
-            $0.id.peerID  = operation.peerID.data
-            $0.contribution = operation.stringInsertContribution
-            $0.parentID.lamport = operation.parent?.lamport ?? 0
-            $0.parentID.peerID = operation.parent?.peerID.data ?? UUID.zero.data
-        }
-
-        for operation in operation.childOperations?.allObjects ?? [] {
-            guard let operation = operation as? CDOperation else { continue }
-            if operation.state == .inUpstreamQueueRenderedMerged {
-                switch operation.type {
-                case .delete:
-                    proto.deleteOperations.append(protoDeleteOperationRecurse(operation))
-                case .stringInsert:
-                    break // we can ignore it as it will be picked up by .next
-                default:
-                    print(operation)
-                    fatalError("unsupported subOperation")
-                }
-            }
-        }
-        operation.state = .processed
-        return proto
-    }
-
-    // returns a list of linked string operations (including deletes as sub operations)
-    static func protoStringInsertOperationsLinkedList(_ operation: CDOperation) -> [ProtoStringInsertOperation] {
-        assert(operation.state == .inUpstreamQueueRenderedMerged)
-        
-        var protoOperations:[ProtoStringInsertOperation] = []
-        if let protoForm = protoStringInsertOperationRecurse(operation) {
-            protoOperations.append(protoForm)
-        }
-        
-        // going left
-        var node:CDOperation? = operation.prev
-        while node != nil && node!.state == .inUpstreamQueueRenderedMerged && node!.type == .stringInsert{
-            if let protoForm = protoStringInsertOperationRecurse(node!) {
-                protoOperations.insert(protoForm, at: 0)
-            }
-            node = node?.prev
-        }
-        
-        // going right
-        node = operation.next
-        while node != nil && node!.state == .inUpstreamQueueRenderedMerged && node!.type == .stringInsert {
-            if let protoForm = protoStringInsertOperationRecurse(node!) {
-                protoOperations.append(protoForm)
-            }
-            node = node?.next
-        }
-        return protoOperations
-    }
 }
 
 

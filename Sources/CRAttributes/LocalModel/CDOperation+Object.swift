@@ -46,5 +46,30 @@ extension CDOperation {
     }
 }
 
-
-
+extension CDOperation {
+    func protoObjectOperationRecurse() -> ProtoObjectOperation {
+        assert(self.type == .object)
+        var proto = ProtoObjectOperation.with {
+            $0.version = self.version
+            $0.id.lamport = self.lamport
+            $0.id.peerID  = self.peerID.data
+            $0.rawType = self.rawType
+        }
+        for operation in self.containedOperations() {
+            if operation.state == .inUpstreamQueueRenderedMerged {
+                switch operation.type {
+                case .delete:
+                    proto.deleteOperations.append(operation.protoDeleteOperationRecurse())
+                case .attribute:
+                    proto.attributeOperations.append(operation.protoAttributeOperationRecurse())
+                case .object:
+                    proto.objectOperations.append(operation.protoObjectOperationRecurse())
+                default:
+                    fatalError("unsupported subOperation")
+                }
+            }
+        }
+        self.state = .processed
+        return proto
+    }
+}

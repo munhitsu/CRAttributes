@@ -111,6 +111,7 @@ class CRTextStorage: NSTextStorage {
         if range.length > 0 {
             // TODO: delete operations in the range
             for address in addressesArray[range.location...(range.location+range.length-1)] {
+//                let op = CDOperation.findOperationOrCreateGhost(from: address, in: context) //TODO: consider moving to background
                 let delete = CDOperation.createDelete(context: context, within: self.attributeOp, of: address)
                 delete.state = .inUpstreamQueueRendered
             }
@@ -131,7 +132,9 @@ class CRTextStorage: NSTextStorage {
         }
         
         for us in strContent.unicodeScalars {
-            let newOp:CDOperation = CDOperation.createStringInsert(context: context, container: self.attributeOp, parentAddress: parentAddress, contribution: us)
+//            let parent = CDOperation.findOperationOrCreateGhost(from: parentAddress, in: context) //TODO: consider moving to background
+
+            let newOp:CDOperation = CDOperation.createStringInsert(context: context, container: self.attributeOp, parentID: parentAddress, contribution: us)
             newOp.state = .inUpstreamQueueRendered
             let charAddress = newOp.operationID()
             strAddresses.append(charAddress)

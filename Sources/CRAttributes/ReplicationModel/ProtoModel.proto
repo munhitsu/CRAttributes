@@ -33,9 +33,11 @@ message AttributeOperation {
     StringInsertOperationLinkedList stringInsertOperationsList = 8;
 }
 
+// if entity has a delete operation then it's deleted
 message DeleteOperation {
     int32 version = 1;
     OperationID id = 2;
+    OperationID parentID = 3;
 }
 
 message LWWOperation {

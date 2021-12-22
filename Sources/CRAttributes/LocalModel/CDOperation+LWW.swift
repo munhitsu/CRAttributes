@@ -104,3 +104,40 @@ extension CDOperation {
     }
 }
 
+
+extension CDOperation {
+    func protoLWWOperationRecurse() -> ProtoLWWOperation {
+        var proto = ProtoLWWOperation.with {
+            $0.version = self.version
+            $0.id.lamport = self.lamport
+            $0.id.peerID  = self.peerID.data
+            switch self.type {
+            case .lwwInt:
+                $0.int = self.lwwInt
+            case .lwwFloat:
+                $0.float = self.lwwFloat
+            case .lwwDate:
+                fatalNotImplemented() //TODO: implement Date
+            case .lwwBool:
+                $0.boolean = self.lwwBool
+            case .lwwString:
+                $0.string = self.lwwString!
+            default:
+                fatalNotImplemented()
+            }
+        }
+
+        for operation in self.containedOperations() {
+            if operation.state == .inUpstreamQueueRenderedMerged {
+                switch operation.type {
+                case .delete:
+                    proto.deleteOperations.append(operation.protoDeleteOperationRecurse())
+                default:
+                    fatalError("unsupported subOperation")
+                }
+            }
+        }
+        self.state = .processed
+        return proto
+    }
+}
