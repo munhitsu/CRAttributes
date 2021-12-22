@@ -25,16 +25,6 @@ public class CRStorageController {
 
     static var preview: CRStorageController = {
         let result = CRStorageController(inMemory: true)
-        //        let viewContext = result.container.viewContext
-        //        for _ in 0..<10 {
-        //            let newItem = Note(context: viewContext)
-        //        }
-        //        do {
-        //            try viewContext.save()
-        //        } catch {
-        //            let nsError = error as NSError
-        //            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
-        //        }
         return result
     }()
     

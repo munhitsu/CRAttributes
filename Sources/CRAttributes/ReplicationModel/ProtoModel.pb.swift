@@ -90,13 +90,21 @@ struct ProtoAttributeOperation {
 
   var lwwOperations: [ProtoLWWOperation] = []
 
-  var stringInsertOperations: [ProtoStringInsertOperation] = []
+  var stringInsertOperationsList: ProtoStringInsertOperationLinkedList {
+    get {return _stringInsertOperationsList ?? ProtoStringInsertOperationLinkedList()}
+    set {_stringInsertOperationsList = newValue}
+  }
+  /// Returns true if `stringInsertOperationsList` has been explicitly set.
+  var hasStringInsertOperationsList: Bool {return self._stringInsertOperationsList != nil}
+  /// Clears the value of `stringInsertOperationsList`. Subsequent reads from it will return its default value.
+  mutating func clearStringInsertOperationsList() {self._stringInsertOperationsList = nil}
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
   init() {}
 
   fileprivate var _id: ProtoOperationID? = nil
+  fileprivate var _stringInsertOperationsList: ProtoStringInsertOperationLinkedList? = nil
 }
 
 struct ProtoDeleteOperation {
@@ -255,9 +263,8 @@ struct ProtoStringInsertOperation {
 
   var contribution: Int32 = 0
 
+  ///    repeated StringInsertOperation stringInsertOperations = 6; //TODO: are we using it? - recursion limit
   var deleteOperations: [ProtoDeleteOperation] = []
-
-  var stringInsertOperations: [ProtoStringInsertOperation] = []
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -328,12 +335,12 @@ struct ProtoOperationsTree {
     set {value = .lwwOperation(newValue)}
   }
 
-  var stringInsertOperations: ProtoStringInsertOperationLinkedList {
+  var stringInsertOperationsList: ProtoStringInsertOperationLinkedList {
     get {
-      if case .stringInsertOperations(let v)? = value {return v}
+      if case .stringInsertOperationsList(let v)? = value {return v}
       return ProtoStringInsertOperationLinkedList()
     }
-    set {value = .stringInsertOperations(newValue)}
+    set {value = .stringInsertOperationsList(newValue)}
   }
 
   var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -343,7 +350,7 @@ struct ProtoOperationsTree {
     case attributeOperation(ProtoAttributeOperation)
     case deleteOperation(ProtoDeleteOperation)
     case lwwOperation(ProtoLWWOperation)
-    case stringInsertOperations(ProtoStringInsertOperationLinkedList)
+    case stringInsertOperationsList(ProtoStringInsertOperationLinkedList)
 
   #if !swift(>=4.1)
     static func ==(lhs: ProtoOperationsTree.OneOf_Value, rhs: ProtoOperationsTree.OneOf_Value) -> Bool {
@@ -367,8 +374,8 @@ struct ProtoOperationsTree {
         guard case .lwwOperation(let l) = lhs, case .lwwOperation(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
-      case (.stringInsertOperations, .stringInsertOperations): return {
-        guard case .stringInsertOperations(let l) = lhs, case .stringInsertOperations(let r) = rhs else { preconditionFailure() }
+      case (.stringInsertOperationsList, .stringInsertOperationsList): return {
+        guard case .stringInsertOperationsList(let l) = lhs, case .stringInsertOperationsList(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -470,12 +477,16 @@ extension ProtoObjectOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.version != 0 {
       try visitor.visitSingularInt32Field(value: self.version, fieldNumber: 1)
     }
-    if let v = self._id {
+    try { if let v = self._id {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    }
+    } }()
     if self.rawType != 0 {
       try visitor.visitSingularInt32Field(value: self.rawType, fieldNumber: 4)
     }
@@ -512,7 +523,7 @@ extension ProtoAttributeOperation: SwiftProtobuf.Message, SwiftProtobuf._Message
     5: .same(proto: "rawType"),
     6: .same(proto: "deleteOperations"),
     7: .same(proto: "lwwOperations"),
-    8: .same(proto: "stringInsertOperations"),
+    8: .same(proto: "stringInsertOperationsList"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -527,19 +538,23 @@ extension ProtoAttributeOperation: SwiftProtobuf.Message, SwiftProtobuf._Message
       case 5: try { try decoder.decodeSingularInt32Field(value: &self.rawType) }()
       case 6: try { try decoder.decodeRepeatedMessageField(value: &self.deleteOperations) }()
       case 7: try { try decoder.decodeRepeatedMessageField(value: &self.lwwOperations) }()
-      case 8: try { try decoder.decodeRepeatedMessageField(value: &self.stringInsertOperations) }()
+      case 8: try { try decoder.decodeSingularMessageField(value: &self._stringInsertOperationsList) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.version != 0 {
       try visitor.visitSingularInt32Field(value: self.version, fieldNumber: 1)
     }
-    if let v = self._id {
+    try { if let v = self._id {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    }
+    } }()
     if !self.name.isEmpty {
       try visitor.visitSingularStringField(value: self.name, fieldNumber: 4)
     }
@@ -552,9 +567,9 @@ extension ProtoAttributeOperation: SwiftProtobuf.Message, SwiftProtobuf._Message
     if !self.lwwOperations.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.lwwOperations, fieldNumber: 7)
     }
-    if !self.stringInsertOperations.isEmpty {
-      try visitor.visitRepeatedMessageField(value: self.stringInsertOperations, fieldNumber: 8)
-    }
+    try { if let v = self._stringInsertOperationsList {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 8)
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -565,7 +580,7 @@ extension ProtoAttributeOperation: SwiftProtobuf.Message, SwiftProtobuf._Message
     if lhs.rawType != rhs.rawType {return false}
     if lhs.deleteOperations != rhs.deleteOperations {return false}
     if lhs.lwwOperations != rhs.lwwOperations {return false}
-    if lhs.stringInsertOperations != rhs.stringInsertOperations {return false}
+    if lhs._stringInsertOperationsList != rhs._stringInsertOperationsList {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -592,12 +607,16 @@ extension ProtoDeleteOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.version != 0 {
       try visitor.visitSingularInt32Field(value: self.version, fieldNumber: 1)
     }
-    if let v = self._id {
+    try { if let v = self._id {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    }
+    } }()
     try unknownFields.traverse(visitor: &visitor)
   }
 
@@ -677,15 +696,16 @@ extension ProtoLWWOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.version != 0 {
       try visitor.visitSingularInt32Field(value: self.version, fieldNumber: 1)
     }
-    if let v = self._id {
+    try { if let v = self._id {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    }
-    // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every case branch when no optimizations are
-    // enabled. https://github.com/apple/swift-protobuf/issues/1034
+    } }()
     switch self.value {
     case .int?: try {
       guard case .int(let v)? = self.value else { preconditionFailure() }
@@ -733,7 +753,6 @@ extension ProtoStringInsertOperation: SwiftProtobuf.Message, SwiftProtobuf._Mess
     3: .same(proto: "parentID"),
     4: .same(proto: "contribution"),
     5: .same(proto: "deleteOperations"),
-    6: .same(proto: "stringInsertOperations"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -747,30 +766,30 @@ extension ProtoStringInsertOperation: SwiftProtobuf.Message, SwiftProtobuf._Mess
       case 3: try { try decoder.decodeSingularMessageField(value: &self._parentID) }()
       case 4: try { try decoder.decodeSingularInt32Field(value: &self.contribution) }()
       case 5: try { try decoder.decodeRepeatedMessageField(value: &self.deleteOperations) }()
-      case 6: try { try decoder.decodeRepeatedMessageField(value: &self.stringInsertOperations) }()
       default: break
       }
     }
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
     if self.version != 0 {
       try visitor.visitSingularInt32Field(value: self.version, fieldNumber: 1)
     }
-    if let v = self._id {
+    try { if let v = self._id {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 2)
-    }
-    if let v = self._parentID {
+    } }()
+    try { if let v = self._parentID {
       try visitor.visitSingularMessageField(value: v, fieldNumber: 3)
-    }
+    } }()
     if self.contribution != 0 {
       try visitor.visitSingularInt32Field(value: self.contribution, fieldNumber: 4)
     }
     if !self.deleteOperations.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.deleteOperations, fieldNumber: 5)
-    }
-    if !self.stringInsertOperations.isEmpty {
-      try visitor.visitRepeatedMessageField(value: self.stringInsertOperations, fieldNumber: 6)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
@@ -781,7 +800,6 @@ extension ProtoStringInsertOperation: SwiftProtobuf.Message, SwiftProtobuf._Mess
     if lhs._parentID != rhs._parentID {return false}
     if lhs.contribution != rhs.contribution {return false}
     if lhs.deleteOperations != rhs.deleteOperations {return false}
-    if lhs.stringInsertOperations != rhs.stringInsertOperations {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -827,7 +845,7 @@ extension ProtoOperationsTree: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     3: .same(proto: "attributeOperation"),
     4: .same(proto: "deleteOperation"),
     5: .same(proto: "lwwOperation"),
-    6: .same(proto: "stringInsertOperations"),
+    6: .same(proto: "stringInsertOperationsList"),
   ]
 
   mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
@@ -894,12 +912,12 @@ extension ProtoOperationsTree: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
         var hadOneofValue = false
         if let current = self.value {
           hadOneofValue = true
-          if case .stringInsertOperations(let m) = current {v = m}
+          if case .stringInsertOperationsList(let m) = current {v = m}
         }
         try decoder.decodeSingularMessageField(value: &v)
         if let v = v {
           if hadOneofValue {try decoder.handleConflictingOneOf()}
-          self.value = .stringInsertOperations(v)
+          self.value = .stringInsertOperationsList(v)
         }
       }()
       default: break
@@ -908,12 +926,13 @@ extension ProtoOperationsTree: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
   }
 
   func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
-    if let v = self._containerID {
-      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
-    }
     // The use of inline closures is to circumvent an issue where the compiler
-    // allocates stack space for every case branch when no optimizations are
-    // enabled. https://github.com/apple/swift-protobuf/issues/1034
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._containerID {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
     switch self.value {
     case .objectOperation?: try {
       guard case .objectOperation(let v)? = self.value else { preconditionFailure() }
@@ -931,8 +950,8 @@ extension ProtoOperationsTree: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
       guard case .lwwOperation(let v)? = self.value else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 5)
     }()
-    case .stringInsertOperations?: try {
-      guard case .stringInsertOperations(let v)? = self.value else { preconditionFailure() }
+    case .stringInsertOperationsList?: try {
+      guard case .stringInsertOperationsList(let v)? = self.value else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 6)
     }()
     case nil: break

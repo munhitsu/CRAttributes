@@ -82,23 +82,13 @@ extension CDRenderedStringOp {
             return Array<CROperationID>(buffer)
         } ?? []
 
-
-//        let array = self.arrayContributionRaw?.withUnsafeBytes {
-//            $0.load(as: [CRStringAddress].self)
-//        }
         return array
         
-//        let decoder = JSONDecoder()
-//        return try! decoder.decode([CRStringAddress].self, from: self.arrayContributionRaw!)
-////        return (try? (NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(self.arrayContributionRaw!) as? [CRStringAddress])!) ?? []
     }
     func setArrayContribution(newValue: [CROperationID]) {
         self.arrayContributionRaw = newValue.withUnsafeBufferPointer {
             return Data(buffer: $0)
         }
-//        let encoder = JSONEncoder()
-//        self.arrayContributionRaw = try! encoder.encode(newValue)
-//        self.arrayContributionRaw = try? NSKeyedArchiver.archivedData(withRootObject: newValue, requiringSecureCoding: false)
     }
 }
 
@@ -125,19 +115,14 @@ extension CDRenderedStringOp {
         requestOps.returnsObjectsAsFaults = false
         
         let operations:[CDRenderedStringOp] = try! context.fetch(requestOps)
-//        print("operations to process: \(operations.count)")
                 
         for op in operations {
             if op.isSnapshot == true {
                 continue
             }
-//            let startStringIndex = string.index(string.startIndex, offsetBy: String.IndexDistance(op.location))
-//            let endStringIndex = string.index(startStringIndex, offsetBy: String.IndexDistance(op.length))
-//            string.replaceSubrange(startStringIndex...endStringIndex, with: op.getStringContribution())
             let range = NSRange(location: Int(op.location), length: Int(op.length))
             string.replaceCharacters(in: range, with: op.getStringContribution())
             array.replaceElements(in: range, with: op.getArrayContribution())
-//            array.replaceSubrange(Int(op.location)...Int((op.location+op.length)), with: op.getArrayContribution())
         }
         return (string, array)
     }

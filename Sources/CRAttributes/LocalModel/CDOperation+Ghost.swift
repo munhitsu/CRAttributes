@@ -19,5 +19,5 @@ extension CDOperation {
         return op
     }
     
-    // there is no protobuf init as protobuf existence makes ghost materialise
+    // there is no protobuf init as the fact that ID reference exists somewhere in the protobuf tree makes ghost materialise
 }

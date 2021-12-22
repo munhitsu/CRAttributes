@@ -38,9 +38,7 @@ enum CDOperationType: Int32 {
     case lwwBool = 18
     case lwwString = 19
     case lwwDate = 20
-
-//    case stringHead = 32
-    case stringInsert = 33
+    case stringInsert = 32
 }
 
 struct CRObjectType: RawRepresentable, Equatable, Hashable, Comparable {
@@ -165,26 +163,7 @@ extension CDOperation {
     }
 }
 
-
-// MARK: Generated accessors for subOperations
-//extension CDAbstractOp {
-//
-//    @objc(addContainedOperationsObject:)
-//    @NSManaged public func addToContainedOperations(_ value: CDAbstractOp)
-//
-//    @objc(removeContainedOperationsObject:)
-//    @NSManaged public func removeFromContainedOperations(_ value: CDAbstractOp)
-//
-//    @objc(addContainedOperations:)
-//    @NSManaged public func addToContainedOperations(_ values: NSSet)
-//
-//    @objc(removeContainedOperations:)
-//    @NSManaged public func removeFromContainedOperations(_ values: NSSet)
-//
-//}
-
 extension CDOperation : Identifiable {
-
 }
 
 extension CDOperation : Comparable {
@@ -249,7 +228,9 @@ extension CDOperation {
         }
     }
 
-    /** returns operation or a ghost operation for the ID*/
+    /**
+     returns operation or a ghost operation for the ID
+     */
     static func findOperationOrCreateGhost(fromLamport:lamportType, fromPeerID:UUID, in context: NSManagedObjectContext) -> CDOperation {
         let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
         request.returnsObjectsAsFaults = false
@@ -269,39 +250,33 @@ extension CDOperation {
         return findOperationOrCreateGhost(fromLamport: operationID.lamport, fromPeerID: operationID.peerID, in: context)
     }
     
-//    static func findOperation(from address: CROperationID, in context: NSManagedObjectContext) -> CDOperation? {
-//        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
-//        request.returnsObjectsAsFaults = false
-//        request.predicate = NSPredicate(format: "lamport == %@ and peerID == %@", argumentArray: [address.lamport, address.peerID])
-//        request.fetchLimit = 1
-//        return try? context.fetch(request).first
-//    }
-
-    //TODO: replace case with some reasonable inheritance of protostructures; if possible
+    //TODO: replace case with some reasonable inheritance of protostructures (if possible)
     static func findOrCreateOperation(context: NSManagedObjectContext, from protoForm: SwiftProtobuf.Message, container: CDOperation?, type: CDOperationType) -> CDOperation {
         var op:CDOperation?
 
-        switch type {
-        case .stringInsert:
-            op = findOperationOrCreateGhost(from: (protoForm as! ProtoStringInsertOperation).id, in: context)
-        case .attribute:
-            op = findOperationOrCreateGhost(from: (protoForm as! ProtoAttributeOperation).id, in: context)
-        case .delete:
-            op = findOperationOrCreateGhost(from: (protoForm as! ProtoDeleteOperation).id, in: context)
-        case .lwwBool:
-            op = findOperationOrCreateGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
-        case .lwwDate:
-            op = findOperationOrCreateGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
-        case .lwwFloat:
-            op = findOperationOrCreateGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
-        case .lwwInt:
-            op = findOperationOrCreateGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
-        case .lwwString:
-            op = findOperationOrCreateGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
-        case .object:
-            op = findOperationOrCreateGhost(from: (protoForm as! ProtoObjectOperation).id, in: context)
-        default:
-            fatalNotImplemented()
+        context.performAndWait {
+            switch type {
+            case .stringInsert:
+                op = findOperationOrCreateGhost(from: (protoForm as! ProtoStringInsertOperation).id, in: context)
+            case .attribute:
+                op = findOperationOrCreateGhost(from: (protoForm as! ProtoAttributeOperation).id, in: context)
+            case .delete:
+                op = findOperationOrCreateGhost(from: (protoForm as! ProtoDeleteOperation).id, in: context)
+            case .lwwBool:
+                op = findOperationOrCreateGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
+            case .lwwDate:
+                op = findOperationOrCreateGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
+            case .lwwFloat:
+                op = findOperationOrCreateGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
+            case .lwwInt:
+                op = findOperationOrCreateGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
+            case .lwwString:
+                op = findOperationOrCreateGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
+            case .object:
+                op = findOperationOrCreateGhost(from: (protoForm as! ProtoObjectOperation).id, in: context)
+            default:
+                fatalNotImplemented()
+            }
         }
         
         if op!.type != .ghost {
@@ -311,23 +286,23 @@ extension CDOperation {
         
         switch type {
         case .stringInsert:
-            op!.updateObject(context: context, from: protoForm as! ProtoStringInsertOperation, container: container)
+            op!.updateObject(from: protoForm as! ProtoStringInsertOperation, container: container)
         case .attribute:
-            op!.updateObject(context: context, from: protoForm as! ProtoAttributeOperation, container: container)
+            op!.updateObject(from: protoForm as! ProtoAttributeOperation, container: container)
         case .delete:
-            op!.updateObject(context: context, from: protoForm as! ProtoDeleteOperation, container: container)
+            op!.updateObject(from: protoForm as! ProtoDeleteOperation, container: container)
         case .lwwBool:
-            op!.updateObject(context: context, from: protoForm as! ProtoLWWOperation, container: container)
+            op!.updateObject(from: protoForm as! ProtoLWWOperation, container: container)
         case .lwwDate:
-            op!.updateObject(context: context, from: protoForm as! ProtoLWWOperation, container: container)
+            op!.updateObject(from: protoForm as! ProtoLWWOperation, container: container)
         case .lwwFloat:
-            op!.updateObject(context: context, from: protoForm as! ProtoLWWOperation, container: container)
+            op!.updateObject(from: protoForm as! ProtoLWWOperation, container: container)
         case .lwwInt:
-            op!.updateObject(context: context, from: protoForm as! ProtoLWWOperation, container: container)
+            op!.updateObject(from: protoForm as! ProtoLWWOperation, container: container)
         case .lwwString:
-            op!.updateObject(context: context, from: protoForm as! ProtoLWWOperation, container: container)
+            op!.updateObject(from: protoForm as! ProtoLWWOperation, container: container)
         case .object:
-            op!.updateObject(context: context, from: protoForm as! ProtoObjectOperation, container: container)
+            op!.updateObject(from: protoForm as! ProtoObjectOperation, container: container)
         default:
             fatalNotImplemented()
         }
@@ -337,30 +312,35 @@ extension CDOperation {
 
     
     static func printTreeOfContainers(context: NSManagedObjectContext) {
-        print("nil")
-        let indent = "  "
-        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
-        request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "container == nil")
-        for op in try! context.fetch(request) {
-            op.printTreeOfContainers(indent: indent)
+        context.performAndWait {
+            print("treeOfContainers:")
+            print("nil")
+            let indent = "  "
+            let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+            request.returnsObjectsAsFaults = false
+            request.predicate = NSPredicate(format: "container == nil")
+            for op in try! context.fetch(request) {
+                op.printTreeOfContainers(indent: indent)
+            }
         }
     }
     
     func printTreeOfContainers(indent: String) {
-        print("\(indent)\(self.shortDescrption())")
-        let indent = indent + "  "
-        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
-        request.returnsObjectsAsFaults = false
-        request.predicate = NSPredicate(format: "container == %@", self)
-        for op in try! managedObjectContext!.fetch(request) {
-            op.printTreeOfContainers(indent: indent)
+        managedObjectContext?.performAndWait {
+            print("\(indent)\(self.shortDescrption())")
+            let indent = indent + "  "
+            let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+            request.returnsObjectsAsFaults = false
+            request.predicate = NSPredicate(format: "container == %@", self)
+            for op in try! managedObjectContext!.fetch(request) {
+                op.printTreeOfContainers(indent: indent)
+            }
         }
     }
     
     func shortDescrption() -> String {
-//        , state:\(state)
-        return "op(peer=\(peerID), lamport=\(lamport), type=\(type))"
+        //peer=\(peerID),
+        return "op(lamport=\(lamport), type=\(type), state:\(state), del:\(hasTombstone)"
     }
 }
 
@@ -379,9 +359,9 @@ extension CDOperation {
         
         switch type {
         case .stringInsert:
-            stringInsertLinking(context: context)
+            stringInsertLinking()
         case .delete:
-            deleteLinking(context: context)
+            deleteLinking()
         default:
             break
         }
@@ -408,11 +388,19 @@ extension CDOperation {
         
         switch type {
         case .stringInsert:
-            stringInsertLinking(context: context)
+            stringInsertLinking()
         case .delete:
-            deleteLinking(context: context)
+            deleteLinking()
         default:
             break
         }
+        
+        switch state {
+        case .inDownstreamQueue:
+            state = .inDownstreamQueueMergedUnrendered
+        default:
+            fatalNotImplemented()
+        }
+
     }
 }

@@ -45,15 +45,14 @@ extension CDOperation {
         return op
     }
 
-    func updateObject(context: NSManagedObjectContext, from protoForm: ProtoLWWOperation, container: CDOperation?) {
-        print("From protobuf LLWOp(\(protoForm.id.lamport),\(self.type)")
+    func updateObject(from protoForm: ProtoLWWOperation, container: CDOperation?) {
+        print("From protobuf LLWOp(\(protoForm.id.lamport))")
         self.version = protoForm.version
         self.peerID = protoForm.id.peerID.object()
         self.lamport = protoForm.id.lamport
         self.container = container
         self.state = .inDownstreamQueueMergedUnrendered
 
-        print("container: \(shortDescrption())")
 
         switch protoForm.value {
         case .some(.int):
@@ -77,6 +76,7 @@ extension CDOperation {
             fatalError("unknown LWW type")
         }
         
+        let context = managedObjectContext!
         for protoItem in protoForm.deleteOperations {
             let _ = CDOperation.findOrCreateOperation(context: context, from: protoItem, container: self, type: .delete)
 //            _ = CDOperation(context: context, from: protoItem, container: self)

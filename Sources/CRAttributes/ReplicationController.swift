@@ -62,7 +62,6 @@ extension ReplicationController {
      returns a list of ProtoOperationsForest ready for serialisation for further replication
      */
     func protoOperationsForests() -> [ProtoOperationsForest] {
-        //        print("protoOperationsForests()")
         let context = localContext
         var forests:[ProtoOperationsForest] = []
         context.performAndWait {
@@ -107,7 +106,7 @@ extension ReplicationController {
                     case .lwwString:
                         tree.lwwOperation = ReplicationController.protoLWWOperationRecurse(branchRoot)
                     case .stringInsert:
-                        tree.stringInsertOperations.stringInsertOperations = ReplicationController.protoStringInsertOperationsLinkedList(branchRoot)
+                        tree.stringInsertOperationsList.stringInsertOperations = ReplicationController.protoStringInsertOperationsLinkedList(branchRoot)
                     default:
                         fatalNotImplemented()
                     }
@@ -119,12 +118,7 @@ extension ReplicationController {
                 forest.peerID = localPeerID.data
                 forests.append(forest)
             }
-            // TODO: split into forests when one is getting too big (2 MB is the CloudKit Operation limit but we can still compress - one forrest is one CloudKit record)
-            
-            //        print("forests: \(forests)")
-            //        for forest in forests {
-            //            print("trees: \(forest.trees.count)")
-            //        }
+            // TODO: split into forests when one is getting too big (2 MB is the CloudKit Operation limit but we can still compress - one forrest is one CloudKit record)            
         }
         return forests
     }
@@ -137,10 +131,6 @@ extension ReplicationController {
             $0.id.peerID  = operation.peerID.data
             $0.rawType = operation.rawType
         }
-        //        print("ObjectOperation \(proto.id.lamport)")
-        
-        
-        //        assert(operation.containedOperations as! Set<CDAbstractOp> == Set(operation.containedOps()))
         for operation in operation.containedOperations() {
             if operation.state == .inUpstreamQueueRenderedMerged {
                 switch operation.type {
@@ -166,8 +156,6 @@ extension ReplicationController {
             $0.id.lamport = operation.lamport
             $0.id.peerID  = operation.peerID.data
         }
-        //        assert(operation.container?.containedOperations?.contains(operation) ?? false)
-        //        print("DeleteOperation \(proto.id.lamport)")
         
         operation.state = .processed
         return proto
@@ -182,11 +170,9 @@ extension ReplicationController {
             $0.name = operation.attributeName!
             $0.rawType = operation.rawAttributeType
         }
-        //        print("AttributeOperation \(proto.id.lamport)")
         
         var headStringOperation:CDOperation? = nil
         
-        //        assert(operation.containedOperations as! Set<CDAbstractOp> == Set(operation.containedOps()))
         for operation in operation.containedOperations() {
             if operation.state == .inUpstreamQueueRenderedMerged {
                 switch operation.type {
@@ -214,7 +200,7 @@ extension ReplicationController {
         var node = headStringOperation
         while node != nil {
             if let protoForm = protoStringInsertOperationRecurse(node!) {
-                proto.stringInsertOperations.append(protoForm)
+                proto.stringInsertOperationsList.stringInsertOperations.append(protoForm)
             }
             node = node!.next
         }
@@ -242,9 +228,7 @@ extension ReplicationController {
                 fatalNotImplemented()
             }
         }
-        //        print("LWWOperation \(proto.id.lamport)")
-        
-        //        assert(operation.containedOperations as! Set<CDAbstractOp> == Set(operation.containedOps()))
+
         for operation in operation.containedOperations() {
             if operation.state == .inUpstreamQueueRenderedMerged {
                 switch operation.type {
@@ -268,15 +252,13 @@ extension ReplicationController {
             $0.parentID.lamport = operation.parent?.lamport ?? 0
             $0.parentID.peerID = operation.parent?.peerID.data ?? UUID.zero.data
         }
-        //        print("StringInsertOperation \(proto.id.lamport)")
-        //        assert(operation.upstreamQueueOperation)
-        //        assert(operation.containedOperations as! Set<CDAbstractOp> == Set(operation.containedOps()))
+
         for operation in operation.childOperations?.allObjects ?? [] {
             guard let operation = operation as? CDOperation else { continue }
             if operation.state == .inUpstreamQueueRenderedMerged {
                 switch operation.type {
                 case .delete:
-                    proto.deleteOperations.append(protoStringDeleteOperation(operation))
+                    proto.deleteOperations.append(protoDeleteOperationRecurse(operation))
                 case .stringInsert:
                     break // we can ignore it as it will be picked up by .next
                 default:
@@ -289,39 +271,18 @@ extension ReplicationController {
         return proto
     }
 
-    //TODO: merge with delete
-    static func protoStringDeleteOperation(_ operation: CDOperation) -> ProtoDeleteOperation {
-        assert(operation.type == .delete)
-        let proto = ProtoDeleteOperation.with {
-            $0.version = operation.version
-            $0.id.lamport = operation.lamport
-            $0.id.peerID  = operation.peerID.data
-        }
-        //        assert(operation.container?.containedOperations?.contains(operation) ?? false)
-        //        print("DeleteOperation \(proto.id.lamport)")
-        
-        operation.state = .processed
-        return proto
-    }
-
     // returns a list of linked string operations (including deletes as sub operations)
     static func protoStringInsertOperationsLinkedList(_ operation: CDOperation) -> [ProtoStringInsertOperation] {
         assert(operation.state == .inUpstreamQueueRenderedMerged)
-        //TODO: don't add head
+        
         var protoOperations:[ProtoStringInsertOperation] = []
         if let protoForm = protoStringInsertOperationRecurse(operation) {
             protoOperations.append(protoForm)
         }
-        //        print(protoOperations[0])
-        
-        //        print("###")
-        //        print("prev: \(String(describing: operation.prev))")
-        //        print("operation: \(operation)")
-        //        print("next: \(String(describing: operation.next))")
         
         // going left
         var node:CDOperation? = operation.prev
-        while node != nil && node!.state == .inUpstreamQueueRenderedMerged {
+        while node != nil && node!.state == .inUpstreamQueueRenderedMerged && node!.type == .stringInsert{
             if let protoForm = protoStringInsertOperationRecurse(node!) {
                 protoOperations.insert(protoForm, at: 0)
             }
@@ -330,16 +291,12 @@ extension ReplicationController {
         
         // going right
         node = operation.next
-        while node != nil && node!.state == .inUpstreamQueueRenderedMerged {
+        while node != nil && node!.state == .inUpstreamQueueRenderedMerged && node!.type == .stringInsert {
             if let protoForm = protoStringInsertOperationRecurse(node!) {
                 protoOperations.append(protoForm)
             }
             node = node?.next
         }
-        //        print("string list:")
-        //        for item in protoOperations {
-        //            try! print(item.jsonString())
-        //        }
         return protoOperations
     }
 }
@@ -347,18 +304,26 @@ extension ReplicationController {
 
 //MARK: - Downstream
 extension ReplicationController {
-    // TODO: (later) introduce RGA Split and consolidate operations here, this will solve the recursion risk
+    // TODO: (later) maybe introduce RGA Split and consolidate operations here, this will solve the recursion risk
     
-    func backgroundProcessDownstreamForest(forest cdForestObjectID: NSManagedObjectID) {
+    func processDownstreamForest(forest cdForestObjectID: NSManagedObjectID) {
+        assert(cdForestObjectID.isTemporaryID == false)
         let remoteContext = CRStorageController.shared.replicationContainerBackgroundContext
         let localContext = CRStorageController.shared.localContainerBackgroundContext
         
-        let cdForest = remoteContext.object(with: cdForestObjectID) as! CDOperationsForest
-        
-        localContext.perform {
+        remoteContext.performAndWait {
+            let cdForest = remoteContext.object(with: cdForestObjectID) as! CDOperationsForest
             let protoForest = cdForest.protoStructure()
-            protoForest.restore(context: localContext)
-            try! localContext.save()
+            localContext.performAndWait {
+                protoForest.restore(context: localContext)
+                try! localContext.save()
+            }
+        }
+    }
+    func processDownstreamForestAsync(forest cdForestObjectID: NSManagedObjectID) {
+        let remoteContext = CRStorageController.shared.replicationContainerBackgroundContext
+        remoteContext.perform { [self] in
+            self.processDownstreamForest(forest: cdForestObjectID)
         }
     }
 }

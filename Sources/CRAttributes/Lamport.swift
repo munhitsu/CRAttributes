@@ -54,7 +54,6 @@ public func updateLastLamportFromCoOpLog(in context: NSManagedObjectContext) {
         
         let opsInsert = try? context.fetch(fetchRequestInsert)
         for op in opsInsert ?? [] {
-            print("Max insert lamport observed: \(op.lamport)")
             newLamportSeen(op.lamport)
         }
     }

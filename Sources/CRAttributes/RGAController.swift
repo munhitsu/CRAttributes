@@ -57,7 +57,6 @@ public class RGAController {
     }
     
     func linkUnlinked() {
-        print("link unlinked")
         localContainerBackgroundContext.performAndWait {
             let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.returnsObjectsAsFaults = false

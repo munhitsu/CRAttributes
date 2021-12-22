@@ -21,7 +21,7 @@ extension CDOperation {
     /**
      initialise from the protobuf
      */
-    func updateObject(context: NSManagedObjectContext, from protoForm: ProtoDeleteOperation, container: CDOperation?) {
+    func updateObject(from protoForm: ProtoDeleteOperation, container: CDOperation?) {
         print("From protobuf DeleteOp(\(protoForm.id.lamport))")
         self.version = protoForm.version
         self.peerID = protoForm.id.peerID.object()
@@ -32,7 +32,8 @@ extension CDOperation {
         self.state = .inDownstreamQueueMergedUnrendered // parent has tombstone - we've merged
     }
 
-    func deleteLinking(context: NSManagedObjectContext) {
+    func deleteLinking() {
+        let context = managedObjectContext!
         guard type == .delete else { fatalError() }
         if parent == nil {
             let parentAddress = CROperationID(lamport: parentLamport, peerID: parentPeerID)

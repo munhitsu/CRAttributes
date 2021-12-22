@@ -38,23 +38,18 @@ extension ProtoOperationsTree: RestorableProtobuf {
         case .some(.attributeOperation(_)):
             print("restoring attribute")
             let _ = CDOperation.findOrCreateOperation(context: context, from: attributeOperation, container: container, type: .attribute)
-//            let _ = CDOperation(context: context, from: attributeOperation, container: container)
         case .some(.objectOperation(_)):
             print("restoring object")
             let _ = CDOperation.findOrCreateOperation(context: context, from: objectOperation, container: container, type: .object)
-//            let _ = CDOperation(context: context, from: objectOperation, container: container)
         case .some(.deleteOperation(_)):
             print("restoring delete")
             let _ = CDOperation.findOrCreateOperation(context: context, from: deleteOperation, container: container, type: .delete)
-//            let _ = CDOperation(context: context, from: deleteOperation, container: container)
         case .some(.lwwOperation(_)):
             print("restoring lww")
             let _ = CDOperation.findOrCreateOperation(context: context, from: lwwOperation, container: container, type: .lwwBool) // we need any lww type here
-//            let _ = CDOperation(context: context, from: lwwOperation, container: container)
-        case .some(.stringInsertOperations(_)):
+        case .some(.stringInsertOperationsList(_)):
             print("restoring [stringInsert]")
-//            let _ = CDOperation.findOrCreateOperation(context: context, from: objectOperation, container: container, type: .object)
-            stringInsertOperations.restore(context: context, container: container)
+            stringInsertOperationsList.restore(context: context, container: container)
         case .none:
             fatalNotImplemented()
         }

@@ -11,7 +11,7 @@ import AppKit
 
 
 //TODO: in a very unlikely event that multiple same name attributes will get crated within the same objects - we should be merging all operations
-//TODO: CRAttribute should be a template...
+//TODO: CRAttribute could be a template (generic) for LWWs
 
 class CRAttribute {
     var operation: CDOperation? = nil
@@ -60,7 +60,6 @@ class CRAttribute {
     // Remember to execute within context.perform {}
     public static func factory(context: NSManagedObjectContext, from attributeOperation: CDOperation, container: CRObject) -> CRAttribute {
         assert(attributeOperation.type == .attribute)
-//        print(attributeOperation)
         //TODO: (low) make it nicer (e.g. store types classes in CRAttributeType
         switch attributeOperation.attributeType {
         case CRAttributeType.mutableString:

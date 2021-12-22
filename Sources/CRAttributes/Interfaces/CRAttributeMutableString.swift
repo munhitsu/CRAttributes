@@ -37,16 +37,6 @@ class CRAttributeMutableString: CRAttribute {
         super.init(context: context, container: container, from: from)
     }
 }
-
-
-//extension NSAttributedString.Key {
-//    static let opObjectID = NSAttributedString.Key("CRObjectID")
-//    static let opProxy = NSAttributedString.Key("CROpProxy")
-//    static let opLamport = NSAttributedString.Key("CRLamport")
-//    static let opPeerID = NSAttributedString.Key("CRPeerID")
-//}
-
-
  
 
 
@@ -86,6 +76,7 @@ class CRTextStorage: NSTextStorage {
         
         
         prebuildStringBundleFromRenderedString(attributeOp: attributeOp)
+        //TODO: backfill with RGA operations - for UI we will need async version
 //        prebuildAttributedStringFromOperations(attributeOp: attributeOp)
     }
 
@@ -192,7 +183,7 @@ class CRTextStorage: NSTextStorage {
             return
         }
         let lamport = getLamport()
-        print("scheduling snapshot with lamport: \(lamport)")
+        print("Scheduling snapshot with lamport: \(lamport)")
         stringOptimiseCountDown = stringOptimiseQueueLengthMax
 
         //TODO: should it be context per save?

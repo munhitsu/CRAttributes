@@ -30,7 +30,7 @@ message AttributeOperation {
     int32 rawType = 5;
     repeated DeleteOperation deleteOperations = 6;
     repeated LWWOperation lwwOperations = 7;
-    repeated StringInsertOperation stringInsertOperations = 8;
+    StringInsertOperationLinkedList stringInsertOperationsList = 8;
 }
 
 message DeleteOperation {
@@ -57,7 +57,7 @@ message StringInsertOperation {
     OperationID parentID = 3;
     int32 contribution = 4;
     repeated DeleteOperation deleteOperations = 5;
-    repeated StringInsertOperation stringInsertOperations = 6;
+//    repeated StringInsertOperation stringInsertOperations = 6; //TODO: are we using it? - recursion limit
 }
 
 message StringInsertOperationLinkedList { // because you can't have repeated within oneof
@@ -71,7 +71,7 @@ message OperationsTree {
         AttributeOperation attributeOperation = 3;
         DeleteOperation deleteOperation = 4;
         LWWOperation lwwOperation = 5;
-        StringInsertOperationLinkedList stringInsertOperations = 6;
+        StringInsertOperationLinkedList stringInsertOperationsList = 6;
     }
 }
 

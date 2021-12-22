@@ -20,9 +20,8 @@ extension CDOperation {
     /**
      initialise from the protobuf
      */
-    func updateObject(context: NSManagedObjectContext, from protoForm: ProtoObjectOperation, container: CDOperation?) {
+    func updateObject(from protoForm: ProtoObjectOperation, container: CDOperation?) {
         print("From protobuf ObjectOp(\(protoForm.id.lamport))")
-//        self.init(context: context)
         self.version = protoForm.version
         self.peerID = protoForm.id.peerID.object()
         self.lamport = protoForm.id.lamport
@@ -31,20 +30,18 @@ extension CDOperation {
         self.type = .object
         self.state = .inDownstreamQueueMergedUnrendered
 
+        let context = managedObjectContext!
         
         for protoItem in protoForm.deleteOperations {
             let _ = CDOperation.findOrCreateOperation(context: context, from: protoItem, container: self, type: .delete)
-//            _ = CDOperation(context: context, from: protoItem, container: self)
         }
         
         for protoItem in protoForm.attributeOperations {
             let _ = CDOperation.findOrCreateOperation(context: context, from: protoItem, container: self, type: .attribute)
-//            _ = CDOperation(context: context, from: protoItem, container: self)
         }
         
         for protoItem in protoForm.objectOperations {
             let _ = CDOperation.findOrCreateOperation(context: context, from: protoItem, container: self, type: .object)
-//            _ = CDOperation(context: context, from: protoItem, container: self)
         }
     }
 }

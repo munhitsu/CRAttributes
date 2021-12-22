@@ -41,12 +41,7 @@ class CRObject {
         
     //getOrCreate
     func attribute(name: String, type attributeType: CRAttributeType) -> CRAttribute {
-        print("attribute")
         if let attribute = self.attributesDict[name] {
-//            print("attributesDict:")
-//            for (key, value) in attributesDict {
-//                print("name:\(key) type:\(value.type)")
-//            }
             assert(attribute.type == attributeType)
             return attribute
         }
@@ -65,7 +60,6 @@ class CRObject {
                 guard op.container == operation && op.attributeName == name && op.type == .attribute && op.attributeType == attributeType else {
                     continue
                 }
-                print(op)
                 assert(op.type == .attribute)
                 assert(op.attributeType == attributeType)
                 attribute = CRAttribute.factory(context: context, from: op, container: self)
@@ -74,7 +68,6 @@ class CRObject {
             if attribute == nil {
                 attribute = CRAttribute.factory(context: context, container:self, name:name, type:attributeType)
             }
-            print("caching attribute \(name) of type \(String(describing: attribute?.type))")
             attributesDict[name] = attribute
 
         }
@@ -99,7 +92,6 @@ class CRObject {
     }
 
     func prefetchAttributes() {
-        print("prefetchAttributes")
 //        context.performAndWait {
         let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
         request.returnsObjectsAsFaults = false
@@ -111,9 +103,7 @@ class CRObject {
         if cdResults.count > 0 {
             for attributeOp in cdResults {
                 guard attributeOp.type == .attribute else { continue }
-                print(attributeOp)
                 attributesDict[attributeOp.attributeName!] = CRAttribute.factory(context: context, from:attributeOp, container: self)
-                print("caching attribute \(attributeOp.attributeName!) of type \(attributesDict[attributeOp.attributeName!]!.type)")
             }
         }
 //        }

@@ -26,7 +26,7 @@ class CRRemoteOperationsTests: XCTestCase {
     func waitForStringAttributeValue(context: NSManagedObjectContext, operation: CDOperation, value: String) {
         let expPredicate = NSPredicate(block: { operation, _ -> Bool in
             guard let operation = operation as? CDOperation else { return false}
-            return operation.stringFromRGAList(context: context).0.string == value
+            return operation.stringFromRGAList().0.string == value
         })
         expectation(for: expPredicate, evaluatedWith: operation)
         waitForExpectations(timeout: 10)
@@ -165,9 +165,6 @@ class CRRemoteOperationsTests: XCTestCase {
         checkStringOperationsCorrectness(textOp)
 
         try! viewContext.save() // this will force merging
-        bgContext.performAndWait {
-            print("Blocking for the merge operations to finish")
-        }
     }
 
     func checkStringOperationsCorrectness(_ cdAttribute: CDOperation) {
@@ -282,7 +279,7 @@ class CRRemoteOperationsTests: XCTestCase {
     }
     
     func countUpstreamOps(context: NSManagedObjectContext) -> Int {
-        print("countUpstreamOps")
+//        print("countUpstreamOps")
         let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
         request.predicate = NSPredicate(format: "rawState == %@", argumentArray: [CDOperationState.inUpstreamQueueRenderedMerged.rawValue])
 
@@ -290,19 +287,21 @@ class CRRemoteOperationsTests: XCTestCase {
         let results = try! context.fetch(request)
         for op in results {
             assert(op.state == .inUpstreamQueueRenderedMerged)
-            print("op id:\(op.lamport) type:\(op.type) state:\(op.state)")
+//            print("op id:\(op.lamport) type:\(op.type) state:\(op.state)")
         }
         return results.count
     }
 
     
     func opCount(context: NSManagedObjectContext) -> Int {
-        print("opCount")
+//        print("opCount")
+        var count = 0
         let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
-        
-        let count = try! context.count(for: request)
-        for op in try! context.fetch(request) {
-            print("op id:\(op.lamport) type:\(op.type) state:\(op.state)")
+        context.performAndWait {
+            count = try! context.count(for: request)
+//            for op in try! context.fetch(request) {
+//                print("op id:\(op.lamport) type:\(op.type) state:\(op.state)")
+//            }
         }
         return count
     }
@@ -326,7 +325,7 @@ class CRRemoteOperationsTests: XCTestCase {
 //        try! context.count(for: request)
     }
     
-    func testBundleRestore() throws {
+    func testBundleRestoreEasy() throws {
         let viewContext = CRStorageController.shared.localContainer.viewContext
         let bgContext = CRStorageController.shared.localContainerBackgroundContext
         var ghostCount = 0
@@ -336,9 +335,9 @@ class CRRemoteOperationsTests: XCTestCase {
         waitForAllOperationsMergedOrProcessed(context: viewContext)
 
         let localOpsCount0 = opCount(context: viewContext)
-        print("created ops batch 0: \(localOpsCount0)")
+        print("created ops batch id:0 count:\(localOpsCount0)")
         let upstreamOps0 = countUpstreamOps(context: viewContext)
-        print("waiting ops upstream 0: \(upstreamOps0)")
+        print("waiting ops upstream id:0 count:\(upstreamOps0)")
 
         XCTAssertEqual(upstreamOps0, localOpsCount0)
 
@@ -355,7 +354,7 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(countUpstreamOps(context: viewContext), 0)
 
         let localOpsCount1Appended = opCount(context: viewContext)-localOpsCount0
-        print("created ops batch 1: \(localOpsCount1Appended)")
+        print("created ops batch id:1 count:\(localOpsCount1Appended)")
         XCTAssertEqual(localOpsCount1Appended, 12)
         
         // let's restore the operations in the inverted order to force issues (e.g. ghost containers)
@@ -364,8 +363,93 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(cdForests.count, 2)
         flushAllCoreData(CRStorageController.shared.localContainer)
 
+        
+        print("let's restore [0]")
+        CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[0].objectID)
+        waitForGhosts(context: viewContext, count: 0)
+        waitForAllOperationsMergedOrProcessed(context: viewContext)
+
+        CDOperation.printTreeOfContainers(context: viewContext)
+
         print("let's restore [1]")
-        CRStorageController.shared.replicationController.backgroundProcessDownstreamForest(forest: cdForests[1].objectID)
+        CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[1].objectID)
+        waitForAllOperationsMergedOrProcessed(context: viewContext)
+        waitForGhosts(context: viewContext, count: 0)
+
+        waitForGhosts(context: viewContext, count: 0)
+        waitForAllOperationsMergedOrProcessed(context: viewContext)
+
+        CDOperation.printTreeOfContainers(context: viewContext)
+
+        //validate if operations are properly merged
+ 
+        let b_n1 = CRObject.allObjects(context: viewContext, type: .testNote)[0]
+        
+        let b_a1:CRAttributeInt = b_n1.attribute(name: "count", type: .int) as! CRAttributeInt
+        XCTAssertEqual(b_a1.value, 4)
+
+        let b_a2:CRAttributeFloat = b_n1.attribute(name: "weight", type: .float) as! CRAttributeFloat
+        XCTAssertGreaterThan(Double(b_a2.value!), 0.19)
+
+        let b_a3:CRAttributeBool = b_n1.attribute(name: "active", type: .boolean) as! CRAttributeBool
+        XCTAssertEqual(b_a3.value, true)
+
+//        let b_a4:CRAttributeDate = b_n1.attribute(name: "created_on", type: .date) as! CRAttributeDate
+//        XCTAssertEqual(b_a4.operationsCount(), 2)
+        
+
+        let b_a5:CRAttributeString = b_n1.attribute(name: "title", type: .string) as! CRAttributeString
+        XCTAssertEqual(b_a5.value, "abc")
+
+        let b_a6:CRAttributeMutableString = b_n1.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
+        XCTAssertEqual(b_a6.operation?.stringFromRGATree().0.string, "123def###")
+        XCTAssertEqual(b_a6.operation?.stringFromRGAList().0.string, "123def###")
+        XCTAssertEqual(b_a6.textStorage!.string, "123def###") //FIXME: this won't be real until string form is updated
+
+        b_a6.textStorage?.attributeOp.printRGADebug()
+
+    }
+
+    func testBundleRestore() throws {
+        let viewContext = CRStorageController.shared.localContainer.viewContext
+        let bgContext = CRStorageController.shared.localContainerBackgroundContext
+        var ghostCount = 0
+        // 1st batch of operations
+        dummyLocalData()
+        CRStorageController.shared.rgaController.linkUnlinked()
+        waitForAllOperationsMergedOrProcessed(context: viewContext)
+
+        let localOpsCount0 = opCount(context: viewContext)
+        print("created ops batch id:0 count:\(localOpsCount0)")
+        let upstreamOps0 = countUpstreamOps(context: viewContext)
+        print("waiting ops upstream id:0 count:\(upstreamOps0)")
+
+        XCTAssertEqual(upstreamOps0, localOpsCount0)
+
+        CRStorageController.shared.processUpsteamOperationsQueue()
+        XCTAssertEqual(countUpstreamOps(context: viewContext), 0)
+
+        // 2nd batch of operations
+        appendToDummyLocalData()
+        CRStorageController.shared.rgaController.linkUnlinked()
+        waitForAllOperationsMergedOrProcessed(context: viewContext)
+        
+        XCTAssertEqual(countUpstreamOps(context: viewContext), 12)
+        CRStorageController.shared.processUpsteamOperationsQueue()
+        XCTAssertEqual(countUpstreamOps(context: viewContext), 0)
+
+        let localOpsCount1Appended = opCount(context: viewContext)-localOpsCount0
+        print("created ops batch id:1 count:\(localOpsCount1Appended)")
+        XCTAssertEqual(localOpsCount1Appended, 12)
+        
+        // let's restore the operations in the inverted order to force issues (e.g. ghost containers)
+        let remoteContext = CRStorageController.shared.replicationContainer.viewContext
+        let cdForests = CDOperationsForest.allObjects(context: remoteContext)
+        XCTAssertEqual(cdForests.count, 2)
+        flushAllCoreData(CRStorageController.shared.localContainer)
+        
+        print("let's restore [1]")
+        CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[1].objectID)
         waitForGhosts(context: viewContext, count: 3)
 
         //TODO: test that inverted procesing has no impact
@@ -383,7 +467,7 @@ class CRRemoteOperationsTests: XCTestCase {
         print(cdForests[1].protoStructure())
         
         print("let's restore [0]")
-        CRStorageController.shared.replicationController.backgroundProcessDownstreamForest(forest: cdForests[0].objectID)
+        CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[0].objectID)
 
         let localCount4 = opCount(context: viewContext)
         let localCount4bg = opCount(context: bgContext)
@@ -397,7 +481,7 @@ class CRRemoteOperationsTests: XCTestCase {
 
         // let's restore again
         print("let's restore again [0]")
-        CRStorageController.shared.replicationController.backgroundProcessDownstreamForest(forest: cdForests[0].objectID)
+        CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[0].objectID)
         waitForAllOperationsMergedOrProcessed(context: viewContext)
         waitForGhosts(context: viewContext, count: 0)
 
@@ -431,10 +515,11 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(b_a5.value, "abc")
 
         let b_a6:CRAttributeMutableString = b_n1.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
-        XCTAssertEqual(b_a6.textStorage!.string, "123def###")
+        XCTAssertEqual(b_a6.operation?.stringFromRGATree().0.string, "123def###")
+        XCTAssertEqual(b_a6.operation?.stringFromRGAList().0.string, "123def###")
+        XCTAssertEqual(b_a6.textStorage!.string, "123def###") //FIXME: this won't be real until string form is updated
 
-        b_a6.textStorage?.attributeOp.printRGADebug(context: bgContext)
-        b_a6.textStorage?.attributeOp.printRGADebug(context: viewContext)
+        b_a6.textStorage?.attributeOp.printRGADebug()
 
     }
 
