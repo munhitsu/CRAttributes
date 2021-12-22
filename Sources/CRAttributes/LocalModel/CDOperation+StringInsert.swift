@@ -73,7 +73,7 @@ extension CDOperation { // StringInsert
 //            print("self: '\(unicodeScalar)' \(lamport): parent:\(parent.lamport) prev:\(String(describing: prev?.lamport)) next:\(String(describing: next?.lamport))")
             
             // this will include self, but w/o left/right link
-            let children:[CDOperation] = (parent.childOperations?.allObjects as? [CDOperation] ?? []).sorted(by: >)
+            let children:[CDOperation] = (parent.childOperations?.allObjects as? [CDOperation] ?? []).filter{$0.type == .stringInsert}.sorted(by: >)
         
             var lastNode = self 
             while lastNode.next != nil {
