@@ -46,7 +46,7 @@ extension CDOperation {
     }
 
     func updateObject(from protoForm: ProtoLWWOperation, container: CDOperation?) {
-        print("From protobuf LLWOp(\(protoForm.id.lamport))")
+//        print("From protobuf LLWOp(\(protoForm.id.lamport))")
         self.version = protoForm.version
         self.peerID = protoForm.id.peerID.object()
         self.lamport = protoForm.id.lamport

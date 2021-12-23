@@ -27,7 +27,7 @@ extension CDOperation { // Delete
      initialise from the protobuf
      */
     func updateObject(from protoForm: ProtoDeleteOperation, container: CDOperation?) {
-        print("From protobuf DeleteOp(\(protoForm.id.lamport))")
+//        print("From protobuf DeleteOp(\(protoForm.id.lamport))")
         self.version = protoForm.version
         self.peerID = protoForm.id.peerID.object()
         self.lamport = protoForm.id.lamport

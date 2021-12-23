@@ -392,6 +392,8 @@ extension CDOperation {
             break
         case .processed:
             return
+        case .inDownstreamQueueMergedUnrendered:
+            return
         default:
             fatalNotImplemented()
         }

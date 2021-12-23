@@ -244,7 +244,7 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(b_a6.operation?.stringFromRGAList().0.string, "123def#")
 //        XCTAssertEqual(b_a6.textStorage!.string, "123def#") //FIXME: this won't be real until string form is updated
 
-        b_a6.textStorage?.attributeOp.printRGADebug()
+//        b_a6.textStorage?.attributeOp.printRGADebug()
     }
 
     func checkStringOperationsCorrectness(_ cdAttribute: CDOperation) {
@@ -281,6 +281,9 @@ class CRRemoteOperationsTests: XCTestCase {
         let viewContext = CRStorageController.shared.localContainer.viewContext
         let bgContext = CRStorageController.shared.localContainerBackgroundContext
         dummyLocalData()
+        CRStorageController.shared.rgaController.linkUnlinked()
+        waitForAllOperationsMergedOrProcessed(context: viewContext)
+
 //        waitForAllOperationsMergedOrProcessed(context: bgContext)
 //        waitForAllOperationsMergedOrProcessed(context: viewContext)
 //        assertAllOperationsMergedOrProcessed(context: bgContext)
@@ -296,7 +299,7 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(forests.count, 1) //for now that's truth, will change
         
         let forest = forests[0]
-        print(try! forest.jsonString())
+//        print(try! forest.jsonString())
   
         XCTAssertEqual(forest.peerID.object(), localPeerID)
         XCTAssertGreaterThan(try! forest.serializedData().count, 1400) // was 1400
@@ -325,14 +328,16 @@ class CRRemoteOperationsTests: XCTestCase {
 
         
         appendToDummyLocalData()
+        CRStorageController.shared.rgaController.linkUnlinked()
+        waitForAllOperationsMergedOrProcessed(context: viewContext)
 
         //let's preview
         forests = CRStorageController.shared.replicationController.protoOperationsForests()
         XCTAssertEqual(forests.count, 1)
-        for tree in forests[0].trees{
-            print("Tree:")
-            print(try! tree.jsonString())
-        }
+//        for tree in forests[0].trees{
+//            print("Tree:")
+//            print(try! tree.jsonString())
+//        }
         
         XCTAssertEqual(forests[0].trees.count, 6)
 //        print(try! forests[0].jsonString())
@@ -400,13 +405,13 @@ class CRRemoteOperationsTests: XCTestCase {
         CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[0].objectID)
         waitForGhosts(context: viewContext, count: 0)
         waitForAllOperationsMergedOrProcessed(context: viewContext)
-        CDOperation.printTreeOfContainers(context: viewContext)
+//        CDOperation.printTreeOfContainers(context: viewContext)
 
         print("let's restore [1]")
         CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[1].objectID)
         waitForGhosts(context: viewContext, count: 0)
         waitForAllOperationsMergedOrProcessed(context: viewContext)
-        CDOperation.printTreeOfContainers(context: viewContext)
+//        CDOperation.printTreeOfContainers(context: viewContext)
 
         assertDummyLocalData()
     }
@@ -435,13 +440,13 @@ class CRRemoteOperationsTests: XCTestCase {
         CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[1].objectID)
         waitForGhosts(context: viewContext, count: 6) //TODO: confirm if it's still 6
         waitForAllOperationsMergedOrProcessed(context: viewContext, ghosts: true)
-        CDOperation.printTreeOfContainers(context: viewContext)
+//        CDOperation.printTreeOfContainers(context: viewContext)
 
         print("let's restore [0]")
         CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[0].objectID)
         waitForGhosts(context: viewContext, count: 0)
         waitForAllOperationsMergedOrProcessed(context: viewContext)
-        CDOperation.printTreeOfContainers(context: viewContext)
+//        CDOperation.printTreeOfContainers(context: viewContext)
 
         assertDummyLocalData()
     }
@@ -487,7 +492,7 @@ class CRRemoteOperationsTests: XCTestCase {
         
         print("let's restore [1]")
         CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[1].objectID)
-        waitForGhosts(context: viewContext, count: 3)
+        waitForGhosts(context: viewContext, count: 6)
 
         //TODO: test that inverted procesing has no impact
         
@@ -496,12 +501,12 @@ class CRRemoteOperationsTests: XCTestCase {
 
         let localCount3 = opCount(context: viewContext)
         print("second batch restored: \(localCount3)")
-        XCTAssertEqual(localCount3, localOpsCount1Appended+3) //3 ghosts
+        XCTAssertEqual(localCount3, localOpsCount1Appended+6) //3 ghosts
         ghostCount = countGhosts(context: viewContext)
-        XCTAssertEqual(ghostCount, 3)
+        XCTAssertEqual(ghostCount, 6)
 //        debugPrintOps(context: viewContext)
         
-        print(cdForests[1].protoStructure())
+//        print(cdForests[1].protoStructure())
         
         print("let's restore [0]")
         CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[0].objectID)
@@ -514,7 +519,7 @@ class CRRemoteOperationsTests: XCTestCase {
         XCTAssertEqual(localOpsCount0+localOpsCount1Appended, localCount4)
         ghostCount = countGhosts(context: viewContext)
         XCTAssertEqual(ghostCount, 0)
-        CDOperation.printTreeOfContainers(context: viewContext)
+//        CDOperation.printTreeOfContainers(context: viewContext)
 
         // let's restore again
         print("let's restore again [0]")
@@ -527,37 +532,9 @@ class CRRemoteOperationsTests: XCTestCase {
         ghostCount = countGhosts(context: viewContext)
         XCTAssertEqual(ghostCount, 0)
 
-        CDOperation.printTreeOfContainers(context: viewContext)
+//        CDOperation.printTreeOfContainers(context: viewContext)
         
-        
-        //validate if operations are properly merged
- 
-       let b_n1 = CRObject.allObjects(context: viewContext, type: .testNote)[0]
-        
-        let b_a1:CRAttributeInt = b_n1.attribute(name: "count", type: .int) as! CRAttributeInt
-        XCTAssertEqual(b_a1.value, 4)
-
-        let b_a2:CRAttributeFloat = b_n1.attribute(name: "weight", type: .float) as! CRAttributeFloat
-        XCTAssertGreaterThan(Double(b_a2.value!), 0.19)
-
-        let b_a3:CRAttributeBool = b_n1.attribute(name: "active", type: .boolean) as! CRAttributeBool
-        XCTAssertEqual(b_a3.value, true)
-
-//        let b_a4:CRAttributeDate = b_n1.attribute(name: "created_on", type: .date) as! CRAttributeDate
-//        XCTAssertEqual(b_a4.operationsCount(), 2)
-        
-        XCTAssertEqual(opCount(context: viewContext), localCount4)
-
-        let b_a5:CRAttributeString = b_n1.attribute(name: "title", type: .string) as! CRAttributeString
-        XCTAssertEqual(b_a5.value, "abc")
-
-        let b_a6:CRAttributeMutableString = b_n1.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
-        XCTAssertEqual(b_a6.operation?.stringFromRGATree().0.string, "123def#")
-        XCTAssertEqual(b_a6.operation?.stringFromRGAList().0.string, "123def#")
-        XCTAssertEqual(b_a6.textStorage!.string, "123def#") //FIXME: this won't be real until string form is updated
-
-        b_a6.textStorage?.attributeOp.printRGADebug()
-
+        assertDummyLocalData()
     }
 
 }

@@ -21,7 +21,7 @@ extension CDOperation {
      initialise from the protobuf
      */
     func updateObject(from protoForm: ProtoObjectOperation, container: CDOperation?) {
-        print("From protobuf ObjectOp(\(protoForm.id.lamport))")
+//        print("From protobuf ObjectOp(\(protoForm.id.lamport))")
         self.version = protoForm.version
         self.peerID = protoForm.id.peerID.object()
         self.lamport = protoForm.id.lamport

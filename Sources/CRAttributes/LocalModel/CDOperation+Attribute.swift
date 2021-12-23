@@ -23,7 +23,7 @@ extension CDOperation {
      from protobuf
      */
     func updateObject(from protoForm: ProtoAttributeOperation, container: CDOperation?) {
-        print("From protobuf AttributeOp(\(protoForm.id.lamport))")
+//        print("From protobuf AttributeOp(\(protoForm.id.lamport))")
         let context = managedObjectContext!
         self.container = container
         self.attributeType = .init(rawValue: protoForm.rawType)!
