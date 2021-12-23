@@ -343,7 +343,14 @@ extension CDOperation {
     
     func shortDescrption() -> String {
         //peer=\(peerID),
-        return "op(lamport=\(lamport), type=\(type), state:\(state), del:\(hasTombstone)"
+        switch type {
+        case .stringInsert:
+            return "op([\(lamport)]: '\(unicodeScalar)' parent=\(parent?.lamport) prev=\(prev?.lamport) next=\(next?.lamport) type=\(type), state:\(state))"
+        case .attribute:
+            return "op([\(lamport)]: '\(attributeName!) type=\(type), state:\(state))"
+        default:
+            return "op([\(lamport)]: type=\(type), state:\(state))"
+        }
     }
 }
 

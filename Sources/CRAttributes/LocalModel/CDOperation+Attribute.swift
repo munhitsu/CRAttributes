@@ -129,8 +129,7 @@ extension CDOperation {
         print("rga form debug:")
         let context = managedObjectContext!
         context.performAndWait {
-            assert(type == .attribute)
-            assert(attributeType == .mutableString)
+            assert((type == .attribute && attributeType == .mutableString) || (type == .ghost))
 
             let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
 

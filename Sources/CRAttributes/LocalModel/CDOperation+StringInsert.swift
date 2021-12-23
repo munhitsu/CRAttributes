@@ -57,25 +57,33 @@ extension CDOperation { // StringInsert
     func stringInsertLinking() {
         let context = managedObjectContext!
         context.performAndWait {
+            print("linking: \(self.shortDescrption())")
+            print("rga for self (pre):")
+            self.printRGATree(intention: 2)
+
             guard type == .stringInsert else { fatalError() }
+            
             if parent == nil {
                 let parentAddress = CROperationID(lamport: parentLamport, peerID: parentPeerID)
-                parent = CDOperation.findOperationOrCreateGhost(from: parentAddress, in: context)
+                let newParent = CDOperation.findOperationOrCreateGhost(from: parentAddress, in: context)
+                assert(newParent.assertIfWithChildrenThenNextWithin())
+                parent = newParent
             }
             guard let parent = parent else { fatalError() }
-             
+            assert(assertIfWithChildrenThenNextWithin())
             
-//            print("linking:")
-//            print("pre:")
-//            print("parent: \(parent.shortDescrption())")
-//            print("parent: '\(parent.unicodeScalar)' \(parent.lamport): prev:\(String(describing: parent.prev?.lamport)) next:\(String(describing: parent.next?.lamport)) ")
-//            print("self: \(shortDescrption())")
-//            print("self: '\(unicodeScalar)' \(lamport): parent:\(parent.lamport) prev:\(String(describing: prev?.lamport)) next:\(String(describing: next?.lamport))")
+            print("rga for parent (pre):")
+            parent.printRGATree(intention: 2)
             
             // this will include self, but w/o left/right link
             let children:[CDOperation] = (parent.childOperations?.allObjects as? [CDOperation] ?? []).filter{$0.type == .stringInsert}.sorted(by: >)
-        
-            var lastNode = self 
+
+            print("children of parent:")
+            for child in children {
+                print("  \(child.shortDescrption())")
+            }
+
+            var lastNode = self
             while lastNode.next != nil {
 //                print("lastNode.next")
                 lastNode = lastNode.next!
@@ -84,7 +92,13 @@ extension CDOperation { // StringInsert
                     assert(false)
                 }
             }
-
+            
+            if parent.next == nil {
+//                print("1st time parent shortcut")
+                parent.next = self
+                assert(assertIfWithChildrenThenNextWithin())
+                return
+            }
             
     //        if children.count == 1 { // if just one children then it's me so we insert after parent
     //            let parentNext = parent.next
@@ -98,46 +112,108 @@ extension CDOperation { // StringInsert
     //        } else { // multiple kids cases
                 // let's insert before the 1st older op
                 
-                var prevOp:CDOperation = parent
-                for op: CDOperation in children { //TODO: remove duplicate comparision as we are already at the right place in the array
-                    
-                    if op == self {
-                        let prevNext = prevOp.next
-                        prevOp.next = self
-                        lastNode.next = prevNext
-                        break
-                    }
-                    prevOp = op
+            var prevOp:CDOperation = parent
+            var childrenIterator = children.makeIterator()
+            
+            while let op = childrenIterator.next() {
+                if op == self {
+                    break
                 }
-    //        }
+                prevOp = op
+            }
+            if let nextOp:CDOperation = childrenIterator.next() {
+//                print("has nextOp: \(nextOp.shortDescrption())")
+                // so we have prevOp, self, nextOp? (all being siblings)
+                assert(assertIfWithChildrenThenNextWithin())
+                let nextOpPrev = nextOp.prev
+                assert(assertIfWithChildrenThenNextWithin())
+                nextOp.prev = lastNode
+                assert(assertIfWithChildrenThenNextWithin())
+                self.prev = nextOpPrev
+                assert(assertIfWithChildrenThenNextWithin())
+            } else {
+//                print("no nextOp")
+                // so we have prevOp, self and prevOp.lastNode(ignoring: self)
+                print("prevOp: \(prevOp.shortDescrption())")
+                let prevOpLast = prevOp.lastNode(ignoring: self)
+                print("prevOpLast: \(prevOpLast.shortDescrption())")
+                let lastOpNext = prevOpLast.next
+                print("lastOpNext: \(lastOpNext?.shortDescrption())")
+                assert(assertIfWithChildrenThenNextWithin())
+                prevOpLast.next = self
+                assert(assertIfWithChildrenThenNextWithin())
+                lastNode.next = lastOpNext
+                assert(assertIfWithChildrenThenNextWithin())
+            }
+//
+            let listString = container!.stringFromRGAList()
+            let treeString = container!.stringFromRGATree()
+//    
+//            if listString.0 != treeString.0 {
+//                print("listString: \(listString.0)")
+//                print("treeString: \(treeString.0)")
+//                print("was linking: \(self.shortDescrption())")
+//            }
+            assert(listString.0 == treeString.0)
 
-
-    //        print("post:")
-    //        print("parent: '\(parent?.unicodeScalar)' \(parent!.lamport): parent:\(parent!.parent?.lamport) prev:\(parent!.prev?.lamport) next:\(parent!.next?.lamport)")
-    //        print("self: '\(unicodeScalar)' \(lamport): parent:\(parent?.lamport) prev:\(prev?.lamport) next:\(next?.lamport)")
-            
-    //        printRGADebug(context: context)
-            
-    //        guard let container = container as? CDAttributeOp else {
-    //            fatalNotImplemented()
-    //            return false
-    //        }
-    //        let listString = container.stringFromRGAList(context: context)
-    //        let treeString = container.stringFromRGATree(context: context)
-    //
-    //        assert(listString.0 == treeString.0)
+            print("rga for parent (post): ")
+            parent.printRGATree(intention: 2)
+            print("rga for self (post): ")
+            self.printRGATree(intention: 2)
+            assert(assertIfWithChildrenThenNextWithin())
+            assert(parent.assertIfWithChildrenThenNextWithin())
         }
     }
     /**
      if this node is a start of a branch, then where is the end?
      */
-    func lastNode() -> CDOperation {
-        guard let lastChild = (childOperations?.allObjects as! [CDOperation]).sorted(by: >).last else {
+    func lastNode(ignoring: CDOperation? = nil) -> CDOperation {
+        var childrenStack = (childOperations?.allObjects as! [CDOperation]).filter{$0.type == .stringInsert}.sorted(by: >)
+        var lastChild = childrenStack.popLast()
+        
+        if lastChild == nil {
             return self
         }
-        return lastChild.lastNode()
+        if lastChild == ignoring {
+            lastChild = childrenStack.popLast()
+        }
+        if lastChild == nil {
+            return self
+        }
+        return lastChild!.lastNode()
     }
     
+    func debugListString() -> String {
+        var node:CDOperation = self
+        var s = ""
+        while node.next != nil {
+            s.append(contentsOf: String(node.unicodeScalar))
+            node = node.next!
+        }
+        return s
+    }
+    
+    func debugTreeString() -> String {
+        var s = "\(unicodeScalar)"
+        let children:[CDOperation] = (childOperations?.allObjects as? [CDOperation] ?? []).filter{$0.type == .stringInsert}.sorted(by: >)
+        for child in children {
+            s.append(contentsOf: child.debugTreeString())
+        }
+        return s
+    }
+    
+    func assertIfWithChildrenThenNextWithin() -> Bool {
+        let children:[CDOperation] = (childOperations?.allObjects as? [CDOperation] ?? []).filter{$0.type == .stringInsert}
+        if children.count > 0 {
+            for child in children {
+                if child == self.next {
+                    return true
+                }
+            }
+            return false
+        }
+        return true
+    }
 }
 
 extension CDOperation {

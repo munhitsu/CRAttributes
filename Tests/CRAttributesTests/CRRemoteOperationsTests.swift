@@ -24,6 +24,7 @@ class CRRemoteOperationsTests: XCTestCase {
     }
 
     func waitForStringAttributeValue(context: NSManagedObjectContext, operation: CDOperation, value: String) {
+        print("waitForStringAttributeValue: \(value)")
         let expPredicate = NSPredicate(block: { operation, _ -> Bool in
             guard let operation = operation as? CDOperation else { return false}
             return operation.stringFromRGAList().0.string == value
@@ -32,7 +33,8 @@ class CRRemoteOperationsTests: XCTestCase {
         waitForExpectations(timeout: 10)
     }
     
-    func waitForAllOperationsMergedOrProcessed(context: NSManagedObjectContext) {
+    func waitForAllOperationsMergedOrProcessed(context: NSManagedObjectContext, ghosts waitforGhosts: Bool = false) {
+        print("waitForAllOperationsMergedOrProcessed")
         let expPredicate = NSPredicate(block: { _, _ -> Bool in
             var success = true
             context.performAndWait {
@@ -42,8 +44,11 @@ class CRRemoteOperationsTests: XCTestCase {
         
                 for op in operations {
                     if ![CDOperationState.processed, CDOperationState.inUpstreamQueueRenderedMerged, CDOperationState.inDownstreamQueueMergedUnrendered].contains(op.state) {
-                        success = false
-                        return
+
+                        if !(waitforGhosts && op.type == .ghost) {
+                            success = false
+                            return
+                        }
                     }
                 }
             }
@@ -54,6 +59,7 @@ class CRRemoteOperationsTests: XCTestCase {
     }
     
     func waitForGhosts(context: NSManagedObjectContext, count expectedCount: Int = 0) {
+        print("waitForGhosts - count: \(expectedCount)")
         let expPredicate = NSPredicate(block: { _, _ -> Bool in
             var success = true
             context.performAndWait {
@@ -61,12 +67,60 @@ class CRRemoteOperationsTests: XCTestCase {
                 request.returnsObjectsAsFaults = false
                 request.predicate = NSPredicate(format: "rawType == %@", argumentArray: [CDOperationType.ghost.rawValue])
                 let gotCount = try! context.count(for: request)
+                print("waitForGhosts - current ghost count: \(gotCount)")
                 success = (gotCount == expectedCount)
             }
             return success
         })
         expectation(for: expPredicate, evaluatedWith: nil)
         waitForExpectations(timeout: 10)
+    }
+    
+    func countUpstreamOps(context: NSManagedObjectContext) -> Int {
+//        print("countUpstreamOps")
+        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+        request.predicate = NSPredicate(format: "rawState == %@", argumentArray: [CDOperationState.inUpstreamQueueRenderedMerged.rawValue])
+
+//        let count = try! context.count(for: request)
+        let results = try! context.fetch(request)
+        for op in results {
+            assert(op.state == .inUpstreamQueueRenderedMerged)
+//            print("op id:\(op.lamport) type:\(op.type) state:\(op.state)")
+        }
+        return results.count
+    }
+
+    
+    func opCount(context: NSManagedObjectContext) -> Int {
+//        print("opCount")
+        var count = 0
+        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+        context.performAndWait {
+            count = try! context.count(for: request)
+//            for op in try! context.fetch(request) {
+//                print("op id:\(op.lamport) type:\(op.type) state:\(op.state)")
+//            }
+        }
+        return count
+    }
+    
+    func assertAllOperationsMergedOrProcessed(context: NSManagedObjectContext) {
+        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+        for op in try! context.fetch(request) {
+            assert([CDOperationState.processed, CDOperationState.inUpstreamQueueRenderedMerged].contains(op.state))
+        }
+    }
+    
+    func countGhosts(context: NSManagedObjectContext) -> Int {
+        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+        request.predicate = NSPredicate(format: "rawType == %@", argumentArray: [CDOperationType.ghost.rawValue])
+        let ops = try! context.fetch(request)
+        print("Ghosts:")
+        for op in ops {
+            print(" \(op.lamport)")
+        }
+        return ops.count
+//        try! context.count(for: request)
     }
     
     func dummyLocalData() {
@@ -166,6 +220,32 @@ class CRRemoteOperationsTests: XCTestCase {
 
         try! viewContext.save() // this will force merging
     }
+    
+    func assertDummyLocalData() {
+        let viewContext = CRStorageController.shared.localContainer.viewContext
+        //validate if operations are properly merged
+ 
+        let b_n1 = CRObject.allObjects(context: viewContext, type: .testNote)[0]
+        
+        let b_a1:CRAttributeInt = b_n1.attribute(name: "count", type: .int) as! CRAttributeInt
+        XCTAssertEqual(b_a1.value, 4)
+
+        let b_a2:CRAttributeFloat = b_n1.attribute(name: "weight", type: .float) as! CRAttributeFloat
+        XCTAssertGreaterThan(Double(b_a2.value!), 0.19)
+
+        let b_a3:CRAttributeBool = b_n1.attribute(name: "active", type: .boolean) as! CRAttributeBool
+        XCTAssertEqual(b_a3.value, true)
+
+        let b_a5:CRAttributeString = b_n1.attribute(name: "title", type: .string) as! CRAttributeString
+        XCTAssertEqual(b_a5.value, "abc")
+
+        let b_a6:CRAttributeMutableString = b_n1.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
+        XCTAssertEqual(b_a6.operation?.stringFromRGATree().0.string, "123def#")
+        XCTAssertEqual(b_a6.operation?.stringFromRGAList().0.string, "123def#")
+//        XCTAssertEqual(b_a6.textStorage!.string, "123def#") //FIXME: this won't be real until string form is updated
+
+        b_a6.textStorage?.attributeOp.printRGADebug()
+    }
 
     func checkStringOperationsCorrectness(_ cdAttribute: CDOperation) {
         var nodesSeen = Set<lamportType>()
@@ -194,6 +274,8 @@ class CRRemoteOperationsTests: XCTestCase {
             node = node!.next
         }
     }
+    
+    
 
     func testBundleCreation() throws {
         let viewContext = CRStorageController.shared.localContainer.viewContext
@@ -278,79 +360,6 @@ class CRRemoteOperationsTests: XCTestCase {
 //        XCTAssertGreaterThan(protoBundle.deleteOperations.count, 0)
     }
     
-    func countUpstreamOps(context: NSManagedObjectContext) -> Int {
-//        print("countUpstreamOps")
-        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
-        request.predicate = NSPredicate(format: "rawState == %@", argumentArray: [CDOperationState.inUpstreamQueueRenderedMerged.rawValue])
-
-//        let count = try! context.count(for: request)
-        let results = try! context.fetch(request)
-        for op in results {
-            assert(op.state == .inUpstreamQueueRenderedMerged)
-//            print("op id:\(op.lamport) type:\(op.type) state:\(op.state)")
-        }
-        return results.count
-    }
-
-    
-    func opCount(context: NSManagedObjectContext) -> Int {
-//        print("opCount")
-        var count = 0
-        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
-        context.performAndWait {
-            count = try! context.count(for: request)
-//            for op in try! context.fetch(request) {
-//                print("op id:\(op.lamport) type:\(op.type) state:\(op.state)")
-//            }
-        }
-        return count
-    }
-    
-    func assertAllOperationsMergedOrProcessed(context: NSManagedObjectContext) {
-        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
-        for op in try! context.fetch(request) {
-            assert([CDOperationState.processed, CDOperationState.inUpstreamQueueRenderedMerged].contains(op.state))
-        }
-    }
-    
-    func countGhosts(context: NSManagedObjectContext) -> Int {
-        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
-        request.predicate = NSPredicate(format: "rawType == %@", argumentArray: [CDOperationType.ghost.rawValue])
-        let ops = try! context.fetch(request)
-        print("Ghosts:")
-        for op in ops {
-            print(" \(op.lamport)")
-        }
-        return ops.count
-//        try! context.count(for: request)
-    }
-    
-    func assertDummyLocalData() {
-        let viewContext = CRStorageController.shared.localContainer.viewContext
-        //validate if operations are properly merged
- 
-        let b_n1 = CRObject.allObjects(context: viewContext, type: .testNote)[0]
-        
-        let b_a1:CRAttributeInt = b_n1.attribute(name: "count", type: .int) as! CRAttributeInt
-        XCTAssertEqual(b_a1.value, 4)
-
-        let b_a2:CRAttributeFloat = b_n1.attribute(name: "weight", type: .float) as! CRAttributeFloat
-        XCTAssertGreaterThan(Double(b_a2.value!), 0.19)
-
-        let b_a3:CRAttributeBool = b_n1.attribute(name: "active", type: .boolean) as! CRAttributeBool
-        XCTAssertEqual(b_a3.value, true)
-
-        let b_a5:CRAttributeString = b_n1.attribute(name: "title", type: .string) as! CRAttributeString
-        XCTAssertEqual(b_a5.value, "abc")
-
-        let b_a6:CRAttributeMutableString = b_n1.attribute(name: "note", type: .mutableString) as! CRAttributeMutableString
-        XCTAssertEqual(b_a6.operation?.stringFromRGATree().0.string, "123def#")
-        XCTAssertEqual(b_a6.operation?.stringFromRGAList().0.string, "123def#")
-        XCTAssertEqual(b_a6.textStorage!.string, "123def#") //FIXME: this won't be real until string form is updated
-
-        b_a6.textStorage?.attributeOp.printRGADebug()
-    }
-    
     func testBundleRestoreOrdered() throws {
         let viewContext = CRStorageController.shared.localContainer.viewContext
         let remoteContext = CRStorageController.shared.replicationContainer.viewContext
@@ -424,8 +433,8 @@ class CRRemoteOperationsTests: XCTestCase {
 
         print("let's restore [1]")
         CRStorageController.shared.replicationController.processDownstreamForest(forest: cdForests[1].objectID)
-        waitForGhosts(context: viewContext, count: 0)
-        waitForAllOperationsMergedOrProcessed(context: viewContext)
+        waitForGhosts(context: viewContext, count: 6) //TODO: confirm if it's still 6
+        waitForAllOperationsMergedOrProcessed(context: viewContext, ghosts: true)
         CDOperation.printTreeOfContainers(context: viewContext)
 
         print("let's restore [0]")

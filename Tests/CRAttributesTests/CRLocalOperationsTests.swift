@@ -63,7 +63,7 @@ final class CRLocalOperationsTests: XCTestCase {
         super.tearDown()
     }
     
-    func testAttributeRecovery() {
+    func test00AttributeRecovery() {
         let viewContext = CRStorageController.shared.localContainer.viewContext
         let n1 = CRObject(context: viewContext, type: .testNote, container: nil)
         let a1:CRAttributeInt = n1.attribute(name: "count", type: .int) as! CRAttributeInt
@@ -88,7 +88,7 @@ final class CRLocalOperationsTests: XCTestCase {
 
     }
     
-    func testModeling() {
+    func test00Modeling() {
         let viewContext = CRStorageController.shared.localContainer.viewContext
         let n1 = CRObject(context: viewContext, type: .testNote, container: nil)
         let a1:CRAttributeInt = n1.attribute(name: "count", type: .int) as! CRAttributeInt
@@ -181,7 +181,7 @@ final class CRLocalOperationsTests: XCTestCase {
 
     }
     
-    func testStringSaveRestore() {
+    func test00StringSaveRestore() {
         let viewContext = CRStorageController.shared.localContainer.viewContext
         let bgContext = CRStorageController.shared.localContainerBackgroundContext
 //
@@ -251,6 +251,8 @@ final class CRLocalOperationsTests: XCTestCase {
 //        let fromOp_a8 = a8.operation!.stringFromRGAList(context: viewContext).0
 //        XCTAssertEqual(fromOp_a8.string, "123aXcA")
         waitForStringAttributeValue(context: viewContext, operation: a8.operation!, value:"123aXcA")
+        
+        CDOperation.printTreeOfContainers(context: viewContext)
 
         // Restoring
         let b_n1 = CRObject.allObjects(context: viewContext, type: .testNote)[0]
@@ -281,10 +283,9 @@ final class CRLocalOperationsTests: XCTestCase {
     
     
     
-    func testMultipleInsertsAtZero() {
+    func test00MultipleInsertsAtZero() {
         let viewContext = CRStorageController.shared.localContainer.viewContext
         let bgContext = CRStorageController.shared.localContainerBackgroundContext
-
 
         let n1 = CRObject(context: viewContext, type: .testNote, container: nil)
         
@@ -298,7 +299,6 @@ final class CRLocalOperationsTests: XCTestCase {
         a8.textStorage!.replaceCharacters(in: .init(location: 4, length: 1), with: "X")
         XCTAssertEqual(a8.textStorage!.string, "123aXcABC")
 
-        
         let expPredicate = NSPredicate(block: { op, _ -> Bool in
             guard let op = op as? CDOperation else { return false}
             return op.stringFromRGAList().0.string == "123aXcABC"
@@ -314,7 +314,7 @@ final class CRLocalOperationsTests: XCTestCase {
     /**
      test inserting one character into string - good for debugging head of the string
      */
-    func testInitialInsert() {
+    func test00InitialInsert() {
         let viewContext = CRStorageController.shared.localContainer.viewContext
         let bgContext = CRStorageController.shared.localContainerBackgroundContext
 
@@ -351,7 +351,7 @@ final class CRLocalOperationsTests: XCTestCase {
         waitForExpectations(timeout: 10)
     }
     
-    func testCompareStringPerformanceUpstream() {
+    func test64CompareStringPerformanceUpstream() {
         let viewContext = CRStorageController.shared.localContainer.viewContext
         let operationsLimit = 50000
         
@@ -385,7 +385,7 @@ final class CRLocalOperationsTests: XCTestCase {
 
     }
     
-    func testLoadingPerformanceUpstreamOperations() {
+    func test64LoadingPerformanceUpstreamOperations() {
         let viewContext = CRStorageController.shared.localContainer.viewContext
         let operationsLimit = 50000
         
@@ -406,7 +406,7 @@ final class CRLocalOperationsTests: XCTestCase {
         }
     }
     
-    func testLoadingPerformanceSinglePaste() {
+    func test64LoadingPerformanceSinglePaste() {
         let viewContext = CRStorageController.shared.localContainer.viewContext
         let myText = lorem+lorem
         //+lorem+lorem+lorem+lorem
