@@ -1,0 +1,86 @@
+syntax = "proto3";
+option swift_prefix="Proto";
+
+
+message OperationID {
+    int64 lamport = 1;
+    bytes peerID = 2; //UUID to 16 bytes
+}
+//TODO: later optimise representation to e.g. 2 x int64
+
+
+//message BaseOperation {
+//    OperationID parentID = 3;
+////    OperationID attributeID = 4; // TODO: it's not always needed so maybe handcraft the objects
+//}
+
+message ObjectOperation {
+    int32 version = 1;
+    OperationID id = 2;
+    int32 rawType = 4;
+    repeated DeleteOperation deleteOperations = 5;
+    repeated AttributeOperation attributeOperations = 6;
+    repeated ObjectOperation objectOperations = 7;
+}
+
+message AttributeOperation {
+    int32 version = 1;
+    OperationID id = 2;
+    string name = 4;
+    int32 rawType = 5;
+    repeated DeleteOperation deleteOperations = 6;
+    repeated LWWOperation lwwOperations = 7;
+    StringInsertOperationLinkedList stringInsertOperationsList = 8;
+}
+
+// if entity has a delete operation then it's deleted
+message DeleteOperation {
+    int32 version = 1;
+    OperationID id = 2;
+    OperationID parentID = 3;
+}
+
+message LWWOperation {
+    int32 version = 1;
+    OperationID id = 2;
+    oneof value {
+        int64 int = 4;
+        float float = 5;
+        double date = 6;
+        bool boolean = 7;
+        string string = 8;
+    }
+    repeated DeleteOperation deleteOperations = 9;
+}
+
+message StringInsertOperation {
+    int32 version = 1;
+    OperationID id = 2;
+    OperationID parentID = 3;
+    int32 contribution = 4;
+    repeated DeleteOperation deleteOperations = 5;
+//    repeated StringInsertOperation stringInsertOperations = 6; //TODO: are we using it? - recursion limit
+}
+
+message StringInsertOperationLinkedList { // because you can't have repeated within oneof
+    repeated StringInsertOperation stringInsertOperations = 1;
+}
+
+message OperationsTree {
+    OperationID containerID = 1;
+    oneof value {
+        ObjectOperation objectOperation = 2;
+        AttributeOperation attributeOperation = 3;
+        DeleteOperation deleteOperation = 4;
+        LWWOperation lwwOperation = 5;
+        StringInsertOperationLinkedList stringInsertOperationsList = 6;
+    }
+}
+
+// tree of operations
+// a tree will contain all operations in the upstream queue, if device change the peerID or repllicated through backup then it may contain a mix
+message OperationsForest {
+    int32 version = 1;
+    bytes peerID = 2; //it's a sender device ID
+    repeated OperationsTree trees = 3;
+}

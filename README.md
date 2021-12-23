@@ -105,9 +105,122 @@ average: 0.008, relative standard deviation: 30.413%, values: [0.012892, 0.01046
 Time elapsed for saving operations: 201.65687596797943 s.
 average: 0.027, relative standard deviation: 34.418%, values: [0.053208, 0.030514, 0.024415, 0.022593, 0.022593, 0.022532, 0.022595, 0.022581, 0.022704, 0.022588]
 
-
 ## opening 50K ops from testPerformance:
 Time elapsed for creating operations: 184.44972002506256 s.
 Time elapsed for saving operations: 146.00910997390747 s.
-
 average: 0.022, relative standard deviation: 37.334%, values: [0.044644, 0.027610, 0.021237, 0.018515, 0.017842, 0.017754, 0.017686, 0.017655, 0.017596, 0.017944]
+
+
+## migrated to AttributedString
+
+## opening 50K ops from testLoadingPerformanceUpstreamOperations
+1. Time to convert upstream operations into the string:
+Time elapsed for CRTextStorage: 11.415868997573853 s.
+
+2. Time to rebuild the string from the saved from:
+average: 0.073, relative standard deviation: 10.412%, values: [0.094805, 0.073712, 0.070798, 0.069835, 0.069900, 0.068491, 0.069923, 0.068632, 0.069312, 0.069902]
+
+
+## opening 50K
+Result of doing everything in the main context - let's call it a baseline
+But why is loading slower then?
+
+1. Time to convert upstream operations into the string:
+Time elapsed for CRTextStorage: 24.234724044799805 s.
+
+2. Time to rebuild the string from the saved from:
+average: 0.230, relative standard deviation: 1.900%, values: [0.236713, 0.232893, 0.229278, 0.227163, 0.232548, 0.227663, 0.232114, 0.227976, 0.234746, 0.220696]
+
+
+
+
+rTree index on lamport only:
+Time elapsed for fetchFromOpID: 5.698631048202515 s.
+Time elapsed for fetchFromOpID: 5.666351914405823 s.
+
+binary index on lamport only:
+Time elapsed for fetchFromOpID: 5.68967604637146 s.
+Time elapsed for fetchFromOpID: 5.6395909786224365 s.
+
+
+
+
+# results with storing at the drive
+Test Case '-[CRAttributesTests.CRAttributedStringTests testFetchFromSortedList]' started.
+Time elapsed for buildStrWithObjID: 1123.0154089927673 s.
+Time elapsed for fetchFromObjID: 0.4828900098800659 s.
+Time elapsed for fetchFromObjID: 0.5006580352783203 s.
+50170
+Time elapsed for fetchFromSortedList: 0.127640962600708 s.
+50170
+Time elapsed for fetchFromSortedList: 0.12289893627166748 s.
+
+
+When restoring from the cold sqlite (new test run)
+Test Case '-[CRAttributesTests.CRAttributedStringTests testPrototype]' started.
+50170
+Time elapsed for fetchFromSortedList: 0.17053508758544922 s.
+50170
+Time elapsed for fetchFromSortedList: 0.11431002616882324 s.
+
+
+
+# adding rendered string
+
+## before:
+/Users/munhitsu/hack-memory/CRAttributes/Tests/CRAttributesTests/CRLocalOperationsTests.swift:428: Test Case '-[CRAttributesTests.CRLocalOperationsTests testLoadingPerformanceUpstreamOperations]' measured [Time, seconds] average: 0.177, relative standard deviation: 18.885%, values: [0.234950, 0.164570, 0.216153, 0.151576, 0.159007, 0.161176, 0.231860, 0.151317, 0.151783, 0.151456], performanceMetricID:com.apple.XCTPerformanceMetric_WallClockTime, baselineName: "", baselineAverage: , polarity: prefers smaller, maxPercentRegression: 10.000%, maxPercentRelativeStandardDeviation: 10.000%, maxRegression: 0.100, maxStandardDeviation: 0.100
+
+## after:
+
+
+
+
+
+
+
+
+
+# SQL debug
+## slow SQL queries 
+
+attributedStringFor()
+CoreData: sql: SELECT 0, t0.Z_PK, t0.Z_OPT, t0.ZCONTRIBUTIONRAW, t0.ZISSNAPSHOT, t0.ZLAMPORT, t0.ZLENGTH, t0.ZLOCATION, t0.ZCONTAINER FROM ZCDRENDEREDSTRINGOP t0 WHERE ( t0.ZCONTAINER = ? AND  t0.ZISSNAPSHOT = ?) ORDER BY t0.ZLAMPORT DESC LIMIT 1
+CoreData: annotation: sql connection fetch time: 0.0183s
+CoreData: annotation: total fetch execution time: 0.0187s for 1 rows.
+lamport: 100003
+CoreData: sql: SELECT 0, t0.Z_PK, t0.Z_OPT, t0.ZCONTRIBUTIONRAW, t0.ZISSNAPSHOT, t0.ZLAMPORT, t0.ZLENGTH, t0.ZLOCATION, t0.ZCONTAINER FROM ZCDRENDEREDSTRINGOP t0 WHERE ( t0.ZCONTAINER = ? AND  t0.ZLAMPORT > ?) ORDER BY t0.ZLAMPORT
+CoreData: annotation: sql connection fetch time: 0.0435s
+CoreData: annotation: total fetch execution time: 0.0436s for 0 rows.
+operations: 0
+
+
+## after removing reference in where
+attributedStringFor() - start
+CoreData: sql: SELECT 0, t0.Z_PK, t0.Z_OPT, t0.ZCONTRIBUTIONRAW, t0.ZISSNAPSHOT, t0.ZLAMPORT, t0.ZLENGTH, t0.ZLOCATION, t0.ZCONTAINER FROM ZCDRENDEREDSTRINGOP t0 WHERE  t0.ZISSNAPSHOT = ? ORDER BY t0.ZLAMPORT DESC LIMIT 1
+CoreData: annotation: sql connection fetch time: 0.0036s
+CoreData: annotation: total fetch execution time: 0.0040s for 1 rows.
+lamport: 100003
+CoreData: sql: SELECT 0, t0.Z_PK, t0.Z_OPT, t0.ZCONTRIBUTIONRAW, t0.ZISSNAPSHOT, t0.ZLAMPORT, t0.ZLENGTH, t0.ZLOCATION, t0.ZCONTAINER FROM ZCDRENDEREDSTRINGOP t0 WHERE  t0.ZLAMPORT > ? ORDER BY t0.ZLAMPORT
+CoreData: annotation: sql connection fetch time: 0.0001s
+CoreData: annotation: total fetch execution time: 0.0002s for 0 rows.
+operations: 0
+attributedStringFor() - done
+
+
+
+
+# Tasks
+rebuilding model
+```
+cd Sources/CRAttributes/ReplicationModel
+protoc --swift_out=. ProtoModel.proto
+```
+
+
+
+
+# patch
+                propertyNameToProperty[relationshipDescription.name] = relationship
+                entityNameToPropertyNameToProperty[entityDescription.name]![relationshipDescription.name] = relationship
+
+

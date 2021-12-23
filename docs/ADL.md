@@ -19,7 +19,7 @@ this pproach will work with batch operations
 
 
 
-objects will be updated by cloudkit, we onlhy do append object
+objects will be updated by cloudkit, we only do append object
 
 
 

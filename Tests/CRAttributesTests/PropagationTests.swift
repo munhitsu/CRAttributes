@@ -1,7 +1,7 @@
 import XCTest
 import CoreDataModelDescription
 import CoreData
-@testable import CoOpAttributes
+@testable import CRAttributes
 
 
 @objc(NameDocument)
