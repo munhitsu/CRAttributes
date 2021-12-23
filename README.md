@@ -3,16 +3,17 @@
 Enables colaboration on text field across multiple iOS devices.
 
 It's based on operation based CRDT (RGA) with replication leveraging native graph synchronisation using CoreData CloudKit sync.
+A nearly vanilla implementation of CRDT RGA (operation per character).
+
 
 ## research
-Merging:
-- Weihai Yu Linked List with cursor approach from "A String-Wise CRDT for Group Editing" [2012] and "Supporting String-Wise Operations and Selective Undo for Peer-to-Peer Group Editing" 2014
+Source:
 - RGA Tree Split (w/o tree) from - Marc Shapiro at other - "High Responsiveness for Group Editing CRDTs" [2016]
 - "CloudKit - Structured Storage for Mobile Applications" [2018]
 
 
 ## warning
-This code is not produciton ready. Data structures and api may change as we are polishing the solution.
+This code is not produciton ready. Data structures and api may change
 
 
 ### future roadmap
@@ -21,10 +22,7 @@ This code is not produciton ready. Data structures and api may change as we are 
 
 
 ## usage
-Build your data model on top of the CoOpAttributes one. We found CoreDataModelDescription framework the missing piece to enable usable programatic declaration of CoreData Model.
-See ModelTests.swift for an example.
-
-Plese note that you decide when changes are commited - you perform core data save.
+See tests. 
 
 
 ## Goal
@@ -36,14 +34,11 @@ Source: https://www.nngroup.com/articles/response-times-3-important-limits/
 
 
 ## Missign cloudkit core data functionality
-- sharing of object trees between users
-- exclusion of specific attributes from the sync
-- exclusion of specific objects from the sync
+- sharing of object trees between users (changed in 2021)
+- exclusion of specific attributes from the sync (forces to have separate sync store)
+- exclusion of specific objects from the sync (forces to have separate sync store)
 - fine tuning cloudkit sync to prioritise specific objects
 - easy hook for a code block on every remote object creation, object update, object delete
-
-Note: sharing will eventually come and meanwhile at worse we can do sharing by hand
-
 
 ## Milestones
 - mutable string model field (https://developer.apple.com/documentation/uikit/nstextstorage)
@@ -70,157 +65,9 @@ Note: sharing will eventually come and meanwhile at worse we can do sharing by h
 - compare full binary tree with binary tree and list search for last 20 elements - not needed, see above
 
 
-## HowTo add a local package to your application
-https://forums.swift.org/t/how-to-add-local-swift-package-as-dependency/26457/7
-
-- Drag the package folder which contains the Package.swift into your Xcode project
-- Click the Plus button in the "Link Binary with Libraries" section, locate the package in the modal dialog, select the gray library icon inside the package, and add this one.
-
-
-## benchmarking
-benchmarking first string building
-
-### lorem impsum walking
-tested on MBP M1
-lorem 5 paragraphs - approx 5K characters
-avg 0.288 - with faults
-avg 0.165 - after introducing prefetching
-avg 0.047 - after replacing recursion tree walk with a loop (1st run is 0.078)
-
-
-10K ops testWalkingListBenchmark
-avg 0.080 - after replacing recursion tree walk with a loop (1st run is 0.118)
-
-
-
-## 10K -  using xcode 13.0 betas:
-Time elapsed for saving operations: 8.156451940536499 s.
-Version 13.0 beta 1
-average: 0.004, relative standard deviation: 30.181%, values: [0.005170, 0.005433, 0.006467, 0.005196, 0.003543, 0.002320, 0.002265, 0.003901, 0.004191, 0.003972]
-
-Version 13.0 beta 4 (13A5201i):
-average: 0.008, relative standard deviation: 30.413%, values: [0.012892, 0.010469, 0.009059, 0.008257, 0.007364, 0.006581, 0.006141, 0.005799, 0.005536, 0.005177]
-
-## 50K ops from testWalkingListBenchmark:
-Time elapsed for saving operations: 201.65687596797943 s.
-average: 0.027, relative standard deviation: 34.418%, values: [0.053208, 0.030514, 0.024415, 0.022593, 0.022593, 0.022532, 0.022595, 0.022581, 0.022704, 0.022588]
-
-## opening 50K ops from testPerformance:
-Time elapsed for creating operations: 184.44972002506256 s.
-Time elapsed for saving operations: 146.00910997390747 s.
-average: 0.022, relative standard deviation: 37.334%, values: [0.044644, 0.027610, 0.021237, 0.018515, 0.017842, 0.017754, 0.017686, 0.017655, 0.017596, 0.017944]
-
-
-## migrated to AttributedString
-
-## opening 50K ops from testLoadingPerformanceUpstreamOperations
-1. Time to convert upstream operations into the string:
-Time elapsed for CRTextStorage: 11.415868997573853 s.
-
-2. Time to rebuild the string from the saved from:
-average: 0.073, relative standard deviation: 10.412%, values: [0.094805, 0.073712, 0.070798, 0.069835, 0.069900, 0.068491, 0.069923, 0.068632, 0.069312, 0.069902]
-
-
-## opening 50K
-Result of doing everything in the main context - let's call it a baseline
-But why is loading slower then?
-
-1. Time to convert upstream operations into the string:
-Time elapsed for CRTextStorage: 24.234724044799805 s.
-
-2. Time to rebuild the string from the saved from:
-average: 0.230, relative standard deviation: 1.900%, values: [0.236713, 0.232893, 0.229278, 0.227163, 0.232548, 0.227663, 0.232114, 0.227976, 0.234746, 0.220696]
-
-
-
-
-rTree index on lamport only:
-Time elapsed for fetchFromOpID: 5.698631048202515 s.
-Time elapsed for fetchFromOpID: 5.666351914405823 s.
-
-binary index on lamport only:
-Time elapsed for fetchFromOpID: 5.68967604637146 s.
-Time elapsed for fetchFromOpID: 5.6395909786224365 s.
-
-
-
-
-# results with storing at the drive
-Test Case '-[CRAttributesTests.CRAttributedStringTests testFetchFromSortedList]' started.
-Time elapsed for buildStrWithObjID: 1123.0154089927673 s.
-Time elapsed for fetchFromObjID: 0.4828900098800659 s.
-Time elapsed for fetchFromObjID: 0.5006580352783203 s.
-50170
-Time elapsed for fetchFromSortedList: 0.127640962600708 s.
-50170
-Time elapsed for fetchFromSortedList: 0.12289893627166748 s.
-
-
-When restoring from the cold sqlite (new test run)
-Test Case '-[CRAttributesTests.CRAttributedStringTests testPrototype]' started.
-50170
-Time elapsed for fetchFromSortedList: 0.17053508758544922 s.
-50170
-Time elapsed for fetchFromSortedList: 0.11431002616882324 s.
-
-
-
-# adding rendered string
-
-## before:
-/Users/munhitsu/hack-memory/CRAttributes/Tests/CRAttributesTests/CRLocalOperationsTests.swift:428: Test Case '-[CRAttributesTests.CRLocalOperationsTests testLoadingPerformanceUpstreamOperations]' measured [Time, seconds] average: 0.177, relative standard deviation: 18.885%, values: [0.234950, 0.164570, 0.216153, 0.151576, 0.159007, 0.161176, 0.231860, 0.151317, 0.151783, 0.151456], performanceMetricID:com.apple.XCTPerformanceMetric_WallClockTime, baselineName: "", baselineAverage: , polarity: prefers smaller, maxPercentRegression: 10.000%, maxPercentRelativeStandardDeviation: 10.000%, maxRegression: 0.100, maxStandardDeviation: 0.100
-
-## after:
-
-
-
-
-
-
-
-
-
-# SQL debug
-## slow SQL queries 
-
-attributedStringFor()
-CoreData: sql: SELECT 0, t0.Z_PK, t0.Z_OPT, t0.ZCONTRIBUTIONRAW, t0.ZISSNAPSHOT, t0.ZLAMPORT, t0.ZLENGTH, t0.ZLOCATION, t0.ZCONTAINER FROM ZCDRENDEREDSTRINGOP t0 WHERE ( t0.ZCONTAINER = ? AND  t0.ZISSNAPSHOT = ?) ORDER BY t0.ZLAMPORT DESC LIMIT 1
-CoreData: annotation: sql connection fetch time: 0.0183s
-CoreData: annotation: total fetch execution time: 0.0187s for 1 rows.
-lamport: 100003
-CoreData: sql: SELECT 0, t0.Z_PK, t0.Z_OPT, t0.ZCONTRIBUTIONRAW, t0.ZISSNAPSHOT, t0.ZLAMPORT, t0.ZLENGTH, t0.ZLOCATION, t0.ZCONTAINER FROM ZCDRENDEREDSTRINGOP t0 WHERE ( t0.ZCONTAINER = ? AND  t0.ZLAMPORT > ?) ORDER BY t0.ZLAMPORT
-CoreData: annotation: sql connection fetch time: 0.0435s
-CoreData: annotation: total fetch execution time: 0.0436s for 0 rows.
-operations: 0
-
-
-## after removing reference in where
-attributedStringFor() - start
-CoreData: sql: SELECT 0, t0.Z_PK, t0.Z_OPT, t0.ZCONTRIBUTIONRAW, t0.ZISSNAPSHOT, t0.ZLAMPORT, t0.ZLENGTH, t0.ZLOCATION, t0.ZCONTAINER FROM ZCDRENDEREDSTRINGOP t0 WHERE  t0.ZISSNAPSHOT = ? ORDER BY t0.ZLAMPORT DESC LIMIT 1
-CoreData: annotation: sql connection fetch time: 0.0036s
-CoreData: annotation: total fetch execution time: 0.0040s for 1 rows.
-lamport: 100003
-CoreData: sql: SELECT 0, t0.Z_PK, t0.Z_OPT, t0.ZCONTRIBUTIONRAW, t0.ZISSNAPSHOT, t0.ZLAMPORT, t0.ZLENGTH, t0.ZLOCATION, t0.ZCONTAINER FROM ZCDRENDEREDSTRINGOP t0 WHERE  t0.ZLAMPORT > ? ORDER BY t0.ZLAMPORT
-CoreData: annotation: sql connection fetch time: 0.0001s
-CoreData: annotation: total fetch execution time: 0.0002s for 0 rows.
-operations: 0
-attributedStringFor() - done
-
-
-
-
 # Tasks
-rebuilding model
+rebuilding protobuf model
 ```
 cd Sources/CRAttributes/ReplicationModel
 protoc --swift_out=. ProtoModel.proto
 ```
-
-
-
-
-# patch
-                propertyNameToProperty[relationshipDescription.name] = relationship
-                entityNameToPropertyNameToProperty[entityDescription.name]![relationshipDescription.name] = relationship
-
-
