@@ -125,7 +125,7 @@ class CRRemoteOperationsTests: XCTestCase {
     
     func dummyLocalData() {
         let viewContext = CRStorageController.shared.localContainer.viewContext
-        let bgContext = CRStorageController.shared.localContainerBackgroundContext
+//        let bgContext = CRStorageController.shared.localContainerBackgroundContext
 
         let n1 = CRObject(context: viewContext, type: .testNote, container: nil)
         let a1:CRAttributeInt = n1.attribute(name: "count", type: .int) as! CRAttributeInt
@@ -196,7 +196,7 @@ class CRRemoteOperationsTests: XCTestCase {
 
     func appendToDummyLocalData() {
         let viewContext = CRStorageController.shared.localContainer.viewContext
-        let bgContext = CRStorageController.shared.localContainerBackgroundContext
+//        let bgContext = CRStorageController.shared.localContainerBackgroundContext
 
         let note = CRObject.allObjects(context: viewContext, type: .testNote)[0]
 

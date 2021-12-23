@@ -183,7 +183,7 @@ final class CRLocalOperationsTests: XCTestCase {
     
     func test00StringSaveRestore() {
         let viewContext = CRStorageController.shared.localContainer.viewContext
-        let bgContext = CRStorageController.shared.localContainerBackgroundContext
+//        let bgContext = CRStorageController.shared.localContainerBackgroundContext
 //
 //        expectation(
 //          forNotification: .NSManagedObjectContextDidSave,
@@ -285,7 +285,7 @@ final class CRLocalOperationsTests: XCTestCase {
     
     func test00MultipleInsertsAtZero() {
         let viewContext = CRStorageController.shared.localContainer.viewContext
-        let bgContext = CRStorageController.shared.localContainerBackgroundContext
+//        let bgContext = CRStorageController.shared.localContainerBackgroundContext
 
         let n1 = CRObject(context: viewContext, type: .testNote, container: nil)
         
@@ -316,13 +316,13 @@ final class CRLocalOperationsTests: XCTestCase {
      */
     func test00InitialInsert() {
         let viewContext = CRStorageController.shared.localContainer.viewContext
-        let bgContext = CRStorageController.shared.localContainerBackgroundContext
+//        let bgContext = CRStorageController.shared.localContainerBackgroundContext
 
         let n1 = CRObject(context: viewContext, type: .testNote, container: nil)
 
 
         let a8:CRAttributeMutableString = n1.attribute(name: "note3", type: .mutableString) as! CRAttributeMutableString
-        print("Attribute ID: \(a8.operation?.operationID())")
+        print("Attribute ID: \(String(describing: a8.operation?.operationID()))")
 
         XCTAssertEqual(a8.operation!.stringFromRGAList().0.string, "") // w already have it but reads better
         XCTAssertEqual(a8.operation!.stringFromRGATree().0.string, "")
