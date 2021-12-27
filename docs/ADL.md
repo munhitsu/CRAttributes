@@ -1,54 +1,9 @@
 #  ADL
 
-14. 
 
+## How to identify remote changes?
+A: Transaction History
 
-
-option A) react to the didSaveObjectIDsNotification and query for specific real object
-inpired by: https://www.donnywals.com/observing-changes-to-managed-objects-across-contexts-with-combine/
-docs: https://developer.apple.com/documentation/foundation/nsnotification/name/1506884-nsmanagedobjectcontextobjectsdid
-
-option B) reacting to store changes through keeping revision history and observing remote changes
-https://developer.apple.com/documentation/coredata/consuming_relevant_store_changes
-
-another voice for option B
-https://beckyhansmeyer.com/tag/cloudkit/
-
-this pproach will work with batch operations
-
-
-
-
-objects will be updated by cloudkit, we only do append object
-
-
-
-
-
-
-13. we keep lamport and peerid for consistent ordering for all replicas
-
-12. use core data references
-but monitor for updated objects as it's uknown what sync will do
-
-11. drop transformation from core data to operation to node (sync the graph, not the list of operations)
-
-10. Dropping protobuf as we only have one operation type to focus on
-and coredata is your in memory database
-
-9. pivot
-make implementation compatible with the native coredata+cloudkit sync
-focus on mutable string
-lww is about the same as a native cloudkit merge resolution
-cloudkit is for near real time, delay with native cloud kit can be 10s (see: https://developer.apple.com/forums/thread/131696) and that's ok
-
-reintroduce container later
-
-this approach means we are ready to introduce our own sync if needed but for now we have a solid foundation and Apple may introduce Sharing
-
---------------
-
-0.
 there is a way to track changes introduced by cloudkit core data
 https://developer.apple.com/videos/play/wwdc2017/210/?time=715
 transaction history
@@ -56,16 +11,9 @@ transaction history
 PS: you can subscribe to notifications and consume from other contexts
 
 
-1. referencing models
-caveat sub model can not be coming from the xcode visual data model editor
+## Op Log format
+A: ProtoBuf 
 
-2. Should cache be merged with attribute? - YES - for now
-I didn't wan't so that sync could be separated out, but I implement sync myself so for now it means less boilerplate code. 
-May change
-
-E.g. I could store the cache in a dedicated key value store
-
-3. Op Log format - ProtoBuf 
 we need to leave as fields things that we query on, but otherwise it's a blob
 Apple Notes picked protobuf
 
@@ -79,37 +27,40 @@ https://github.com/mczachurski/SwiftBenchmarkJSON -> protobuf
 https://itnext.io/swift-json-performance-ce9438632b02 -> protobuf
 
 
-4. When should the fields be updated - only when document is open
-we replicate all operations but we update the cache only on document open an later keep it up to date
+## Op Log structure
+A: Combine multiple related operations together into a bigger envelope
 
-if document open is long e.g. 0.1s then we return cached version and shortly update
+We call it a forrest of trees, where each tree is independent, but easy to merge (e.g. linked list of characters comes as an ordered array)
+This approach means we can compress a lot.
 
 
-5. where to store the max seen lamport - attribute in oplog and get max
+## where to store the max seen lamport
+A: attribute in oplog and get last on ordered
+
 a) in KV store, but then on every operation, on every msg received we need to update it
 b) expose it as attribute in oplog and get max - we only do it at the start as later we just update singleton
+especially nice as we have a single oplog
 
 
-6. abstract out data layer or dive in - dive in
-why? premature abstraction
+## How to notify UI of related downstream operation
 
-6. abstract out transport layer or dive in - dive in
-native cloudkit is the target architecture
-cloudkit coredata sync can't provide:
-- sharing
-- prioritisation
-- notify on specific changes
+### option 1 - on every object creation create notification
+- minus - very granular (batching will need to happen before firing notifications)
+- minus - how to deal with crash on in flight notifications?
+Process objects on the same serial queue you would be creating and saving them (fire async task so it lands after the save)
 
-souce of truth for the data is on the device, not in the cloud
+### option 2 - use .NSManagedObjectContextDidSave notification
+- trouble - it's on every save so I need to filter out the remote sourced ones
 
-7. How to trigger updates on new remote objects 
-subscribe to events?
-
-received operation should not force pull attribute/document form the store
-
-a) every field subscribing to it's only events? - how to do it so that only in memory fields are processing
-b) only open document gets update - I need more code for the document
+### option 3 - use history tracking
+- it will be reliable
+We can trigger history check after every NSManagedObjectContextDidSave
+We update historyToken only after finished processing (transaction
+We use author/name to filter out upstream batches
 
 
-8. and on new internal objects
+## Should Pointer Array store NSManagedObjectIDs or CRObjectIDs?
+A: For now we use CRObjectIDs - revise
+
+So fetchnig object using NSManagedObjectID is about 10x faster then using CRObjectID but generating is the other way around
 

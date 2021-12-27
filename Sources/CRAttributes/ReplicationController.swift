@@ -15,18 +15,50 @@ public class ReplicationController {
     
     private var observers: [AnyCancellable] = []
     
+    var lastToken: NSPersistentHistoryToken? = nil {
+        didSet {
+            guard let token = lastToken, let data = try? NSKeyedArchiver.archivedData(withRootObject: token, requiringSecureCoding: true) else { return }
+            do {
+                try data.write(to: tokenFile)
+            } catch {
+                print("###\(#function): Could not write token data: \(error)")
+            }
+        }
+    }
+    
+    lazy var tokenFile: URL = {
+        let url = NSPersistentContainer.defaultDirectoryURL().appendingPathComponent("CRAttributes", isDirectory: true)
+        if !FileManager.default.fileExists(atPath: url.path) {
+            do {
+                try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
+            } catch {
+                print("###\(#function): Could not create persistent container URL: \(error)")
+            }
+        }
+        return url.appendingPathComponent("historyToken.data", isDirectory: false)
+    }()
     
     init(localContext: NSManagedObjectContext,
          replicationContext: NSManagedObjectContext,
-         skipTimer: Bool = false) {
+         skipTimer: Bool = false,
+         skipRemoteChanges: Bool = false) {
         self.localContext = localContext
         self.replicationContext = replicationContext
         
         if !skipTimer {
-            observers.append(Publishers.timer(interval: .seconds(1), times: .unlimited).sink { time in //TODO: change to 5s, ensure only one operation at the time, stop at the end of the test
+            observers.append(Publishers.timer(interval: .seconds(1), times: .unlimited).sink { [weak self] time in //TODO: change to 5s, ensure only one operation at the time, stop at the end of the test
+                guard let self = self else { return }
                 print("Processing merged upstream operations: \(time)")
                 self.processUpsteamOperationsQueueAsync()
             })
+        }
+
+        if !skipRemoteChanges {
+            observers.append(NotificationCenter.default.publisher(for: .NSPersistentStoreRemoteChange, object: replicationContext.persistentStoreCoordinator).sink { [weak self] notification in
+                guard let self = self else { return }
+                self.processRemoteStoreChanges(notification)
+                })
+            self.processDownstreamHistoryAsync()
         }
     }
 }
@@ -144,10 +176,63 @@ extension ReplicationController {
             }
         }
     }
+    
     func processDownstreamForestAsync(forest cdForestObjectID: NSManagedObjectID) {
         let remoteContext = CRStorageController.shared.replicationContainerBackgroundContext
         remoteContext.perform { [self] in
             self.processDownstreamForest(forest: cdForestObjectID)
         }
+    }
+    
+    //TODO: (optimise) filterout local changes based on the author/context...
+    func processDownstreamHistory() {
+        let remoteContext = CRStorageController.shared.replicationContainerBackgroundContext
+        remoteContext.performAndWait {
+            let fetchHistoryRequest = NSPersistentHistoryChangeRequest.fetchHistory(after: lastToken)
+            
+            guard let historyResult = try? remoteContext.execute(fetchHistoryRequest) as? NSPersistentHistoryResult,
+                  let history = historyResult.result as? [NSPersistentHistoryTransaction]
+            else {
+                fatalError("Could not convert history result to transactions.")
+            }
+            
+            for transaction in history.reversed() {
+                let token = transaction.token
+                let transactionNumber = transaction.transactionNumber
+                let context = transaction.contextName ?? "unknown context"
+                let author = transaction.author ?? "unknown author"
+                guard let changes = transaction.changes else { continue }
+                
+                for change in changes {
+                    let objectID = change.changedObjectID
+                    let changeID = change.changeID
+                    let transaction = change.transaction
+                    let changeType = change.changeType
+                    
+                    switch changeType {
+                    case .insert:
+//                        let insertedObject:CDOperationsForest = remoteContext.object(with: objectID) as! CDOperationsForest
+                        processDownstreamForest(forest: objectID)
+                    case .update:
+                        fatalError("There shall be no updates")
+                    case .delete:
+                        fatalError("There shall be no deletions")
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     start me when the application starts
+     */
+    func processDownstreamHistoryAsync() {
+        let remoteContext = CRStorageController.shared.replicationContainerBackgroundContext
+        remoteContext.perform { [self] in
+            self.processDownstreamHistory()
+        }
+    }
+    func processRemoteStoreChanges(_ notification: Notification) {
+        processDownstreamHistoryAsync()
     }
 }

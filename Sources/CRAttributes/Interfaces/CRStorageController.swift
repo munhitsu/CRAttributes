@@ -11,7 +11,6 @@ import CoreData
 //TODO: follow iwht https://developer.apple.com/documentation/coredata/consuming_relevant_store_changes
 public class CRStorageController {
     
-    
     static func testMode() {
         CRStorageController._shared = CRStorageController(inMemory: true, testMode: true)
     }
@@ -24,7 +23,7 @@ public class CRStorageController {
     }
 
     static var preview: CRStorageController = {
-        let result = CRStorageController(inMemory: true)
+        let result = CRStorageController(inMemory: true, testMode: true)
         return result
     }()
     
@@ -36,9 +35,11 @@ public class CRStorageController {
     let rgaController: RGAController
     let replicationController: ReplicationController
     
+    private static let authorName = "FireballWatch"
+    
     init(inMemory: Bool = false, testMode: Bool = false) {
         print("CRStorageController.init")
-
+        
         localContainer = NSPersistentContainer(name: "CRLocalModel", managedObjectModel: CRLocalModel)
         replicationContainer = NSPersistentCloudKitContainer(name: "CRReplicationModel", managedObjectModel: CRReplicationModel)
         
@@ -67,22 +68,30 @@ public class CRStorageController {
         
         localContainerBackgroundContext = localContainer.newBackgroundContext()
         localContainerBackgroundContext.automaticallyMergesChangesFromParent = true
-
+        
+        localContainer.viewContext.name = "viewContext"
+        localContainer.viewContext.transactionAuthor = localPeerID.uuidString
+        localContainerBackgroundContext.name = "backgroundContext"
+        localContainerBackgroundContext.transactionAuthor = localPeerID.uuidString
+        
         replicationContainerBackgroundContext = replicationContainer.newBackgroundContext()
         replicationContainerBackgroundContext.automaticallyMergesChangesFromParent = true //?
+        
+        replicationContainer.viewContext.name = "viewContext"
+        replicationContainer.viewContext.transactionAuthor = localPeerID.uuidString
+        replicationContainerBackgroundContext.name = "backgroundContext"
+        replicationContainerBackgroundContext.transactionAuthor = localPeerID.uuidString
         
         self.rgaController = RGAController(localContainerBackgroundContext: localContainerBackgroundContext)
         rgaController.linkUnlinkedAsync()
         
-        
         self.replicationController = ReplicationController(localContext: localContainerBackgroundContext,
                                                            replicationContext: replicationContainerBackgroundContext,
-                                                           skipTimer: testMode)
+                                                           skipTimer: testMode,
+                                                           skipRemoteChanges: testMode)
     }
-    
-    
+        
     func processUpsteamOperationsQueue() {
         replicationController.processUpsteamOperationsQueue()
     }
-
 }

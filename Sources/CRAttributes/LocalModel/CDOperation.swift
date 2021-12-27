@@ -345,7 +345,7 @@ extension CDOperation {
         //peer=\(peerID),
         switch type {
         case .stringInsert:
-            return "op([\(lamport)]: '\(unicodeScalar)' parent=\(String(describing: parent?.lamport)) prev=\(prev?.lamport) next=\(next?.lamport) type=\(type), state:\(state))"
+            return "op([\(lamport)]: '\(unicodeScalar)' parent=\(String(describing: parent?.lamport)) prev=\(String(describing: prev?.lamport)) next=\(String(describing: next?.lamport)) type=\(type), state:\(state))"
         case .attribute:
             return "op([\(lamport)]: '\(attributeName!) type=\(type), state:\(state))"
         default:

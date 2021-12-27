@@ -8,9 +8,9 @@ A nearly vanilla implementation of CRDT RGA (operation per character).
 
 ## research
 Source:
-- RGA Tree Split (w/o tree) from - Marc Shapiro at other - "High Responsiveness for Group Editing CRDTs" [2016]
+- RGA Tree Split (w/o tree, w/o split) from - Marc Shapiro at other - "High Responsiveness for Group Editing CRDTs" [2016]
 - "CloudKit - Structured Storage for Mobile Applications" [2018]
-
+- Project research notes https://docs.google.com/document/d/1uqFflQRgwTvOWul4fZWYizLxk7GSO8wC_x6HfBoAGyg
 
 ## warning
 This code is not produciton ready. Data structures and api may change
@@ -28,7 +28,21 @@ Source: https://www.nngroup.com/articles/response-times-3-important-limits/
 "0.1 second is about the limit for having the user feel that the system is reacting instantaneously, meaning that no special feedback is necessary except to display the result."
 
 
-# Tasks
+## Performance/benchmark goal
+### high
+Opening a note that’s been previously locally edited
+Every local operation (upstream) needs to be performed instantly (aim for the refresh rate speed)
+
+### medium
+Rendering 1st remote operation on the note since opening
+Rendering remote operation backlog on the freshly opened note that’s been previously locally edited (might be a duplicate)
+Rendering note that only have remote operations and has never been opened
+
+### low
+Sync to CloudKit
+
+
+## Tasks
 rebuilding protobuf model
 ```
 cd Sources/CRAttributes/ReplicationModel
