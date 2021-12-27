@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.5
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -7,8 +7,8 @@ let package = Package(
     name: "CRAttributes",
     platforms: [
         .macOS(.v12),
-        .iOS(.v14),
-        .tvOS(.v14)
+        .iOS(.v15),
+        .tvOS(.v15)
     ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
@@ -21,7 +21,7 @@ let package = Package(
         .package(name: "CoreDataModelDescription", url: "https://github.com/dmytro-anokhin/core-data-model-description", from: "0.0.10"),
         .package(name: "SwiftProtobuf", url: "https://github.com/apple/swift-protobuf.git", from: "1.17.0"),
 //        .package(name: "SwiftProtobuf", url: "https://github.com/apple/swift-protobuf.git", from: "1.6.0"),
-
+ 
 //        .package(name: "CoreDataModelDescription", url: "../core-data-model-description", from: "0.0.9"),
     ],
     targets: [
