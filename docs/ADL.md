@@ -1,5 +1,30 @@
 #  ADL
 
+## ORM abstraction
+few inspirations
+https://github.com/realm/realm-swift
+https://swiftobc.com/repo/PerfectlySoft-Perfect-CRUD-swift-database
+https://github.com/Kitura/Swift-Kuery-ORM
+
+it feels like ORM and CRObject/CRAttribute are a good fit for actors
+
+
+## How to notify UI of related downstream operation
+
+### option 1 - on every object creation create notification
+- minus - very granular (batching will need to happen before firing notifications)
+- minus - how to deal with crash on in flight notifications?
+Process objects on the same serial queue you would be creating and saving them (fire async task so it lands after the save)
+
+### option 2 - use .NSManagedObjectContextDidSave notification
+- trouble - it's on every save so I need to filter out the remote sourced ones
+
+### option 3 - use history tracking
+- it will be reliable
+We can trigger history check after every NSManagedObjectContextDidSave
+We update historyToken only after finished processing (transaction
+We use author/name to filter out upstream batches
+
 
 ## How to identify remote changes?
 A: Transaction History
@@ -40,23 +65,6 @@ A: attribute in oplog and get last on ordered
 a) in KV store, but then on every operation, on every msg received we need to update it
 b) expose it as attribute in oplog and get max - we only do it at the start as later we just update singleton
 especially nice as we have a single oplog
-
-
-## How to notify UI of related downstream operation
-
-### option 1 - on every object creation create notification
-- minus - very granular (batching will need to happen before firing notifications)
-- minus - how to deal with crash on in flight notifications?
-Process objects on the same serial queue you would be creating and saving them (fire async task so it lands after the save)
-
-### option 2 - use .NSManagedObjectContextDidSave notification
-- trouble - it's on every save so I need to filter out the remote sourced ones
-
-### option 3 - use history tracking
-- it will be reliable
-We can trigger history check after every NSManagedObjectContextDidSave
-We update historyToken only after finished processing (transaction
-We use author/name to filter out upstream batches
 
 
 ## Should Pointer Array store NSManagedObjectIDs or CRObjectIDs?

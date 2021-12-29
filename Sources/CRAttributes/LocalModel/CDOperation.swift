@@ -10,7 +10,7 @@ import CoreData
 import SwiftProtobuf
 
 
-enum CRAttributeType: Int32 {
+public enum CRAttributeType: Int32 {
     case int = 0
     case float = 1
     case date = 2
@@ -41,14 +41,19 @@ enum CDOperationType: Int32 {
     case stringInsert = 32
 }
 
-struct CRObjectType: RawRepresentable, Equatable, Hashable, Comparable {
-    typealias RawValue = Int32
+public struct CRObjectType: RawRepresentable, Equatable, Hashable, Comparable {
+    public typealias RawValue = Int32
     
-    var rawValue: Int32
+    public var rawValue: Int32
+    
+    public init(rawValue: RawValue) {
+        self.rawValue = rawValue
+    }
+    
     
     static let unknown = CRObjectType(rawValue: 0)
     
-    var hashValue: Int {
+    public var hashValue: Int {
         return rawValue.hashValue
     }
     

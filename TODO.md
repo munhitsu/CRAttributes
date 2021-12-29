@@ -28,7 +28,6 @@
 - [x] on string upstream - create delete unprocessed op - RGA
 - [x] process string upstream op into the RGA
 
-
 ## later (optimisations)
 - [] compress oplog
 - [] maybe - Should Pointer Array store NSManagedObjectIDs or CRObjectIDs - try NSManagedObjectIDs again
@@ -39,5 +38,4 @@
 - [] evaluate obtainPermanentIDs - to return linked objects from the UI
 - [] evaluate linking in UI (very likely it's a no as big paste will be slow)
 - [] evaluate moving all UI writes to background
-
-
+- [] evaluate ORM abstractions

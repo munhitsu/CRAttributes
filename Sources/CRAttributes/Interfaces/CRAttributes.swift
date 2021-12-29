@@ -13,7 +13,7 @@ import AppKit
 //TODO: in a very unlikely event that multiple same name attributes will get crated within the same objects - we should be merging all operations
 //TODO: CRAttribute could be a template (generic) for LWWs
 
-class CRAttribute {
+public class CRAttribute {
     var operation: CDOperation? = nil
     let container: CRObject
     let name: String
@@ -106,7 +106,7 @@ class CRAttribute {
     }
 }
 
-class CRAttributeInt: CRAttribute {
+public class CRAttributeInt: CRAttribute {
     init(context: NSManagedObjectContext, container:CRObject, name:String) {
         super.init(context: context, container: container, name: name, type: .int)
     }
@@ -128,12 +128,13 @@ class CRAttributeInt: CRAttribute {
             context.performAndWait {
                 let op = CDOperation.createLWW(context: context, container: operation, value: newValue!)
                 op.state = .inUpstreamQueueRenderedMerged
+                try! context.save()
             }
         }
     }
 }
 
-class CRAttributeFloat: CRAttribute {
+public class CRAttributeFloat: CRAttribute {
     init(context: NSManagedObjectContext, container:CRObject, name:String) {
         super.init(context: context, container: container, name: name, type: .float)
     }
@@ -155,12 +156,13 @@ class CRAttributeFloat: CRAttribute {
             context.performAndWait {
                 let op = CDOperation.createLWW(context: context, container: operation, value: newValue!)
                 op.state = .inUpstreamQueueRenderedMerged
+                try! context.save()
             }
         }
     }
 }
 
-class CRAttributeDate: CRAttribute {
+public class CRAttributeDate: CRAttribute {
     init(context: NSManagedObjectContext, container:CRObject, name:String) {
         super.init(context: context, container: container, name: name, type: .date)
     }
@@ -182,13 +184,14 @@ class CRAttributeDate: CRAttribute {
             context.performAndWait {
                 let op = CDOperation.createLWW(context: context, container: operation, value: newValue!)
                 op.state = .inUpstreamQueueRenderedMerged
+                try! context.save()
             }
         }
     }
 }
 
 
-class CRAttributeBool: CRAttribute {
+public class CRAttributeBool: CRAttribute {
     init(context: NSManagedObjectContext, container:CRObject, name:String) {
         super.init(context: context, container: container, name: name, type: .boolean)
     }
@@ -210,12 +213,13 @@ class CRAttributeBool: CRAttribute {
             context.performAndWait {
                 let op = CDOperation.createLWW(context: context, container: operation, value: newValue!)
                 op.state = .inUpstreamQueueRenderedMerged
+                try! context.save()
             }
         }
     }
 }
 
-class CRAttributeString: CRAttribute {
+public class CRAttributeString: CRAttribute {
     init(context: NSManagedObjectContext, container:CRObject, name:String) {
         super.init(context: context, container: container, name: name, type: .string)
     }
@@ -237,6 +241,7 @@ class CRAttributeString: CRAttribute {
             context.performAndWait {
                 let op = CDOperation.createLWW(context: context, container: operation, value: newValue!)
                 op.state = .inUpstreamQueueRenderedMerged
+                try! context.save()
             }
         }
     }

@@ -5,8 +5,20 @@ Enables colaboration on text field across multiple iOS devices.
 It's based on operation based CRDT with replication leveraging native CoreData CloudKit sync.
 A nearly vanilla implementation of CRDT RGA (operation per character).
 
+
 ## project status
 Work in progress (WIP) / Request for comments (RFC)
+
+
+## milestones/roadmap
+- [x] serialisation and deserialisation of basic attributes using LWW and Mutable String using RGA
+- [x] replication primitives
+- [] live merging of remote changes
+- [] demo app
+- [] sharing (native)
+- [] ORM
+- [] optimisations - never ending
+
 
 ## research
 Source:

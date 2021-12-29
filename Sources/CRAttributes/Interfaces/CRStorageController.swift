@@ -8,7 +8,6 @@
 import Foundation
 import CoreData
 
-//TODO: follow iwht https://developer.apple.com/documentation/coredata/consuming_relevant_store_changes
 public class CRStorageController {
     
     static func testMode() {
@@ -17,7 +16,7 @@ public class CRStorageController {
     
     static var _shared:CRStorageController? = nil
     
-    static var shared:CRStorageController {
+    public static var shared:CRStorageController {
         CRStorageController._shared = CRStorageController._shared ?? CRStorageController()
         return _shared!
     }
@@ -27,13 +26,13 @@ public class CRStorageController {
         return result
     }()
     
-    let localContainer: NSPersistentContainer
-    let localContainerBackgroundContext: NSManagedObjectContext
-    let replicationContainer: NSPersistentContainer
-    let replicationContainerBackgroundContext: NSManagedObjectContext
+    public let localContainer: NSPersistentContainer
+    public let localContainerBackgroundContext: NSManagedObjectContext
+    public let replicationContainer: NSPersistentContainer
+    public let replicationContainerBackgroundContext: NSManagedObjectContext
     
-    let rgaController: RGAController
-    let replicationController: ReplicationController
+    public let rgaController: RGAController
+    public let replicationController: ReplicationController
     
     private static let authorName = "FireballWatch"
     

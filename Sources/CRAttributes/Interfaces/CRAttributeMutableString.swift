@@ -19,7 +19,7 @@ import SwiftProtobuf
 let stringOptimiseQueueLengthMax = 1234
 
 
-class CRAttributeMutableString: CRAttribute {
+public class CRAttributeMutableString: CRAttribute {
     var textStorage: CRTextStorage? = nil
 
     init(context: NSManagedObjectContext, container:CRObject, name:String) {
