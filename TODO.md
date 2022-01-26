@@ -1,6 +1,8 @@
 # TODO
 
 
+- [] notify UI about conversions from ghost to the materialised object
+- [] delete container is the container of deleted operation, delete parent is the deleted operation for all types (optimised prefetching)
 - [] update rendered string for the opened container(attribute/object) (CRAttribute should subscribe to changes where it is a container)
 - [] update rendered string optimisations
 - [] background fast update of all not yet opened MutableStrings - O(n) as it's a linked list to string
@@ -14,6 +16,9 @@
 - [] fix performance of testLoadingPerformanceSinglePaste (5 x lorem used to work)
 - [] migrate deprecated "withUnsafeBytes { (pointer: UnsafePointer"
 - [] performance test and solution for big paste
+- [] make Virtual Roots weak, so we only update them when they are a part of UI
+
+- [] foreign key
 
 - [x] track replication container history so we can detect and process remote changes (NSPersistentHistoryTrackingKey)
 - [x] ensure we can receive duplicates of downstream operations

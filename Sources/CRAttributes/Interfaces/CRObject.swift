@@ -14,37 +14,52 @@ import CoreData
 //TODO: future - delay attribute creation until it's used - but then it increases prorability of duplicate attribute objects...., so maybe not
 // ideally object creation should instantly create attributes
 
-public class CRObject {
-    var operation:CDOperation? = nil
-    let context: NSManagedObjectContext
-    let type: CRObjectType
+@MainActor public class CRObject: CREntity {
+    let objectType: CRObjectType
     var attributesDict: [String:CRAttribute] = [:]
-    
+        
     // creates new CRObjects
-    init(context: NSManagedObjectContext, type: CRObjectType, container: CRObject?) {
-        self.context = context
-        self.type = type
+    public init(objectType: CRObjectType, container: CRObject?) {
+        self.objectType = objectType
+        let context = CRStorageController.shared.localContainer.viewContext // we are on MainActor
+        var newOperation:CDOperation? = nil
+        
         context.performAndWait {
-            let containerObject: CDOperation?
-            containerObject = container?.operation
-            self.operation = CDOperation.createObject(context: context, container: containerObject, type: type)
+            let containerOp: CDOperation?
+            containerOp = container?.operation
+            newOperation = CDOperation.createObject(context: context, container: containerOp, type: objectType)
+            try! context.save()
         }
+        super.init(operation: newOperation, type: .object, prefetchContainedEntities: false) //it's new so nothing to contain (for nor as we may want to accept that even new parent could be a duplicate)
     }
     
-    // Remember to execute within context.perform {}
-    init(context: NSManagedObjectContext, from: CDOperation) {
-        self.context = context
-        operation = from
-        type = from.objectType
+    init(from: CDOperation) {
+//        operation = from
+        assert(from.weakCREntity == nil)
+        objectType = from.objectType
+        super.init(operation: from)
+        self.operation?.weakCREntity = self
         prefetchAttributes()
     }
-        
+    
+
+    /**
+     for virtualRoot
+     */
+    init(objectType: CRObjectType) {
+        self.objectType = objectType
+        super.init(type: .object)
+    }
+
+    
+    
     //getOrCreate
-    func attribute(name: String, type attributeType: CRAttributeType) -> CRAttribute {
+    public func attribute(name: String, attributeType: CRAttributeType) -> CRAttribute {
         if let attribute = self.attributesDict[name] {
-            assert(attribute.type == attributeType)
+            assert(attribute.attributeType == attributeType)
             return attribute
         }
+        assert(operation != nil)
 
         context.performAndWait {
             // let's check if it doesn't exist already
@@ -63,7 +78,7 @@ public class CRObject {
                 }
                 assert(op.type == .attribute)
                 assert(op.attributeType == attributeType)
-                attribute = CRAttribute.factory(context: context, from: op, container: self)
+                attribute = op.getOrCreateCREntity() as! CRAttribute
                 break //TODO: make it deterministic in case we have multiple attributes of the same name
             }
             if attribute == nil {
@@ -76,22 +91,23 @@ public class CRObject {
         return attributesDict[name]!
     }
         
-    public static func allObjects(context: NSManagedObjectContext, type:CRObjectType) -> [CRObject] {
-        var crResults:[CRObject] = []
-        
-        context.performAndWait {
-            let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
-            request.returnsObjectsAsFaults = false
-            request.predicate = NSPredicate(format: "rawObjectType == %@ AND hasTombstone == false",
-                                            argumentArray: [type.rawValue])
-
-            let cdResults:[CDOperation] = try! context.fetch(request)
-            
-            crResults = cdResults.map { CRObject(context: context, from: $0) }
-            
-        }
-        return crResults
-    }
+//    public static func allObjects(context: NSManagedObjectContext, type:CRObjectType) -> [CRObject] {
+//        var crResults:[CRObject] = []
+////        print("allObjects on \(context) using thread \(Thread.current)")
+////        print("context.name: \(String(describing: context.name))")
+//        context.performAndWait {
+//            let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+//            request.returnsObjectsAsFaults = false
+//            request.predicate = NSPredicate(format: "rawObjectType == %@ AND hasTombstone == false",
+//                                            argumentArray: [type.rawValue])
+//
+//            let cdResults:[CDOperation] = try! context.fetch(request)
+//
+//            crResults = cdResults.map { CRObject(from: $0) }
+//
+//        }
+//        return crResults
+//    }
 
     func prefetchAttributes() {
 //        context.performAndWait {
@@ -106,25 +122,42 @@ public class CRObject {
         if cdResults.count > 0 {
             for attributeOp in cdResults {
                 guard attributeOp.type == .attribute else { continue }
-                attributesDict[attributeOp.attributeName!] = CRAttribute.factory(context: context, from:attributeOp, container: self)
+                attributesDict[attributeOp.attributeName!] = attributeOp.getOrCreateCREntity() as? CRAttribute
             }
         }
 //        }
         //TODO: prefetch string sub deletes
     }
-        
-    func subObjects() -> [CRObject] {
-        var crResults:[CRObject] = []
+    
+    override func renderOperations(_ operations: [CDOperation]) {
+        // normally we woudl send objectWillChange.send() but it has no value here
+        //TODO: implement delete
+        fatalNotImplemented()
+//        _value = getStorageValue()
+    }
+    
+    override func getStorageContainedObjects() -> [CREntity] {
+        var crResults:[CREntity] = []
+//        print("context.name: \(context.name)")
 
-        context.performAndWait {
+        context.performAndWait { // do we still need context.performAndWait if we are @MainActor?
             let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.returnsObjectsAsFaults = false
-            request.predicate = NSPredicate(format: "container == %@", operation!)
+            if let operation = operation {
+                request.predicate = NSPredicate(format: "container == %@", argumentArray: [operation])
+            } else { // I'm a virtualRoot
+                request.predicate = NSPredicate(format: "container == nil AND rawType == %@ AND rawObjectType == %@", argumentArray: [CDOperationType.object.rawValue, objectType.rawValue])
+            }
 
             let cdResults:[CDOperation] = try! context.fetch(request)
             
-            crResults = cdResults.map { CRObject(context: context, from: $0) }
+            for cd in cdResults {
+                if let cr = cd.getOrCreateCREntity() {
+                    crResults.append(cr)
+                }
+            }
         }
         return crResults
     }
+    
 }

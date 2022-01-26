@@ -71,7 +71,7 @@ extension CRObjectType {
 
 @objc(CDOperation)
 public class CDOperation: NSManagedObject {
-
+    weak var weakCREntity: CREntity? //if we have UI object then it will be refered here
 }
 
 extension CDOperation {
@@ -114,6 +114,8 @@ extension CDOperation {
     @NSManaged public var next: CDOperation?
     @NSManaged public var prev: CDOperation?
 
+    
+    
     @nonobjc public func containedOperations() -> [CDOperation] {
         let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
         request.predicate = NSPredicate(format: "container == %@", self)
@@ -355,6 +357,48 @@ extension CDOperation {
             return "op([\(lamport)]: '\(attributeName!) type=\(type), state:\(state))"
         default:
             return "op([\(lamport)]: type=\(type), state:\(state))"
+        }
+    }
+    
+    
+    var isContainer: Bool {
+        switch type {
+        case .attribute:
+            return true
+        case .object:
+            return true
+        default:
+            return false
+        }
+    }
+    
+    var hasCREntity: Bool {
+        return weakCREntity != nil
+    }
+    
+    /**
+     ghost returns nil
+     object and attribute will always return CREntity
+     lww operation or string operation or delete will return container CREntity but only if container is not a ghost
+     */
+    //TODO: messy design - CDOperation should not know about CREntities
+    @MainActor func getOrCreateCREntity() -> CREntity? {
+        if let weakCREntity = weakCREntity {
+            return weakCREntity
+        } else {
+            var newEntity:CREntity? = nil
+            switch type {
+            case .ghost:
+                break
+            case .attribute:
+                newEntity = CRAttribute.factory(context: self.managedObjectContext!, from: self)
+            case .object:
+                newEntity = CRObject(from: self)
+            default:
+                newEntity = nil
+            }
+            weakCREntity = newEntity
+            return newEntity
         }
     }
 }

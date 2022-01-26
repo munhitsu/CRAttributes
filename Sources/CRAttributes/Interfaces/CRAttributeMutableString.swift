@@ -7,7 +7,9 @@
 
 import Foundation
 import CoreData
+#if targetEnvironment(macCatalyst)
 import AppKit
+#endif
 #if os(iOS)
 import UIKit
 import SwiftProtobuf
@@ -20,21 +22,27 @@ let stringOptimiseQueueLengthMax = 1234
 
 
 public class CRAttributeMutableString: CRAttribute {
-    var textStorage: CRTextStorage? = nil
+    public lazy var textStorage:CRTextStorage = {
+        _textStorage!
+    }()
+    var _textStorage: CRTextStorage?
 
-    init(context: NSManagedObjectContext, container:CRObject, name:String) {
-        super.init(context: context, container: container, name: name, type: .mutableString)
-        let context = CRStorageController.shared.localContainer.viewContext
-        context.performAndWait {
-            textStorage = CRTextStorage(attributeOp: operation!)
-        }
+    init(container: CRObject, name: String) {
+        super.init(container: container, name: name, type: .mutableString)
+        _textStorage = CRTextStorage(attributeOp: operation!)
         assert(operationsCount() == 0)
     }
 
     // Remember to execute within context.perform {}
-    override init(context:NSManagedObjectContext, container: CRObject, from:CDOperation) {
-        textStorage = CRTextStorage(attributeOp: from)
-        super.init(context: context, container: container, from: from)
+    override init(from: CDOperation) {
+        _textStorage = CRTextStorage(attributeOp: from)
+        super.init(from: from)
+    }
+
+    override func renderOperations(_ operations: [CDOperation]) {
+        // normally we woudl send objectWillChange.send() but it has no value here
+        fatalNotImplemented()
+//        _value = getStorageValue()
     }
 }
  
@@ -43,7 +51,7 @@ public class CRAttributeMutableString: CRAttribute {
 /**
  not thread safe - purely for use from the ViewContext
  */
-class CRTextStorage: NSTextStorage {
+public class CRTextStorage: NSTextStorage {
 //    let container: CRObject
 //    let attributeName: String
     var attributeOp: CDOperation
@@ -87,9 +95,9 @@ class CRTextStorage: NSTextStorage {
         super.init(coder: aDecoder)
     }
     
-    required init?(pasteboardPropertyList propertyList: Any, ofType type: NSPasteboard.PasteboardType) {
-        fatalError("init(pasteboardPropertyList:ofType:) has not been implemented")
-    }
+//    required init?(pasteboardPropertyList propertyList: Any, ofType type: NSPasteboard.PasteboardType) {
+//        fatalError("init(pasteboardPropertyList:ofType:) has not been implemented")
+//    }
     
     // subclasses should implement it to execute in O(1) time.
     // source https://developer.apple.com/documentation/foundation/nsattributedstring/1412616-string
@@ -112,6 +120,7 @@ class CRTextStorage: NSTextStorage {
             // TODO: delete operations in the range
             for address in addressesArray[range.location...(range.location+range.length-1)] {
 //                let op = CDOperation.findOperationOrCreateGhost(from: address, in: context) //TODO: consider moving to background
+                
                 let delete = CDOperation.createDelete(context: context, within: self.attributeOp, of: address)
                 delete.state = .inUpstreamQueueRendered
             }

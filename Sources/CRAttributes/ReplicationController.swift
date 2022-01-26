@@ -17,6 +17,7 @@ public class ReplicationController {
     
     var lastToken: NSPersistentHistoryToken? = nil {
         didSet {
+            print("ReplicationController.\(#function): start")
             guard let token = lastToken, let data = try? NSKeyedArchiver.archivedData(withRootObject: token, requiringSecureCoding: true) else { return }
             do {
                 try data.write(to: tokenFile)
@@ -27,6 +28,7 @@ public class ReplicationController {
     }
     
     lazy var tokenFile: URL = {
+        print("ReplicationController.\(#function): tokenFile start")
         let url = NSPersistentContainer.defaultDirectoryURL().appendingPathComponent("CRAttributes", isDirectory: true)
         if !FileManager.default.fileExists(atPath: url.path) {
             do {
@@ -35,6 +37,7 @@ public class ReplicationController {
                 print("###\(#function): Could not create persistent container URL: \(error)")
             }
         }
+        print("got the token URL: \(url)")
         return url.appendingPathComponent("historyToken.data", isDirectory: false)
     }()
     
@@ -58,7 +61,7 @@ public class ReplicationController {
                 guard let self = self else { return }
                 self.processRemoteStoreChanges(notification)
                 })
-            self.processDownstreamHistoryAsync()
+            self.processDownstreamHistoryAsync(context: replicationContext)
         }
     }
 }
@@ -197,16 +200,16 @@ extension ReplicationController {
             }
             
             for transaction in history.reversed() {
-                let token = transaction.token
-                let transactionNumber = transaction.transactionNumber
-                let context = transaction.contextName ?? "unknown context"
-                let author = transaction.author ?? "unknown author"
+//                let token = transaction.token
+//                let transactionNumber = transaction.transactionNumber
+//                let context = transaction.contextName ?? "unknown context"
+//                let author = transaction.author ?? "unknown author"
                 guard let changes = transaction.changes else { continue }
                 
                 for change in changes {
                     let objectID = change.changedObjectID
-                    let changeID = change.changeID
-                    let transaction = change.transaction
+//                    let changeID = change.changeID
+//                    let transaction = change.transaction
                     let changeType = change.changeType
                     
                     switch changeType {
@@ -217,6 +220,8 @@ extension ReplicationController {
                         fatalError("There shall be no updates")
                     case .delete:
                         fatalError("There shall be no deletions")
+                    @unknown default:
+                        fatalError("There shall be no unknowns")
                     }
                 }
             }
@@ -228,10 +233,15 @@ extension ReplicationController {
      */
     func processDownstreamHistoryAsync() {
         let remoteContext = CRStorageController.shared.replicationContainerBackgroundContext
-        remoteContext.perform { [self] in
+        processDownstreamHistoryAsync(context: remoteContext)
+    }
+    
+    func processDownstreamHistoryAsync(context: NSManagedObjectContext) {
+        context.perform { [self] in
             self.processDownstreamHistory()
         }
     }
+
     func processRemoteStoreChanges(_ notification: Notification) {
         processDownstreamHistoryAsync()
     }

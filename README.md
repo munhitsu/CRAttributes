@@ -16,6 +16,7 @@ Work in progress (WIP) / Request for comments (RFC)
 - [] live merging of remote changes
 - [] demo app
 - [] sharing (native)
+- [] Foreign key
 - [] ORM
 - [] optimisations - never ending
 

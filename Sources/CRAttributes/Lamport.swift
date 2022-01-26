@@ -4,8 +4,11 @@
 import CoreData
 #if !os(macOS)
 import UIKit
+#endif
+#if targetEnvironment(macCatalyst)
 import AppKit
 #endif
+
 
 
 public var lastLamport: lamportType = 0

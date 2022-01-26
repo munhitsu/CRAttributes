@@ -8,22 +8,25 @@
 import Foundation
 import CoreData
 
+var cr_test_mode = false
+
 public class CRStorageController {
     
     static func testMode() {
-        CRStorageController._shared = CRStorageController(inMemory: true, testMode: true)
+        cr_test_mode = true
+//        CRStorageController._shared = CRStorageController(inMemory: true, testMode: true)
     }
     
-    static var _shared:CRStorageController? = nil
+    public static let shared:CRStorageController = CRStorageController() // globals are lazy
     
-    public static var shared:CRStorageController {
-        CRStorageController._shared = CRStorageController._shared ?? CRStorageController()
-        return _shared!
-    }
+//    public static var shared:CRStorageController {
+//        CRStorageController._shared = CRStorageController._shared ?? CRStorageController()
+//        return _shared!
+//    }
 
-    static var preview: CRStorageController = {
-        let result = CRStorageController(inMemory: true, testMode: true)
-        return result
+    public static let preview: CRStorageController = {
+        cr_test_mode = true
+        return CRStorageController()
     }()
     
     public let localContainer: NSPersistentContainer
@@ -34,15 +37,14 @@ public class CRStorageController {
     public let rgaController: RGAController
     public let replicationController: ReplicationController
     
-    private static let authorName = "FireballWatch"
-    
-    init(inMemory: Bool = false, testMode: Bool = false) {
-        print("CRStorageController.init")
+    init() {
+        assert(Thread.current.isMainThread)
+//        print("CRStorageController.\(#function) on \(Thread.current)")
         
         localContainer = NSPersistentContainer(name: "CRLocalModel", managedObjectModel: CRLocalModel)
         replicationContainer = NSPersistentCloudKitContainer(name: "CRReplicationModel", managedObjectModel: CRReplicationModel)
         
-        if inMemory {
+        if cr_test_mode {
             localContainer.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
             replicationContainer.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
         }
@@ -55,15 +57,16 @@ public class CRStorageController {
         })
         localContainer.viewContext.automaticallyMergesChangesFromParent = true
         localContainer.viewContext.mergePolicy = NSMergePolicy(merge: .overwriteMergePolicyType)
-        
+
+        let replicationDescription  = replicationContainer.persistentStoreDescriptions.first
+        replicationDescription?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+        replicationDescription?.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+
         replicationContainer.loadPersistentStores(completionHandler: { (_, error) in
             if let error = error as NSError? {
                 fatalError("Unresolved error \(error), \(error.userInfo)")
             }
         })
-        let replicationDescription  = replicationContainer.persistentStoreDescriptions.first
-        replicationDescription?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
-        replicationDescription?.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
         
         localContainerBackgroundContext = localContainer.newBackgroundContext()
         localContainerBackgroundContext.automaticallyMergesChangesFromParent = true
@@ -86,8 +89,9 @@ public class CRStorageController {
         
         self.replicationController = ReplicationController(localContext: localContainerBackgroundContext,
                                                            replicationContext: replicationContainerBackgroundContext,
-                                                           skipTimer: testMode,
-                                                           skipRemoteChanges: testMode)
+                                                           skipTimer: cr_test_mode,
+                                                           skipRemoteChanges: cr_test_mode)
+        print("CRStorageController.done")
     }
         
     func processUpsteamOperationsQueue() {

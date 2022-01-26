@@ -34,6 +34,8 @@
 		BB7BD5D526C4732500ADEDD4 /* test-mk-editing-trace.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = BB7BD5D426C4732500ADEDD4 /* test-mk-editing-trace.json */; };
 		BB8D7C8326D831F300B4E83E /* CDRenderedStringOp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB8D7C8226D831F300B4E83E /* CDRenderedStringOp.swift */; };
 		BBA81EBF26C64F430015981B /* CRRemoteOperationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBA81EBE26C64F430015981B /* CRRemoteOperationsTests.swift */; };
+		BBBBE2F2279D9550003EC3E5 /* CREntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBE2F0279D9550003EC3E5 /* CREntity.swift */; };
+		BBBBE2F3279D9550003EC3E5 /* CREntityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBBBE2F1279D9550003EC3E5 /* CREntityController.swift */; };
 		BBCBAE7B27303F38005E7717 /* CROperationID.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBCBAE7A27303F38005E7717 /* CROperationID.swift */; };
 		BBCBAE7D27303F5F005E7717 /* UUID.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBCBAE7C27303F5F005E7717 /* UUID.swift */; };
 		BBCBAE7F273042A8005E7717 /* RGAController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBCBAE7E273042A8005E7717 /* RGAController.swift */; };
@@ -225,6 +227,8 @@
 		BB8D7C8226D831F300B4E83E /* CDRenderedStringOp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CDRenderedStringOp.swift; sourceTree = "<group>"; };
 		BBA81EBD26C5ACE70015981B /* ProtoModel.proto */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.protobuf; path = ProtoModel.proto; sourceTree = "<group>"; };
 		BBA81EBE26C64F430015981B /* CRRemoteOperationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CRRemoteOperationsTests.swift; sourceTree = "<group>"; };
+		BBBBE2F0279D9550003EC3E5 /* CREntity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CREntity.swift; sourceTree = "<group>"; };
+		BBBBE2F1279D9550003EC3E5 /* CREntityController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CREntityController.swift; sourceTree = "<group>"; };
 		BBBF0889271F685100493613 /* BENCHMARKS.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = BENCHMARKS.md; sourceTree = "<group>"; };
 		BBCBAE7A27303F38005E7717 /* CROperationID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CROperationID.swift; sourceTree = "<group>"; };
 		BBCBAE7C27303F5F005E7717 /* UUID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UUID.swift; sourceTree = "<group>"; };
@@ -388,6 +392,8 @@
 			isa = PBXGroup;
 			children = (
 				BBCBAE7A27303F38005E7717 /* CROperationID.swift */,
+				BBBBE2F0279D9550003EC3E5 /* CREntity.swift */,
+				BBBBE2F1279D9550003EC3E5 /* CREntityController.swift */,
 				OBJ_9 /* CRStorageController.swift */,
 				OBJ_13 /* CRAttributes.swift */,
 				OBJ_14 /* CRAttributeMutableString.swift */,
@@ -853,6 +859,7 @@
 				BB30347A275AD694000F882D /* ProtoModel+Extensions.swift in Sources */,
 				OBJ_154 /* CRAttributeMutableString.swift in Sources */,
 				OBJ_155 /* CRObject.swift in Sources */,
+				BBBBE2F3279D9550003EC3E5 /* CREntityController.swift in Sources */,
 				BB02A8542770DBCB007EE503 /* CDOperation+Delete.swift in Sources */,
 				BB02A8522770DBB5007EE503 /* CDOperation+Ghost.swift in Sources */,
 				BBFF6B3B26CA7330005A6182 /* ProtoModel.pb.swift in Sources */,
@@ -862,6 +869,7 @@
 				BBCBAE7D27303F5F005E7717 /* UUID.swift in Sources */,
 				BBFF6B3D26CA7DD4005A6182 /* CDReplicationModel.swift in Sources */,
 				BB6A991D274AAACB00145446 /* MyTimer.swift in Sources */,
+				BBBBE2F2279D9550003EC3E5 /* CREntity.swift in Sources */,
 				OBJ_164 /* CDOperation.swift in Sources */,
 				OBJ_166 /* CDOperationsForest.swift in Sources */,
 				BB02A8562770DBF9007EE503 /* CDOperation+StringInsert.swift in Sources */,
@@ -1063,7 +1071,7 @@
 				);
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = CRAttributes.xcodeproj/CRAttributes_Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) $(TOOLCHAIN_DIR)/usr/lib/swift/macosx";
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				OTHER_CFLAGS = "$(inherited)";
@@ -1078,7 +1086,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_VERSION = 5.0;
 				TARGET_NAME = CRAttributes;
-				TVOS_DEPLOYMENT_TARGET = 15.0;
+				TVOS_DEPLOYMENT_TARGET = 15.2;
 				WATCHOS_DEPLOYMENT_TARGET = 2.0;
 			};
 			name = Debug;
@@ -1098,7 +1106,7 @@
 				);
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = CRAttributes.xcodeproj/CRAttributes_Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) $(TOOLCHAIN_DIR)/usr/lib/swift/macosx";
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				OTHER_CFLAGS = "$(inherited)";
@@ -1113,7 +1121,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_VERSION = 5.0;
 				TARGET_NAME = CRAttributes;
-				TVOS_DEPLOYMENT_TARGET = 15.0;
+				TVOS_DEPLOYMENT_TARGET = 15.2;
 				WATCHOS_DEPLOYMENT_TARGET = 2.0;
 			};
 			name = Release;
@@ -1176,7 +1184,7 @@
 				);
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = CRAttributes.xcodeproj/CRAttributesTests_Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				OTHER_CFLAGS = "$(inherited)";
@@ -1187,7 +1195,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_VERSION = 5.0;
 				TARGET_NAME = CRAttributesTests;
-				TVOS_DEPLOYMENT_TARGET = 15.0;
+				TVOS_DEPLOYMENT_TARGET = 15.2;
 				WATCHOS_DEPLOYMENT_TARGET = 7.0;
 			};
 			name = Debug;
@@ -1208,7 +1216,7 @@
 				);
 				HEADER_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = CRAttributes.xcodeproj/CRAttributesTests_Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @loader_path/../Frameworks @loader_path/Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				OTHER_CFLAGS = "$(inherited)";
@@ -1219,7 +1227,7 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
 				SWIFT_VERSION = 5.0;
 				TARGET_NAME = CRAttributesTests;
-				TVOS_DEPLOYMENT_TARGET = 15.0;
+				TVOS_DEPLOYMENT_TARGET = 15.2;
 				WATCHOS_DEPLOYMENT_TARGET = 7.0;
 			};
 			name = Release;
