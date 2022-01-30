@@ -198,7 +198,7 @@ class CRRemoteOperationsTests: XCTestCase {
         let viewContext = CRStorageController.shared.localContainer.viewContext
 //        let bgContext = CRStorageController.shared.localContainerBackgroundContext
 
-        let note = CREntity.virtualRootObject(objectType: .testNote).containedEntities[0] as! CRObject
+        let note = CREntity.getOrCreateVirtualRootObject(objectType: .testNote).containedEntities[0] as! CRObject
 //        let note = CRObject.allObjects(objectType: .testNote)[0]
 
         let count:CRAttributeInt = note.attribute(name: "count", attributeType: .int) as! CRAttributeInt
@@ -226,7 +226,7 @@ class CRRemoteOperationsTests: XCTestCase {
 //        let viewContext = CRStorageController.shared.localContainer.viewContext
         //validate if operations are properly merged
  
-        let b_n1 = CREntity.virtualRootObject(objectType: .testNote).containedEntities[0] as! CRObject
+        let b_n1 = CREntity.getOrCreateVirtualRootObject(objectType: .testNote).containedEntities[0] as! CRObject
 //        let b_n1 = CRObject.allObjects(context: viewContext, type: .testNote)[0]
         
         let b_a1:CRAttributeInt = b_n1.attribute(name: "count", attributeType: .int) as! CRAttributeInt

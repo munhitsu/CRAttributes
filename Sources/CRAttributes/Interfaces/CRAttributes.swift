@@ -29,18 +29,10 @@ public class CRAttribute: CREntity {
             let containerObject: CDOperation?
             containerObject = container.operation
             newOperation = CDOperation.createAttribute(context: context, container: containerObject, type: type, name: name)
+            try! context.save()
         }
         super.init(operation: newOperation, type: .attribute, prefetchContainedEntities: false)
     }
-    
-//    init(container: CRObject, from: CDOperation) {
-//        assert(from.type == .attribute)
-//        self.attributeName = from.attributeName!
-//        self.attributeType = from.attributeType
-//        super.init(operation: from)
-////        self.container = container
-//        self.operation?.weakCREntity = self
-//    }
 
     init(from: CDOperation) {
         assert(from.weakCREntity == nil)
@@ -165,7 +157,6 @@ public class CRAttributeInt: CRAttribute {
     }
 
     override func renderOperations(_ operations: [CDOperation]) {
-        objectWillChange.send()
         _value = getStorageValue()
     }
 }
@@ -211,7 +202,6 @@ public class CRAttributeFloat: CRAttribute {
     }
 
     override func renderOperations(_ operations: [CDOperation]) {
-        objectWillChange.send()
         _value = getStorageValue()
     }
 }
@@ -257,7 +247,6 @@ public class CRAttributeDate: CRAttribute {
     }
 
     override func renderOperations(_ operations: [CDOperation]) {
-        objectWillChange.send()
         _value = getStorageValue()
     }
 }
@@ -304,7 +293,6 @@ public class CRAttributeBool: CRAttribute {
     }
 
     override func renderOperations(_ operations: [CDOperation]) {
-        objectWillChange.send()
         _value = getStorageValue()
     }
 }
@@ -350,7 +338,7 @@ public class CRAttributeString: CRAttribute {
     }
 
     override func renderOperations(_ operations: [CDOperation]) {
-        objectWillChange.send()
         _value = getStorageValue()
+        prefetchContainedEntities()
     }
 }

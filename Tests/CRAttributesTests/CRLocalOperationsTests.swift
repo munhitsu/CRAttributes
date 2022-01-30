@@ -82,7 +82,7 @@ final class CRLocalOperationsTests: XCTestCase {
 //        let b_n1 = CRObject.allObjects(context: viewContext, objectType: .testNote)[0]
 //        XCTAssertEqual(b_n1.operation, n1.operation)
         
-        let vr = CREntity.virtualRootObject(objectType: .testNote)
+        let vr = CREntity.getOrCreateVirtualRootObject(objectType: .testNote)
         let b_n1 = vr.containedEntities[0] as! CRObject
         
         let b_a1:CRAttributeInt = b_n1.attribute(name: "count", attributeType: .int) as! CRAttributeInt
@@ -157,7 +157,7 @@ final class CRLocalOperationsTests: XCTestCase {
         //restoring
         
         
-        let vr = CREntity.virtualRootObject(objectType: .testNote)
+        let vr = CREntity.getOrCreateVirtualRootObject(objectType: .testNote)
         let b_n1 = vr.containedEntities[0] as! CRObject
 //        let b_n1 = CRObject.allObjects(objectType: .testNote)[0]
         XCTAssertEqual(b_n1.operation, n1.operation)
@@ -261,7 +261,7 @@ final class CRLocalOperationsTests: XCTestCase {
         CDOperation.printTreeOfContainers(context: viewContext)
 
         // Restoring
-        let b_n1 = CREntity.virtualRootObject(objectType: .testNote).containedEntities[0] as! CRObject
+        let b_n1 = CREntity.getOrCreateVirtualRootObject(objectType: .testNote).containedEntities[0] as! CRObject
 //        let b_n1 = CRObject.allObjects(context: viewContext, objectType: .testNote)[0]
         XCTAssertEqual(b_n1.operation, n1.operation)
         
@@ -406,7 +406,7 @@ final class CRLocalOperationsTests: XCTestCase {
         }
         
         measure {
-            let noteObject = CREntity.virtualRootObject(objectType: .testNote).containedEntities[0] as! CRObject
+            let noteObject = CREntity.getOrCreateVirtualRootObject(objectType: .testNote).containedEntities[0] as! CRObject
 //            let noteObject = CRObject.allObjects(context: viewContext, objectType: .testNote)[0]
             XCTAssertEqual(noteObject.operation, noteObject.operation)
             let noteAttribute = noteObject.attribute(name: "note", attributeType: .mutableString) as! CRAttributeMutableString
@@ -429,7 +429,7 @@ final class CRLocalOperationsTests: XCTestCase {
         }
 //        CRStorageController.shared.localContainer.viewContext.reset()
         measure {
-            let noteObject = CREntity.virtualRootObject(objectType: .testNote).containedEntities[0] as! CRObject
+            let noteObject = CREntity.getOrCreateVirtualRootObject(objectType: .testNote).containedEntities[0] as! CRObject
 //            let noteObject = CRObject.allObjects(context: viewContext, type: .testNote)[0]
             XCTAssertEqual(noteObject.operation, noteObject.operation)
             let noteAttribute = noteObject.attribute(name: "note", attributeType: .mutableString) as! CRAttributeMutableString

@@ -36,6 +36,8 @@ public class CRStorageController {
     
     public let rgaController: RGAController
     public let replicationController: ReplicationController
+   
+    public var entityController: CREntityController?
     
     init() {
         assert(Thread.current.isMainThread)
@@ -91,6 +93,12 @@ public class CRStorageController {
                                                            replicationContext: replicationContainerBackgroundContext,
                                                            skipTimer: cr_test_mode,
                                                            skipRemoteChanges: cr_test_mode)
+        
+        self.entityController = nil
+        Task {
+            self.entityController = await CREntityController(localContainerViewContext: localContainer.viewContext)
+        }
+        
         print("CRStorageController.done")
     }
         

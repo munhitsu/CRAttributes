@@ -49,10 +49,9 @@ public class ReplicationController {
         self.replicationContext = replicationContext
         
         if !skipTimer {
-            observers.append(Publishers.timer(interval: .seconds(1), times: .unlimited).sink { [weak self] time in //TODO: change to 5s, ensure only one operation at the time, stop at the end of the test
+            observers.append(Publishers.timer(interval: .seconds(1), times: .unlimited).sink { [weak self] time in //TODO: ensure only one operation at the time, stop at the end of the test
                 guard let self = self else { return }
-                print("Processing merged upstream operations: \(time)")
-                self.processUpsteamOperationsQueueAsync()
+                self.processUpstreamOperationsQueueAsync()
             })
         }
 
@@ -77,6 +76,7 @@ extension ReplicationController {
             
             self.replicationContext.performAndWait {
                 for protoForest in forests {
+                    print("Processing Upstream Queue (forest)")
                     let _ = CDOperationsForest(context: self.replicationContext, from:protoForest)
                 }
                 try! self.replicationContext.save()
@@ -85,7 +85,7 @@ extension ReplicationController {
         }
     }
 
-    func processUpsteamOperationsQueueAsync() {
+    func processUpstreamOperationsQueueAsync() {
         localContext.perform { [weak self] in
             guard let self = self else { return }
             self.processUpsteamOperationsQueue()

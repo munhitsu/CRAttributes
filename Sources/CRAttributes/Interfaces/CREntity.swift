@@ -7,6 +7,7 @@
 
 import Foundation
 import CoreData
+import Combine
 
 /**
  CREntities are a rendered layer on top of core data
@@ -30,7 +31,8 @@ import CoreData
     var context: NSManagedObjectContext
     var operation: CDOperation?
     var type: CDOperationType
-    var _containedEntities: [CREntity]
+    var _containedEntities: [CREntity] = []
+    var containedObservers: [AnyCancellable] = []
     
     public lazy var operationID: CROperationID =  {
         operation!.operationID()
@@ -63,21 +65,22 @@ import CoreData
 //        if let containerOp = operation.container {
 //            self.container = containerOp.getOrCreateCREntity()
 //        }
-        self._containedEntities.append(contentsOf: getStorageContainedObjects())
+        prefetchContainedEntities()
     }
     
     /**
      purely to create virtualRoot
      */
+    //TODO: convert to     static func virtualRoot(type: CDOperationType) -> CREntity {
     init(type: CDOperationType) {
         self.context = CRStorageController.shared.localContainer.viewContext // we are on MainActor
         self.operation = nil
         self._containedEntities = []
         self.type = type
 //        self.container = nil
-        self._containedEntities.append(contentsOf: getStorageContainedObjects())
+        prefetchContainedEntities()
     }
-
+    
     /**
      only to be used when also creating CDOperation
      */
@@ -87,18 +90,24 @@ import CoreData
         self.operation = operation
 //        self.container = container
         self.type = type
-        self._containedEntities = []
         if prefetchContainedEntities {
             self.prefetchContainedEntities()
         }
         self.operation?.weakCREntity = self
     }
-    
+        
     func prefetchContainedEntities() {
         self._containedEntities = getStorageContainedObjects()
+        containedObservers = []
+        for containedEntity in _containedEntities {
+            containedObservers.append(containedEntity.objectWillChange.sink {
+                [weak self] _ in
+                self?.objectWillChange.send()
+            })
+        }
     }
     
-    public static func virtualRootObject(objectType: CRObjectType) -> CRObject {
+    public static func getOrCreateVirtualRootObject(objectType: CRObjectType) -> CRObject {
         if let virtualRoot = CRObject.virtualRootObjects[objectType] {
             return virtualRoot
         }
@@ -111,14 +120,15 @@ import CoreData
      this will be executed on both merge and local changes
      */
     func renderOperations(_ operations: [CDOperation]) {
-        objectWillChange.send()
-        _containedEntities = getStorageContainedObjects()
+        prefetchContainedEntities()
+//        _containedEntities = getStorageContainedObjects()
     }
 
     /**
      it creates new array but all CREntities should be reused
      */
     func getStorageContainedObjects() -> [CREntity] {
+        print("CREntity.getStorageContainedObjects")
         var crResults:[CREntity] = []
 //        print("context.name: \(context.name)")
 

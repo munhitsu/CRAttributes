@@ -41,7 +41,7 @@ public class CRAttributeMutableString: CRAttribute {
 
     override func renderOperations(_ operations: [CDOperation]) {
         // normally we woudl send objectWillChange.send() but it has no value here
-        fatalNotImplemented()
+//        fatalNotImplemented()
 //        _value = getStorageValue()
     }
 }

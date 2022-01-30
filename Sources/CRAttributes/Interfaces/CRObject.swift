@@ -128,15 +128,12 @@ import CoreData
 //        }
         //TODO: prefetch string sub deletes
     }
-    
     override func renderOperations(_ operations: [CDOperation]) {
-        // normally we woudl send objectWillChange.send() but it has no value here
-        //TODO: implement delete
-        fatalNotImplemented()
-//        _value = getStorageValue()
+        prefetchContainedEntities()
     }
-    
+
     override func getStorageContainedObjects() -> [CREntity] {
+        print("CRObject.getStorageContainedObjects")
         var crResults:[CREntity] = []
 //        print("context.name: \(context.name)")
 
