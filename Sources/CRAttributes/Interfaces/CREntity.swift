@@ -136,7 +136,7 @@ import Combine
             let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.returnsObjectsAsFaults = false
             if let operation = operation {
-                request.predicate = NSPredicate(format: "container == %@", argumentArray: [operation])
+                request.predicate = NSPredicate(format: "container == %@ AND hasTombstone == false", argumentArray: [operation])
             } else { // I'm a virtualRoot
                 fatalNotImplemented()
             }

@@ -78,7 +78,7 @@ import CoreData
                 }
                 assert(op.type == .attribute)
                 assert(op.attributeType == attributeType)
-                attribute = op.getOrCreateCREntity() as! CRAttribute
+                attribute = op.getOrCreateCREntity() as? CRAttribute
                 break //TODO: make it deterministic in case we have multiple attributes of the same name
             }
             if attribute == nil {
@@ -133,7 +133,7 @@ import CoreData
     }
 
     override func getStorageContainedObjects() -> [CREntity] {
-        print("CRObject.getStorageContainedObjects")
+        print("CRObject.getStorageContainedObjects on \(self.type)")
         var crResults:[CREntity] = []
 //        print("context.name: \(context.name)")
 
@@ -141,9 +141,9 @@ import CoreData
             let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.returnsObjectsAsFaults = false
             if let operation = operation {
-                request.predicate = NSPredicate(format: "container == %@", argumentArray: [operation])
+                request.predicate = NSPredicate(format: "container == %@ AND hasTombstone == false", argumentArray: [operation])
             } else { // I'm a virtualRoot
-                request.predicate = NSPredicate(format: "container == nil AND rawType == %@ AND rawObjectType == %@", argumentArray: [CDOperationType.object.rawValue, objectType.rawValue])
+                request.predicate = NSPredicate(format: "container == nil AND rawType == %@ AND rawObjectType == %@ AND hasTombstone == false", argumentArray: [CDOperationType.object.rawValue, objectType.rawValue])
             }
 
             let cdResults:[CDOperation] = try! context.fetch(request)

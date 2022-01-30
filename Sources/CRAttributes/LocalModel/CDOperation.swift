@@ -383,6 +383,7 @@ extension CDOperation {
      */
     //TODO: messy design - CDOperation should not know about CREntities
     @MainActor func getOrCreateCREntity() -> CREntity? {
+        assert(hasTombstone == false)
         if let weakCREntity = weakCREntity {
             return weakCREntity
         } else {
