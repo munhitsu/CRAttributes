@@ -82,13 +82,13 @@ import Combine
     func handleContextDidChange(inserted_objects: Set<NSManagedObject>) {
         assert(Thread.isMainThread)
         context.perform { // if we performAndWait then we can't save - it's relying on the merge save
-            print("viewContext.handleContextDidChange")
+//            print("viewContext.handleContextDidChange")
             // we notify and render only on pre-existing entities
 
             for inserted_object in inserted_objects {
                 // TODO: (optimisation) group operations for the same crEntity
                 if let op = inserted_object as? CDOperation {
-                    print("Root context has changed - objectWillChange.send()")
+//                    print("Root context has changed - objectWillChange.send()")
                     op.weakCREntity?.objectWillChange.send()
                     // now the containers
                     if op.type != .ghost {
@@ -103,7 +103,7 @@ import Combine
             
             for inserted_object in inserted_objects {
                 if let op = inserted_object as? CDOperation {
-                    print("Root context has changed - rendering changes")
+//                    print("Root context has changed - rendering changes")
                     op.weakCREntity?.renderOperations([op])
                     // now the containers
                     if op.type != .ghost {

@@ -172,10 +172,11 @@ public class CRTextStorage: NSTextStorage {
     // each setAttributes shall be a CRDT operation with range mapped to CRDT address space
     public override func setAttributes(_ attrs: [NSAttributedString.Key : Any]?, range: NSRange) {
         //TODO: each attribute set/delete will be an operation (TBD about the parent ID, I think it's string insert one except for deleted operations
-//        beginEditing()
-//        attributedString.setAttributes(attrs, range: range)
-//        edited(.editedAttributes, range: range, changeInLength: 0)
-//        endEditing()
+        beginEditing()
+        print("setting attributes: \(attrs)")
+        attributedString.setAttributes(attrs, range: range)
+        edited(.editedAttributes, range: range, changeInLength: 0)
+        endEditing()
     }
 
     
