@@ -9,8 +9,8 @@ import Foundation
 
 
 public struct CROperationID: Comparable, Hashable, Codable {
-    var lamport: lamportType
-    var peerID: UUID
+    public var lamport: lamportType
+    public var peerID: UUID
     
     init() {
         self.peerID = localPeerID

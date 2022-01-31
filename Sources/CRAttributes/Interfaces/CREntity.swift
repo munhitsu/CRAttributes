@@ -32,21 +32,31 @@ import Combine
     var operation: CDOperation?
     var type: CDOperationType
     var _containedEntities: [CREntity] = []
+//    {
+//        willSet {
+//            objectWillChange.send()
+//        }
+//    }
     var containedObservers: [AnyCancellable] = []
     
-    public lazy var operationID: CROperationID =  {
-        operation!.operationID()
+    public lazy var operationID: CROperationID? =  {
+        operation?.operationID()
     }()
     
     var is_virtual: Bool {
         return operation == nil
     }
 
+    // the object will hasTombstone==true while it's waiting to be unreferenced
+    public var hasTombstone: Bool? {
+        operation?.hasTombstone
+    }
+
     // read only
     // updates are done through creation/deletion of specific related objects
     public var containedEntities: [CREntity] {
         get {
-           return _containedEntities
+            return _containedEntities.filter { $0.hasTombstone == false } //TODO: this is a patch, not a solution of a root cause (see markAsDeleted)
         }
     }
     
@@ -97,9 +107,11 @@ import Combine
     }
         
     func prefetchContainedEntities() {
-        self._containedEntities = getStorageContainedObjects()
+        print("prefetchContainedEntities")
+        _containedEntities = getStorageContainedObjects()
         containedObservers = []
         for containedEntity in _containedEntities {
+            assert(containedEntity.hasTombstone == false)
             containedObservers.append(containedEntity.objectWillChange.sink {
                 [weak self] _ in
                 self?.objectWillChange.send()
@@ -121,14 +133,13 @@ import Combine
      */
     func renderOperations(_ operations: [CDOperation]) {
         prefetchContainedEntities()
-//        _containedEntities = getStorageContainedObjects()
     }
 
     /**
      it creates new array but all CREntities should be reused
      */
     func getStorageContainedObjects() -> [CREntity] {
-        print("CREntity.getStorageContainedObjects")
+        print("CREntity.getStorageContainedObjects: \(operationID?.lamport ?? -1) \(is_virtual)")
         var crResults:[CREntity] = []
 //        print("context.name: \(context.name)")
 
@@ -153,6 +164,7 @@ import Combine
     }
     public func markAsDeleted() {
         context.performAndWait { // do we still need context.performAndWait if we are @MainActor?
+            self.objectWillChange.send() //TODO: this is a patch - why didSaveObjectsNotification triggering objectWillChange is not enough?
             let delete = CDOperation.createDelete(context: context, within: operation?.container, of: operation!)
             self.operation?.hasTombstone = true
             delete.state = .inUpstreamQueueRenderedMerged

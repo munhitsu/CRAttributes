@@ -86,6 +86,8 @@ public class CRStorageController {
         replicationContainerBackgroundContext.name = "backgroundContext"
         replicationContainerBackgroundContext.transactionAuthor = localPeerID.uuidString
         
+        updateLastLamportFromCoOpLog(in: localContainer.viewContext)
+        
         self.rgaController = RGAController(localContainerBackgroundContext: localContainerBackgroundContext)
         rgaController.linkUnlinkedAsync()
         
