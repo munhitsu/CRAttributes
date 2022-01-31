@@ -169,7 +169,8 @@ public class CRTextStorage: NSTextStorage {
     }
     
   
-    // each setAttributes shall be a CRDT operation with range mapped to CRDT address space
+    //TODO: each setAttributes shall be a CRDT operation with range mapped to CRDT address space
+    //TODO: allow for markdown driven formatting (subclass or something)
     public override func setAttributes(_ attrs: [NSAttributedString.Key : Any]?, range: NSRange) {
         //TODO: each attribute set/delete will be an operation (TBD about the parent ID, I think it's string insert one except for deleted operations
         beginEditing()
