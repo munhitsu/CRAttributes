@@ -22,7 +22,7 @@ public class CRAttribute: CREntity {
     init(container: CRObject, name: String, type: CRAttributeType) {
         self.attributeName = name
         self.attributeType = type
-        let context = CRStorageController.shared.localContainer.viewContext // we are on MainActor
+        let context = container.operation!.managedObjectContext!
         var newOperation:CDOperation? = nil
 //        self.container = container
         context.performAndWait { //if it's all on mainActor, then this seems redundant
@@ -31,7 +31,7 @@ public class CRAttribute: CREntity {
             newOperation = CDOperation.createAttribute(context: context, container: containerObject, type: type, name: name)
             try! context.save()
         }
-        super.init(operation: newOperation, type: .attribute, prefetchContainedEntities: false)
+        super.init(operation: newOperation!, type: .attribute, prefetchContainedEntities: false)
     }
 
     init(from: CDOperation) {
@@ -86,7 +86,7 @@ public class CRAttribute: CREntity {
     /**
      creates a new attribute
      */
-    public static func factory(context: NSManagedObjectContext, container: CRObject, name: String, type: CRAttributeType) -> CRAttribute {
+    public static func factory(container: CRObject, name: String, type: CRAttributeType) -> CRAttribute {
         switch type {
         case CRAttributeType.mutableString:
             return CRAttributeMutableString(container: container, name: name)

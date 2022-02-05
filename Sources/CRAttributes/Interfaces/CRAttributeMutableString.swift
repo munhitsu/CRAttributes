@@ -61,7 +61,7 @@ public class CRTextStorage: NSTextStorage {
     var stringOptimiseCountDown = stringOptimiseQueueLengthMax
     
     var knownOperationForAddress: [CROperationID:CDOperation] = [:]
-    var context: NSManagedObjectContext
+    var context: NSManagedObjectContext?
     
     
     // TODO: try later to use the self=NSTextStorage internal storage
@@ -69,7 +69,7 @@ public class CRTextStorage: NSTextStorage {
     //Execute within context.perform of viewContext
     init(attributeOp: CDOperation) {
         self.attributeOp = attributeOp
-        context = CRStorageController.shared.localContainer.viewContext
+        self.context = attributeOp.managedObjectContext
 //        attributedString = NSMutableAttributedString(string:"")
         super.init()
         
@@ -90,7 +90,6 @@ public class CRTextStorage: NSTextStorage {
 
     required init?(coder aDecoder: NSCoder) {
         fatalNotImplemented()
-        context = CRStorageController.shared.localContainer.viewContext
         attributeOp = CDOperation()
         super.init(coder: aDecoder)
     }
@@ -121,10 +120,10 @@ public class CRTextStorage: NSTextStorage {
             for address in addressesArray[range.location...(range.location+range.length-1)] {
 //                let op = CDOperation.findOperationOrCreateGhost(from: address, in: context) //TODO: consider moving to background
                 
-                let delete = CDOperation.createDelete(context: context, within: self.attributeOp, of: address)
+                let delete = CDOperation.createDelete(context: context!, within: self.attributeOp, of: address)
                 delete.state = .inUpstreamQueueRendered
             }
-            try! context.save()
+            try! context!.save()
         }
         // TODO: - save once every 60 objects
 
@@ -143,7 +142,7 @@ public class CRTextStorage: NSTextStorage {
         for us in strContent.unicodeScalars {
 //            let parent = CDOperation.findOperationOrCreateGhost(from: parentAddress, in: context) //TODO: consider moving to background
 
-            let newOp:CDOperation = CDOperation.createStringInsert(context: context, container: self.attributeOp, parentID: parentAddress, contribution: us)
+            let newOp:CDOperation = CDOperation.createStringInsert(context: context!, container: self.attributeOp, parentID: parentAddress, contribution: us)
             newOp.state = .inUpstreamQueueRendered
             let charAddress = newOp.operationID()
             strAddresses.append(charAddress)
@@ -155,8 +154,8 @@ public class CRTextStorage: NSTextStorage {
         attributedString.replaceCharacters(in: range, with: strContent)
         addressesArray.replaceElements(in: range, with: strAddresses)
         
-        _ = CDRenderedStringOp(context: context, containerOp: attributeOp, in: range, operationString: strContent, operationAddresses: strAddresses)
-        try! context.save() // TODO: - make it save once a 60 objects
+        _ = CDRenderedStringOp(context: context!, containerOp: attributeOp, in: range, operationString: strContent, operationAddresses: strAddresses)
+        try! context!.save() // TODO: - make it save once a 60 objects
         considerSnapshotingStringBundle()
 
         edited(.editedCharacters,
@@ -182,8 +181,8 @@ public class CRTextStorage: NSTextStorage {
 
     
     private func prebuildStringBundleFromRenderedString(attributeOp: CDOperation) {
-        let context = CRStorageController.shared.localContainer.viewContext
-        (attributedString, addressesArray) = CDRenderedStringOp.stringBundleFor(context: context, container: attributeOp)
+//        let context = attributeOp.managedObjectContext
+        (attributedString, addressesArray) = CDRenderedStringOp.stringBundleFor(context: context!, container: attributeOp)
     }
     
     /**

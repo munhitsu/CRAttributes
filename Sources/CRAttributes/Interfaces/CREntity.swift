@@ -16,6 +16,11 @@ import Combine
  */
 
 /**
+ we ask for context only when it's not possibel to derive it from operation or container operation
+ */
+
+
+/**
  What are virtualRoots?
  Virtual Root is a container (nil) of all objects of specific type that have no container - e.g. all root level notes, or the top level folder "/"
  */
@@ -67,7 +72,7 @@ import Combine
      */
     init(operation: CDOperation) {
         assert(operation.weakCREntity == nil)
-        self.context = CRStorageController.shared.localContainer.viewContext // we are on MainActor
+        self.context = operation.managedObjectContext!
         self.operation = operation
         self._containedEntities = []
         self.type = operation.type
@@ -82,8 +87,8 @@ import Combine
      purely to create virtualRoot
      */
     //TODO: convert to     static func virtualRoot(type: CDOperationType) -> CREntity {
-    init(type: CDOperationType) {
-        self.context = CRStorageController.shared.localContainer.viewContext // we are on MainActor
+    init(context: NSManagedObjectContext, type: CDOperationType) {
+        self.context = context
         self.operation = nil
         self._containedEntities = []
         self.type = type
@@ -94,9 +99,9 @@ import Combine
     /**
      only to be used when also creating CDOperation
      */
-    init(operation: CDOperation?, type: CDOperationType, prefetchContainedEntities: Bool=true) {
+    init(context: NSManagedObjectContext, operation: CDOperation?, type: CDOperationType, prefetchContainedEntities: Bool=true) {
         assert(operation?.weakCREntity == nil)
-        self.context = CRStorageController.shared.localContainer.viewContext // we are on MainActor
+        self.context = context
         self.operation = operation
 //        self.container = container
         self.type = type
@@ -105,7 +110,19 @@ import Combine
         }
         self.operation?.weakCREntity = self
     }
-        
+
+    init(operation: CDOperation, type: CDOperationType, prefetchContainedEntities: Bool=true) {
+        assert(operation.weakCREntity == nil)
+        self.context = operation.managedObjectContext!
+        self.operation = operation
+//        self.container = container
+        self.type = type
+        if prefetchContainedEntities {
+            self.prefetchContainedEntities()
+        }
+        self.operation?.weakCREntity = self
+    }
+
     func prefetchContainedEntities() {
         print("prefetchContainedEntities")
         _containedEntities = getStorageContainedObjects()
@@ -119,11 +136,11 @@ import Combine
         }
     }
     
-    public static func getOrCreateVirtualRootObject(objectType: CRObjectType) -> CRObject {
+    public static func getOrCreateVirtualRootObject(context: NSManagedObjectContext, objectType: CRObjectType) -> CRObject {
         if let virtualRoot = CRObject.virtualRootObjects[objectType] {
             return virtualRoot
         }
-        let newVirtualRoot = CRObject(objectType: objectType)
+        let newVirtualRoot = CRObject(context: context, objectType: objectType)
         CRObject.virtualRootObjects[objectType] = newVirtualRoot
         return newVirtualRoot
     }

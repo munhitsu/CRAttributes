@@ -30,7 +30,7 @@ import CoreData
             newOperation = CDOperation.createObject(context: context, container: containerOp, type: objectType)
             try! context.save()
         }
-        super.init(operation: newOperation, type: .object, prefetchContainedEntities: false) //it's new so nothing to contain (for nor as we may want to accept that even new parent could be a duplicate)
+        super.init(operation: newOperation!, type: .object, prefetchContainedEntities: false) //it's new so nothing to contain (for nor as we may want to accept that even new parent could be a duplicate)
     }
     
     init(from: CDOperation) {
@@ -46,9 +46,9 @@ import CoreData
     /**
      for virtualRoot
      */
-    init(objectType: CRObjectType) {
+    init(context: NSManagedObjectContext, objectType: CRObjectType) {
         self.objectType = objectType
-        super.init(type: .object)
+        super.init(context: context, type: .object)
     }
 
     
@@ -82,7 +82,7 @@ import CoreData
                 break //TODO: make it deterministic in case we have multiple attributes of the same name
             }
             if attribute == nil {
-                attribute = CRAttribute.factory(context: context, container:self, name:name, type:attributeType)
+                attribute = CRAttribute.factory(container:self, name:name, type:attributeType)
             }
             attributesDict[name] = attribute
 

@@ -95,7 +95,7 @@ import Combine
                         if let container = op.container {
                             container.weakCREntity?.objectWillChange.send()
                         } else {
-                            CRObject.getOrCreateVirtualRootObject(objectType: op.objectType).objectWillChange.send()
+                            CRObject.getOrCreateVirtualRootObject(context: self.context, objectType: op.objectType).objectWillChange.send()
                         }
                     }
                 }
@@ -110,7 +110,7 @@ import Combine
                         if let container = op.container {
                             container.weakCREntity?.renderOperations([op]) // this should trigger container to pickup new sub objects
                         } else {
-                            CRObject.getOrCreateVirtualRootObject(objectType: op.objectType).renderOperations([op])
+                            CRObject.getOrCreateVirtualRootObject(context: self.context, objectType: op.objectType).renderOperations([op])
                         }
                     }
                 }
