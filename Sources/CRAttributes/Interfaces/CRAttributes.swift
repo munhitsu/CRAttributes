@@ -25,7 +25,7 @@ public class CRAttribute: CREntity {
         let context = container.operation!.managedObjectContext!
         var newOperation:CDOperation? = nil
 //        self.container = container
-        context.performAndWait { //if it's all on mainActor, then this seems redundant
+        context.performAndWait {
             let containerObject: CDOperation?
             containerObject = container.operation
             newOperation = CDOperation.createAttribute(context: context, container: containerObject, type: type, name: name)
@@ -48,7 +48,7 @@ public class CRAttribute: CREntity {
     /**
      useful for LWW type attributes
      */
-    internal func getLastOperation() -> CDOperation? {
+    public func getLastOperation() -> CDOperation? {
         var operations:[CDOperation] = []
         context.performAndWait {
             let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()

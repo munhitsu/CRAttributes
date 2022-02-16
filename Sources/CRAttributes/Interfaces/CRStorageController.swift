@@ -35,7 +35,7 @@ public class CRStorageController {
     public let replicationContainerBackgroundContext: NSManagedObjectContext
     
     public let rgaController: RGAController
-    public let replicationController: ReplicationController
+    public let replicationController: CRReplicationController
    
     public var entityController: CREntityController?
     
@@ -91,7 +91,7 @@ public class CRStorageController {
         self.rgaController = RGAController(localContainerBackgroundContext: localContainerBackgroundContext)
         rgaController.linkUnlinkedAsync()
         
-        self.replicationController = ReplicationController(localContext: localContainerBackgroundContext,
+        self.replicationController = CRReplicationController(localContext: localContainerBackgroundContext,
                                                            replicationContext: replicationContainerBackgroundContext,
                                                            skipTimer: cr_test_mode,
                                                            skipRemoteChanges: cr_test_mode)
@@ -105,6 +105,8 @@ public class CRStorageController {
     }
         
     func processUpsteamOperationsQueue() {
-        replicationController.processUpsteamOperationsQueue()
+        Task {
+            await replicationController.processUpstreamOperationsQueue()
+        }
     }
 }

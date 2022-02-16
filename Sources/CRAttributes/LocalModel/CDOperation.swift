@@ -261,7 +261,7 @@ extension CDOperation {
     static func findOrCreateOperation(context: NSManagedObjectContext, from protoForm: SwiftProtobuf.Message, container: CDOperation?, type: CDOperationType) -> CDOperation {
         var op:CDOperation?
 
-        context.performAndWait {
+        context.performAndWait { //TODO: caller will need to have it in context.performAndWait - so do we need to?
             switch type {
             case .stringInsert:
                 op = findOperationOrCreateGhost(from: (protoForm as! ProtoStringInsertOperation).id, in: context)
@@ -408,6 +408,7 @@ extension CDOperation {
 
 extension CDOperation {
     func mergeUpstream(context: NSManagedObjectContext) {
+        print("merging Upstream Op \(self.operationID())")
         switch state {
         case .inUpstreamQueueRendered:
             break
@@ -437,6 +438,7 @@ extension CDOperation {
     }
     
     func mergeDownstream(context: NSManagedObjectContext) {
+        print("merging Downstream Op \(self.operationID())")
         switch state {
         case .inDownstreamQueue:
             break
@@ -445,7 +447,8 @@ extension CDOperation {
         case .inDownstreamQueueMergedUnrendered:
             return
         default:
-            fatalNotImplemented()
+            print("skipping already merged: \(self.operationID())")
+//            fatalNotImplemented("mergeDownstream with state = \(state)")
         }
         
         switch type {
@@ -461,8 +464,8 @@ extension CDOperation {
         case .inDownstreamQueue:
             state = .inDownstreamQueueMergedUnrendered
         default:
-            fatalNotImplemented()
+            print("skipping already merged: \(self.operationID())")
+//            fatalNotImplemented()
         }
-
     }
 }

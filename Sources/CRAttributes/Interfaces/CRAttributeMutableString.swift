@@ -34,7 +34,8 @@ public class CRAttributeMutableString: CRAttribute {
     }
 
     // Remember to execute within context.perform {}
-    override init(from: CDOperation) {
+    // TODO: make it private
+    public override init(from: CDOperation) {
         _textStorage = CRTextStorage(attributeOp: from)
         super.init(from: from)
     }
@@ -111,6 +112,10 @@ public class CRTextStorage: NSTextStorage {
     }
 
     public override func replaceCharacters(in range: NSRange, with strContent: String) {
+        replaceCharacters(in: range, with: strContent, saving: true)
+    }
+    
+    public func replaceCharacters(in range: NSRange, with strContent: String, saving: Bool) {
         beginEditing()
         //TODO: - we may need a hash to track deleted operations
 
@@ -123,7 +128,7 @@ public class CRTextStorage: NSTextStorage {
                 let delete = CDOperation.createDelete(context: context!, within: self.attributeOp, of: address)
                 delete.state = .inUpstreamQueueRendered
             }
-            try! context!.save()
+            if saving { try! context!.save() }
         }
         // TODO: - save once every 60 objects
 
@@ -155,7 +160,7 @@ public class CRTextStorage: NSTextStorage {
         addressesArray.replaceElements(in: range, with: strAddresses)
         
         _ = CDRenderedStringOp(context: context!, containerOp: attributeOp, in: range, operationString: strContent, operationAddresses: strAddresses)
-        try! context!.save() // TODO: - make it save once a 60 objects
+        if saving { try! context!.save() } // TODO: - make it save once a 60 objects
         considerSnapshotingStringBundle()
 
         edited(.editedCharacters,
@@ -216,14 +221,15 @@ public class CRTextStorage: NSTextStorage {
 
 
 
-extension NSMutableAttributedString {
+extension NSTextStorage {
     /**
     based on https://github.com/automerge/automerge-perf
     compare results with https://github.com/dmonad/crdt-benchmarks
      */
-    func loadFromJsonIndexDebug(limiter: Int = 1000000, bundle: Bundle = Bundle.main) {
-        guard let path = bundle.path(forResource: "test-mk-editing-trace", ofType: "json") else {
-            fatalError() }
+    public func loadFromJsonIndexDebug(limiter: Int = 1000000, bundle: Bundle = Bundle.main) {
+        guard let path = bundle.path(forResource: "Data Assets/test-mk-editing-trace", ofType: "json") else {
+            fatalError()
+        }
         
         
         let url = URL(fileURLWithPath: path)

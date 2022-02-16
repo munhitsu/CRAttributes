@@ -133,7 +133,7 @@ import CoreData
     }
 
     override func getStorageContainedObjects() -> [CREntity] {
-        print("CRObject.getStorageContainedObjects: \(self.operationID?.lamport ?? -1) \(self.is_virtual)")
+        print("CRObject.getStorageContainedObjects: l:\(self.operationID?.lamport ?? -1) virtual:\(self.is_virtual)")
         var crResults:[CREntity] = []
 //        print("context.name: \(context.name)")
 

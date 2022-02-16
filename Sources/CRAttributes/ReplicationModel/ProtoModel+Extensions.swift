@@ -17,7 +17,7 @@ protocol RestorableProtobuf {
 extension ProtoOperationsForest: RestorableProtobuf {
     func restore(context: NSManagedObjectContext, container: CDOperation? = nil) {
         for tree in trees {
-//            print("restoring tree")
+            print("restoring tree")
             let containerID = CROperationID(from: tree.containerID)
             
             let container:CDOperation?
@@ -36,19 +36,19 @@ extension ProtoOperationsTree: RestorableProtobuf {
     func restore(context: NSManagedObjectContext, container: CDOperation? = nil) {
         switch value {
         case .some(.attributeOperation(_)):
-//            print("restoring attribute")
+            print("restoring attribute")
             let _ = CDOperation.findOrCreateOperation(context: context, from: attributeOperation, container: container, type: .attribute)
         case .some(.objectOperation(_)):
-//            print("restoring object")
+            print("restoring object")
             let _ = CDOperation.findOrCreateOperation(context: context, from: objectOperation, container: container, type: .object)
         case .some(.deleteOperation(_)):
-//            print("restoring delete")
+            print("restoring delete")
             let _ = CDOperation.findOrCreateOperation(context: context, from: deleteOperation, container: container, type: .delete)
         case .some(.lwwOperation(_)):
-//            print("restoring lww")
+            print("restoring lww")
             let _ = CDOperation.findOrCreateOperation(context: context, from: lwwOperation, container: container, type: .lwwBool) // we need any lww type here
         case .some(.stringInsertOperationsList(_)):
-//            print("restoring [stringInsert]")
+            print("restoring [stringInsert]")
             stringInsertOperationsList.restore(context: context, container: container)
         case .none:
             fatalNotImplemented()

@@ -27,7 +27,7 @@ extension CDOperationsForest {
 
 extension CDOperationsForest : Identifiable {
 
-    convenience init(context:NSManagedObjectContext, from: ProtoOperationsForest) {
+    public convenience init(context:NSManagedObjectContext, from: ProtoOperationsForest) {
         self.init(context: context)
         self.data = try? from.serializedData()
         self.version = 0

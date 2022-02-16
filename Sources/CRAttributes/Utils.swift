@@ -12,8 +12,8 @@ import os.signpost
 let signpostLogHandler = OSLog(subsystem: "time", category: .pointsOfInterest)
 
 
-public func fatalNotImplemented() {
-    fatalError("Not Implemented")
+public func fatalNotImplemented(_ text: String = "") {
+    fatalError("Not Implemented: \(text)")
 }
 
 public func flushAllCoreData(_ container: NSPersistentContainer) {

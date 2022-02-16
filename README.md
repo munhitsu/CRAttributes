@@ -61,5 +61,5 @@ Sync to CloudKit
 rebuilding protobuf model
 ```
 cd Sources/CRAttributes/ReplicationModel
-protoc --swift_out=. ProtoModel.proto
+protoc --swift_out=. ProtoModel.proto --swift_opt=Visibility=Public
 ```

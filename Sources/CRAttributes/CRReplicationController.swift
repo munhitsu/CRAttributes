@@ -9,26 +9,26 @@ import Foundation
 import CoreData
 import Combine
 
-public class ReplicationController {
+public class CRReplicationController {
     let localContext: NSManagedObjectContext
     let replicationContext: NSManagedObjectContext
     
     private var observers: [AnyCancellable] = []
     
-    var lastToken: NSPersistentHistoryToken? = nil {
+    var lastHistoryToken: NSPersistentHistoryToken? = nil {
         didSet {
-            print("ReplicationController.\(#function): start")
-            guard let token = lastToken, let data = try? NSKeyedArchiver.archivedData(withRootObject: token, requiringSecureCoding: true) else { return }
+//            print("ReplicationController.\(#function): start")
+            guard let token = lastHistoryToken, let data = try? NSKeyedArchiver.archivedData(withRootObject: token, requiringSecureCoding: true) else { return }
             do {
-                try data.write(to: tokenFile)
+                try data.write(to: historyTokenFile)
             } catch {
                 print("###\(#function): Could not write token data: \(error)")
             }
         }
     }
     
-    lazy var tokenFile: URL = {
-        print("ReplicationController.\(#function): tokenFile start")
+    lazy var historyTokenFile: URL = {
+//        print("ReplicationController.\(#function): tokenFile start")
         let url = NSPersistentContainer.defaultDirectoryURL().appendingPathComponent("CRAttributes", isDirectory: true)
         if !FileManager.default.fileExists(atPath: url.path) {
             do {
@@ -37,67 +37,99 @@ public class ReplicationController {
                 print("###\(#function): Could not create persistent container URL: \(error)")
             }
         }
-        print("got the token URL: \(url)")
-        return url.appendingPathComponent("historyToken.data", isDirectory: false)
+        let fileURL = url.appendingPathComponent("historyToken.data", isDirectory: false)
+//        print("got the token URL: \(fileURL)")
+        return fileURL
     }()
     
-    init(localContext: NSManagedObjectContext,
+    public init(localContext: NSManagedObjectContext,
          replicationContext: NSManagedObjectContext,
          skipTimer: Bool = false,
          skipRemoteChanges: Bool = false) {
         self.localContext = localContext
         self.replicationContext = replicationContext
+        loadHistoryToken()
         
         if !skipTimer {
             observers.append(Publishers.timer(interval: .seconds(1), times: .unlimited).sink { [weak self] time in //TODO: ensure only one operation at the time, stop at the end of the test
                 guard let self = self else { return }
-                self.processUpstreamOperationsQueueAsync()
+                Task {
+                    await self.processUpstreamOperationsQueue()
+                }
             })
         }
 
         if !skipRemoteChanges {
             observers.append(NotificationCenter.default.publisher(for: .NSPersistentStoreRemoteChange, object: replicationContext.persistentStoreCoordinator).sink { [weak self] notification in
                 guard let self = self else { return }
-                self.processRemoteStoreChanges(notification)
+                Task {
+                    await self.processDownstreamHistory()
+                }
                 })
-            self.processDownstreamHistoryAsync(context: replicationContext)
+            Task {
+                await self.processDownstreamHistory()
+            }
         }
+    }
+}
+
+//MARK: - Token
+extension CRReplicationController {
+    private func loadHistoryToken() {
+      do {
+        let tokenData = try Data(contentsOf: historyTokenFile)
+        lastHistoryToken = try NSKeyedUnarchiver
+          .unarchivedObject(ofClass: NSPersistentHistoryToken.self, from: tokenData)
+      } catch {
+        // log any errors
+      }
     }
 }
 
 
 //MARK: - Upstream
-extension ReplicationController {
-    func processUpsteamOperationsQueue() {
+extension CRReplicationController {
+    public func processUpstreamOperationsQueue() async {
         //TODO: implement transactions as current form is unsafe
- 
-        localContext.performAndWait {
-            let forests = self.protoOperationsForests()
-            
-            self.replicationContext.performAndWait {
-                for protoForest in forests {
-                    print("Processing Upstream Queue (forest)")
-                    let _ = CDOperationsForest(context: self.replicationContext, from:protoForest)
-                }
-                try! self.replicationContext.save()
-            }
-            try! self.localContext.save()
+        
+        let localBackgroundContext = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+        localBackgroundContext.parent = localContext
+
+
+        // so we are spawnig a new subcontext to annotate objects that we are migrating them
+        // when done we will save
+        var forests:[ProtoOperationsForest] = []
+        localBackgroundContext.performAndWait { //TODO: task is started inside of the funciton so no need for performAndWait
+            forests.append(contentsOf: self.protoOperationsForests(context: localBackgroundContext))
         }
+
+        self.replicationContext.performAndWait {
+            for protoForest in forests {
+                print("Processing Upstream Queue (forest)")
+                let _ = CDOperationsForest(context: self.replicationContext, from:protoForest)
+            }
+            try! self.replicationContext.save()
+            //TODO: move triggering update on the localContext after this save is done (async)??
+        }
+
+        localBackgroundContext.performAndWait {
+            try! localBackgroundContext.save()
+        }
+
     }
 
-    func processUpstreamOperationsQueueAsync() {
-        localContext.perform { [weak self] in
-            guard let self = self else { return }
-            self.processUpsteamOperationsQueue()
-        }
-    }
+//    func processUpstreamOperationsQueueAsync() {
+//        DispatchQueue.main.async { [weak self] in
+//            guard let self = self else { return }
+//            self.processUpsteamOperationsQueue()
+//        }
+//    }
     
     
     /**
      returns a list of ProtoOperationsForest ready for serialisation for further replication
      */
-    func protoOperationsForests() -> [ProtoOperationsForest] {
-        let context = localContext
+    func protoOperationsForests(context: NSManagedObjectContext) -> [ProtoOperationsForest] {
         var forests:[ProtoOperationsForest] = []
         context.performAndWait {
             var forest = ProtoOperationsForest()
@@ -162,36 +194,35 @@ extension ReplicationController {
 
 
 //MARK: - Downstream
-extension ReplicationController {
+extension CRReplicationController {
     // TODO: (later) maybe introduce RGA Split and consolidate operations here, this will solve the recursion risk
     
-    func processDownstreamForest(forest cdForestObjectID: NSManagedObjectID) {
+    public func processDownstreamForest(forest cdForestObjectID: NSManagedObjectID) async {
         assert(cdForestObjectID.isTemporaryID == false)
         let remoteContext = CRStorageController.shared.replicationContainerBackgroundContext
         let localContext = CRStorageController.shared.localContainerBackgroundContext
         
-        remoteContext.performAndWait {
+        let protoForest:ProtoOperationsForest = await remoteContext.perform {
             let cdForest = remoteContext.object(with: cdForestObjectID) as! CDOperationsForest
-            let protoForest = cdForest.protoStructure()
-            localContext.performAndWait {
-                protoForest.restore(context: localContext)
-                try! localContext.save()
-            }
+            return cdForest.protoStructure()
         }
-    }
-    
-    func processDownstreamForestAsync(forest cdForestObjectID: NSManagedObjectID) {
-        let remoteContext = CRStorageController.shared.replicationContainerBackgroundContext
-        remoteContext.perform { [self] in
-            self.processDownstreamForest(forest: cdForestObjectID)
+        await localContext.perform {
+            protoForest.restore(context: localContext)
+            try! localContext.save()
         }
+            
     }
-    
+        
+    /**
+     start me when the application starts
+     */
     //TODO: (optimise) filterout local changes based on the author/context...
-    func processDownstreamHistory() {
-        let remoteContext = CRStorageController.shared.replicationContainerBackgroundContext
-        remoteContext.performAndWait {
-            let fetchHistoryRequest = NSPersistentHistoryChangeRequest.fetchHistory(after: lastToken)
+    public func processDownstreamHistory() async {
+//        let remoteContext = CRStorageController.shared.replicationContainerBackgroundContext
+        let remoteContext = replicationContext
+        await remoteContext.perform {
+            print("Fetching history after: \(self.lastHistoryToken)")
+            let fetchHistoryRequest = NSPersistentHistoryChangeRequest.fetchHistory(after: self.lastHistoryToken)
             
             guard let historyResult = try? remoteContext.execute(fetchHistoryRequest) as? NSPersistentHistoryResult,
                   let history = historyResult.result as? [NSPersistentHistoryTransaction]
@@ -215,7 +246,9 @@ extension ReplicationController {
                     switch changeType {
                     case .insert:
 //                        let insertedObject:CDOperationsForest = remoteContext.object(with: objectID) as! CDOperationsForest
-                        processDownstreamForest(forest: objectID)
+                        Task {
+                            await self.processDownstreamForest(forest: objectID)
+                        }
                     case .update:
                         fatalError("There shall be no updates")
                     case .delete:
@@ -225,24 +258,9 @@ extension ReplicationController {
                     }
                 }
             }
+            if let newToken = history.last?.token {
+                self.lastHistoryToken = newToken
+            }
         }
-    }
-    
-    /**
-     start me when the application starts
-     */
-    func processDownstreamHistoryAsync() {
-        let remoteContext = CRStorageController.shared.replicationContainerBackgroundContext
-        processDownstreamHistoryAsync(context: remoteContext)
-    }
-    
-    func processDownstreamHistoryAsync(context: NSManagedObjectContext) {
-        context.perform { [self] in
-            self.processDownstreamHistory()
-        }
-    }
-
-    func processRemoteStoreChanges(_ notification: Notification) {
-        processDownstreamHistoryAsync()
     }
 }

@@ -6,11 +6,16 @@
 //
 
 import Foundation
+import CoreData
 
 
-public struct CROperationID: Comparable, Hashable, Codable {
+public struct CROperationID: Comparable, Hashable, Codable, CustomStringConvertible {
     public var lamport: lamportType
     public var peerID: UUID
+    
+    public var description: String {
+        "[l:\(lamport), p:\(peerID)]"
+    }
     
     init() {
         self.peerID = localPeerID
@@ -52,6 +57,11 @@ public struct CROperationID: Comparable, Hashable, Codable {
             return CROperationID(lamport: 0, peerID: UUID.zero)
         }
     }
+    
+    // exposing so we can spawn attribute from CDOperation...
+    // TODO: make it private
+    public func findOperationOrCreateGhost(in context: NSManagedObjectContext) -> CDOperation {
+        return CDOperation.findOperationOrCreateGhost(fromLamport: lamport, fromPeerID: peerID, in: context)
+    }
+
 }
-
-

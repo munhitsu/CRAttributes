@@ -20,146 +20,146 @@ fileprivate struct _GeneratedWithProtocGenSwiftVersion: SwiftProtobuf.ProtobufAP
   typealias Version = _2
 }
 
-struct ProtoOperationID {
+public struct ProtoOperationID {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var lamport: Int64 = 0
+  public var lamport: Int64 = 0
 
   ///UUID to 16 bytes
-  var peerID: Data = Data()
+  public var peerID: Data = Data()
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
-struct ProtoObjectOperation {
+public struct ProtoObjectOperation {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var version: Int32 = 0
+  public var version: Int32 = 0
 
-  var id: ProtoOperationID {
+  public var id: ProtoOperationID {
     get {return _id ?? ProtoOperationID()}
     set {_id = newValue}
   }
   /// Returns true if `id` has been explicitly set.
-  var hasID: Bool {return self._id != nil}
+  public var hasID: Bool {return self._id != nil}
   /// Clears the value of `id`. Subsequent reads from it will return its default value.
-  mutating func clearID() {self._id = nil}
+  public mutating func clearID() {self._id = nil}
 
-  var rawType: Int32 = 0
+  public var rawType: Int32 = 0
 
-  var deleteOperations: [ProtoDeleteOperation] = []
+  public var deleteOperations: [ProtoDeleteOperation] = []
 
-  var attributeOperations: [ProtoAttributeOperation] = []
+  public var attributeOperations: [ProtoAttributeOperation] = []
 
-  var objectOperations: [ProtoObjectOperation] = []
+  public var objectOperations: [ProtoObjectOperation] = []
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 
   fileprivate var _id: ProtoOperationID? = nil
 }
 
-struct ProtoAttributeOperation {
+public struct ProtoAttributeOperation {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var version: Int32 = 0
+  public var version: Int32 = 0
 
-  var id: ProtoOperationID {
+  public var id: ProtoOperationID {
     get {return _id ?? ProtoOperationID()}
     set {_id = newValue}
   }
   /// Returns true if `id` has been explicitly set.
-  var hasID: Bool {return self._id != nil}
+  public var hasID: Bool {return self._id != nil}
   /// Clears the value of `id`. Subsequent reads from it will return its default value.
-  mutating func clearID() {self._id = nil}
+  public mutating func clearID() {self._id = nil}
 
-  var name: String = String()
+  public var name: String = String()
 
-  var rawType: Int32 = 0
+  public var rawType: Int32 = 0
 
-  var deleteOperations: [ProtoDeleteOperation] = []
+  public var deleteOperations: [ProtoDeleteOperation] = []
 
-  var lwwOperations: [ProtoLWWOperation] = []
+  public var lwwOperations: [ProtoLWWOperation] = []
 
-  var stringInsertOperationsList: ProtoStringInsertOperationLinkedList {
+  public var stringInsertOperationsList: ProtoStringInsertOperationLinkedList {
     get {return _stringInsertOperationsList ?? ProtoStringInsertOperationLinkedList()}
     set {_stringInsertOperationsList = newValue}
   }
   /// Returns true if `stringInsertOperationsList` has been explicitly set.
-  var hasStringInsertOperationsList: Bool {return self._stringInsertOperationsList != nil}
+  public var hasStringInsertOperationsList: Bool {return self._stringInsertOperationsList != nil}
   /// Clears the value of `stringInsertOperationsList`. Subsequent reads from it will return its default value.
-  mutating func clearStringInsertOperationsList() {self._stringInsertOperationsList = nil}
+  public mutating func clearStringInsertOperationsList() {self._stringInsertOperationsList = nil}
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 
   fileprivate var _id: ProtoOperationID? = nil
   fileprivate var _stringInsertOperationsList: ProtoStringInsertOperationLinkedList? = nil
 }
 
 /// if entity has a delete operation then it's deleted
-struct ProtoDeleteOperation {
+public struct ProtoDeleteOperation {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var version: Int32 = 0
+  public var version: Int32 = 0
 
-  var id: ProtoOperationID {
+  public var id: ProtoOperationID {
     get {return _id ?? ProtoOperationID()}
     set {_id = newValue}
   }
   /// Returns true if `id` has been explicitly set.
-  var hasID: Bool {return self._id != nil}
+  public var hasID: Bool {return self._id != nil}
   /// Clears the value of `id`. Subsequent reads from it will return its default value.
-  mutating func clearID() {self._id = nil}
+  public mutating func clearID() {self._id = nil}
 
-  var parentID: ProtoOperationID {
+  public var parentID: ProtoOperationID {
     get {return _parentID ?? ProtoOperationID()}
     set {_parentID = newValue}
   }
   /// Returns true if `parentID` has been explicitly set.
-  var hasParentID: Bool {return self._parentID != nil}
+  public var hasParentID: Bool {return self._parentID != nil}
   /// Clears the value of `parentID`. Subsequent reads from it will return its default value.
-  mutating func clearParentID() {self._parentID = nil}
+  public mutating func clearParentID() {self._parentID = nil}
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 
   fileprivate var _id: ProtoOperationID? = nil
   fileprivate var _parentID: ProtoOperationID? = nil
 }
 
-struct ProtoLWWOperation {
+public struct ProtoLWWOperation {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var version: Int32 = 0
+  public var version: Int32 = 0
 
-  var id: ProtoOperationID {
+  public var id: ProtoOperationID {
     get {return _id ?? ProtoOperationID()}
     set {_id = newValue}
   }
   /// Returns true if `id` has been explicitly set.
-  var hasID: Bool {return self._id != nil}
+  public var hasID: Bool {return self._id != nil}
   /// Clears the value of `id`. Subsequent reads from it will return its default value.
-  mutating func clearID() {self._id = nil}
+  public mutating func clearID() {self._id = nil}
 
-  var value: ProtoLWWOperation.OneOf_Value? = nil
+  public var value: ProtoLWWOperation.OneOf_Value? = nil
 
-  var int: Int64 {
+  public var int: Int64 {
     get {
       if case .int(let v)? = value {return v}
       return 0
@@ -167,7 +167,7 @@ struct ProtoLWWOperation {
     set {value = .int(newValue)}
   }
 
-  var float: Float {
+  public var float: Float {
     get {
       if case .float(let v)? = value {return v}
       return 0
@@ -175,7 +175,7 @@ struct ProtoLWWOperation {
     set {value = .float(newValue)}
   }
 
-  var date: Double {
+  public var date: Double {
     get {
       if case .date(let v)? = value {return v}
       return 0
@@ -183,7 +183,7 @@ struct ProtoLWWOperation {
     set {value = .date(newValue)}
   }
 
-  var boolean: Bool {
+  public var boolean: Bool {
     get {
       if case .boolean(let v)? = value {return v}
       return false
@@ -191,7 +191,7 @@ struct ProtoLWWOperation {
     set {value = .boolean(newValue)}
   }
 
-  var string: String {
+  public var string: String {
     get {
       if case .string(let v)? = value {return v}
       return String()
@@ -199,11 +199,11 @@ struct ProtoLWWOperation {
     set {value = .string(newValue)}
   }
 
-  var deleteOperations: [ProtoDeleteOperation] = []
+  public var deleteOperations: [ProtoDeleteOperation] = []
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  enum OneOf_Value: Equatable {
+  public enum OneOf_Value: Equatable {
     case int(Int64)
     case float(Float)
     case date(Double)
@@ -211,7 +211,7 @@ struct ProtoLWWOperation {
     case string(String)
 
   #if !swift(>=4.1)
-    static func ==(lhs: ProtoLWWOperation.OneOf_Value, rhs: ProtoLWWOperation.OneOf_Value) -> Bool {
+    public static func ==(lhs: ProtoLWWOperation.OneOf_Value, rhs: ProtoLWWOperation.OneOf_Value) -> Bool {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
@@ -242,79 +242,79 @@ struct ProtoLWWOperation {
   #endif
   }
 
-  init() {}
+  public init() {}
 
   fileprivate var _id: ProtoOperationID? = nil
 }
 
-struct ProtoStringInsertOperation {
+public struct ProtoStringInsertOperation {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var version: Int32 = 0
+  public var version: Int32 = 0
 
-  var id: ProtoOperationID {
+  public var id: ProtoOperationID {
     get {return _id ?? ProtoOperationID()}
     set {_id = newValue}
   }
   /// Returns true if `id` has been explicitly set.
-  var hasID: Bool {return self._id != nil}
+  public var hasID: Bool {return self._id != nil}
   /// Clears the value of `id`. Subsequent reads from it will return its default value.
-  mutating func clearID() {self._id = nil}
+  public mutating func clearID() {self._id = nil}
 
-  var parentID: ProtoOperationID {
+  public var parentID: ProtoOperationID {
     get {return _parentID ?? ProtoOperationID()}
     set {_parentID = newValue}
   }
   /// Returns true if `parentID` has been explicitly set.
-  var hasParentID: Bool {return self._parentID != nil}
+  public var hasParentID: Bool {return self._parentID != nil}
   /// Clears the value of `parentID`. Subsequent reads from it will return its default value.
-  mutating func clearParentID() {self._parentID = nil}
+  public mutating func clearParentID() {self._parentID = nil}
 
-  var contribution: Int32 = 0
+  public var contribution: Int32 = 0
 
   ///    repeated StringInsertOperation stringInsertOperations = 6; //TODO: are we using it? - recursion limit
-  var deleteOperations: [ProtoDeleteOperation] = []
+  public var deleteOperations: [ProtoDeleteOperation] = []
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 
   fileprivate var _id: ProtoOperationID? = nil
   fileprivate var _parentID: ProtoOperationID? = nil
 }
 
 /// because you can't have repeated within oneof
-struct ProtoStringInsertOperationLinkedList {
+public struct ProtoStringInsertOperationLinkedList {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var stringInsertOperations: [ProtoStringInsertOperation] = []
+  public var stringInsertOperations: [ProtoStringInsertOperation] = []
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
-struct ProtoOperationsTree {
+public struct ProtoOperationsTree {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var containerID: ProtoOperationID {
+  public var containerID: ProtoOperationID {
     get {return _containerID ?? ProtoOperationID()}
     set {_containerID = newValue}
   }
   /// Returns true if `containerID` has been explicitly set.
-  var hasContainerID: Bool {return self._containerID != nil}
+  public var hasContainerID: Bool {return self._containerID != nil}
   /// Clears the value of `containerID`. Subsequent reads from it will return its default value.
-  mutating func clearContainerID() {self._containerID = nil}
+  public mutating func clearContainerID() {self._containerID = nil}
 
-  var value: ProtoOperationsTree.OneOf_Value? = nil
+  public var value: ProtoOperationsTree.OneOf_Value? = nil
 
-  var objectOperation: ProtoObjectOperation {
+  public var objectOperation: ProtoObjectOperation {
     get {
       if case .objectOperation(let v)? = value {return v}
       return ProtoObjectOperation()
@@ -322,7 +322,7 @@ struct ProtoOperationsTree {
     set {value = .objectOperation(newValue)}
   }
 
-  var attributeOperation: ProtoAttributeOperation {
+  public var attributeOperation: ProtoAttributeOperation {
     get {
       if case .attributeOperation(let v)? = value {return v}
       return ProtoAttributeOperation()
@@ -330,7 +330,7 @@ struct ProtoOperationsTree {
     set {value = .attributeOperation(newValue)}
   }
 
-  var deleteOperation: ProtoDeleteOperation {
+  public var deleteOperation: ProtoDeleteOperation {
     get {
       if case .deleteOperation(let v)? = value {return v}
       return ProtoDeleteOperation()
@@ -338,7 +338,7 @@ struct ProtoOperationsTree {
     set {value = .deleteOperation(newValue)}
   }
 
-  var lwwOperation: ProtoLWWOperation {
+  public var lwwOperation: ProtoLWWOperation {
     get {
       if case .lwwOperation(let v)? = value {return v}
       return ProtoLWWOperation()
@@ -346,7 +346,7 @@ struct ProtoOperationsTree {
     set {value = .lwwOperation(newValue)}
   }
 
-  var stringInsertOperationsList: ProtoStringInsertOperationLinkedList {
+  public var stringInsertOperationsList: ProtoStringInsertOperationLinkedList {
     get {
       if case .stringInsertOperationsList(let v)? = value {return v}
       return ProtoStringInsertOperationLinkedList()
@@ -354,9 +354,9 @@ struct ProtoOperationsTree {
     set {value = .stringInsertOperationsList(newValue)}
   }
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  enum OneOf_Value: Equatable {
+  public enum OneOf_Value: Equatable {
     case objectOperation(ProtoObjectOperation)
     case attributeOperation(ProtoAttributeOperation)
     case deleteOperation(ProtoDeleteOperation)
@@ -364,7 +364,7 @@ struct ProtoOperationsTree {
     case stringInsertOperationsList(ProtoStringInsertOperationLinkedList)
 
   #if !swift(>=4.1)
-    static func ==(lhs: ProtoOperationsTree.OneOf_Value, rhs: ProtoOperationsTree.OneOf_Value) -> Bool {
+    public static func ==(lhs: ProtoOperationsTree.OneOf_Value, rhs: ProtoOperationsTree.OneOf_Value) -> Bool {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
@@ -395,40 +395,40 @@ struct ProtoOperationsTree {
   #endif
   }
 
-  init() {}
+  public init() {}
 
   fileprivate var _containerID: ProtoOperationID? = nil
 }
 
 /// tree of operations
 /// a tree will contain all operations in the upstream queue, if device change the peerID or repllicated through backup then it may contain a mix
-struct ProtoOperationsForest {
+public struct ProtoOperationsForest {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
   // methods supported on all messages.
 
-  var version: Int32 = 0
+  public var version: Int32 = 0
 
   ///it's a sender device ID
-  var peerID: Data = Data()
+  public var peerID: Data = Data()
 
-  var trees: [ProtoOperationsTree] = []
+  public var trees: [ProtoOperationsTree] = []
 
-  var unknownFields = SwiftProtobuf.UnknownStorage()
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
 
-  init() {}
+  public init() {}
 }
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 extension ProtoOperationID: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "OperationID"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = "OperationID"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "lamport"),
     2: .same(proto: "peerID"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -441,7 +441,7 @@ extension ProtoOperationID: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.lamport != 0 {
       try visitor.visitSingularInt64Field(value: self.lamport, fieldNumber: 1)
     }
@@ -451,7 +451,7 @@ extension ProtoOperationID: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ProtoOperationID, rhs: ProtoOperationID) -> Bool {
+  public static func ==(lhs: ProtoOperationID, rhs: ProtoOperationID) -> Bool {
     if lhs.lamport != rhs.lamport {return false}
     if lhs.peerID != rhs.peerID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -460,8 +460,8 @@ extension ProtoOperationID: SwiftProtobuf.Message, SwiftProtobuf._MessageImpleme
 }
 
 extension ProtoObjectOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "ObjectOperation"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = "ObjectOperation"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "version"),
     2: .same(proto: "id"),
     4: .same(proto: "rawType"),
@@ -470,7 +470,7 @@ extension ProtoObjectOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     7: .same(proto: "objectOperations"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -487,7 +487,7 @@ extension ProtoObjectOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -513,7 +513,7 @@ extension ProtoObjectOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ProtoObjectOperation, rhs: ProtoObjectOperation) -> Bool {
+  public static func ==(lhs: ProtoObjectOperation, rhs: ProtoObjectOperation) -> Bool {
     if lhs.version != rhs.version {return false}
     if lhs._id != rhs._id {return false}
     if lhs.rawType != rhs.rawType {return false}
@@ -526,8 +526,8 @@ extension ProtoObjectOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
 }
 
 extension ProtoAttributeOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "AttributeOperation"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = "AttributeOperation"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "version"),
     2: .same(proto: "id"),
     4: .same(proto: "name"),
@@ -537,7 +537,7 @@ extension ProtoAttributeOperation: SwiftProtobuf.Message, SwiftProtobuf._Message
     8: .same(proto: "stringInsertOperationsList"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -555,7 +555,7 @@ extension ProtoAttributeOperation: SwiftProtobuf.Message, SwiftProtobuf._Message
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -584,7 +584,7 @@ extension ProtoAttributeOperation: SwiftProtobuf.Message, SwiftProtobuf._Message
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ProtoAttributeOperation, rhs: ProtoAttributeOperation) -> Bool {
+  public static func ==(lhs: ProtoAttributeOperation, rhs: ProtoAttributeOperation) -> Bool {
     if lhs.version != rhs.version {return false}
     if lhs._id != rhs._id {return false}
     if lhs.name != rhs.name {return false}
@@ -598,14 +598,14 @@ extension ProtoAttributeOperation: SwiftProtobuf.Message, SwiftProtobuf._Message
 }
 
 extension ProtoDeleteOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "DeleteOperation"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = "DeleteOperation"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "version"),
     2: .same(proto: "id"),
     3: .same(proto: "parentID"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -619,7 +619,7 @@ extension ProtoDeleteOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -636,7 +636,7 @@ extension ProtoDeleteOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ProtoDeleteOperation, rhs: ProtoDeleteOperation) -> Bool {
+  public static func ==(lhs: ProtoDeleteOperation, rhs: ProtoDeleteOperation) -> Bool {
     if lhs.version != rhs.version {return false}
     if lhs._id != rhs._id {return false}
     if lhs._parentID != rhs._parentID {return false}
@@ -646,8 +646,8 @@ extension ProtoDeleteOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImp
 }
 
 extension ProtoLWWOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "LWWOperation"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = "LWWOperation"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "version"),
     2: .same(proto: "id"),
     4: .same(proto: "int"),
@@ -658,7 +658,7 @@ extension ProtoLWWOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     9: .same(proto: "deleteOperations"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -712,7 +712,7 @@ extension ProtoLWWOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -752,7 +752,7 @@ extension ProtoLWWOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ProtoLWWOperation, rhs: ProtoLWWOperation) -> Bool {
+  public static func ==(lhs: ProtoLWWOperation, rhs: ProtoLWWOperation) -> Bool {
     if lhs.version != rhs.version {return false}
     if lhs._id != rhs._id {return false}
     if lhs.value != rhs.value {return false}
@@ -763,8 +763,8 @@ extension ProtoLWWOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
 }
 
 extension ProtoStringInsertOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "StringInsertOperation"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = "StringInsertOperation"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "version"),
     2: .same(proto: "id"),
     3: .same(proto: "parentID"),
@@ -772,7 +772,7 @@ extension ProtoStringInsertOperation: SwiftProtobuf.Message, SwiftProtobuf._Mess
     5: .same(proto: "deleteOperations"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -788,7 +788,7 @@ extension ProtoStringInsertOperation: SwiftProtobuf.Message, SwiftProtobuf._Mess
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -811,7 +811,7 @@ extension ProtoStringInsertOperation: SwiftProtobuf.Message, SwiftProtobuf._Mess
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ProtoStringInsertOperation, rhs: ProtoStringInsertOperation) -> Bool {
+  public static func ==(lhs: ProtoStringInsertOperation, rhs: ProtoStringInsertOperation) -> Bool {
     if lhs.version != rhs.version {return false}
     if lhs._id != rhs._id {return false}
     if lhs._parentID != rhs._parentID {return false}
@@ -823,12 +823,12 @@ extension ProtoStringInsertOperation: SwiftProtobuf.Message, SwiftProtobuf._Mess
 }
 
 extension ProtoStringInsertOperationLinkedList: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "StringInsertOperationLinkedList"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = "StringInsertOperationLinkedList"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "stringInsertOperations"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -840,14 +840,14 @@ extension ProtoStringInsertOperationLinkedList: SwiftProtobuf.Message, SwiftProt
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if !self.stringInsertOperations.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.stringInsertOperations, fieldNumber: 1)
     }
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ProtoStringInsertOperationLinkedList, rhs: ProtoStringInsertOperationLinkedList) -> Bool {
+  public static func ==(lhs: ProtoStringInsertOperationLinkedList, rhs: ProtoStringInsertOperationLinkedList) -> Bool {
     if lhs.stringInsertOperations != rhs.stringInsertOperations {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
@@ -855,8 +855,8 @@ extension ProtoStringInsertOperationLinkedList: SwiftProtobuf.Message, SwiftProt
 }
 
 extension ProtoOperationsTree: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "OperationsTree"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = "OperationsTree"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "containerID"),
     2: .same(proto: "objectOperation"),
     3: .same(proto: "attributeOperation"),
@@ -865,7 +865,7 @@ extension ProtoOperationsTree: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     6: .same(proto: "stringInsertOperationsList"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -942,7 +942,7 @@ extension ProtoOperationsTree: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     // The use of inline closures is to circumvent an issue where the compiler
     // allocates stack space for every if/case branch local when no optimizations
     // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
@@ -976,7 +976,7 @@ extension ProtoOperationsTree: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ProtoOperationsTree, rhs: ProtoOperationsTree) -> Bool {
+  public static func ==(lhs: ProtoOperationsTree, rhs: ProtoOperationsTree) -> Bool {
     if lhs._containerID != rhs._containerID {return false}
     if lhs.value != rhs.value {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
@@ -985,14 +985,14 @@ extension ProtoOperationsTree: SwiftProtobuf.Message, SwiftProtobuf._MessageImpl
 }
 
 extension ProtoOperationsForest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
-  static let protoMessageName: String = "OperationsForest"
-  static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
+  public static let protoMessageName: String = "OperationsForest"
+  public static let _protobuf_nameMap: SwiftProtobuf._NameMap = [
     1: .same(proto: "version"),
     2: .same(proto: "peerID"),
     3: .same(proto: "trees"),
   ]
 
-  mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
       // The use of inline closures is to circumvent an issue where the compiler
       // allocates stack space for every case branch when no optimizations are
@@ -1006,7 +1006,7 @@ extension ProtoOperationsForest: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     }
   }
 
-  func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
     if self.version != 0 {
       try visitor.visitSingularInt32Field(value: self.version, fieldNumber: 1)
     }
@@ -1019,7 +1019,7 @@ extension ProtoOperationsForest: SwiftProtobuf.Message, SwiftProtobuf._MessageIm
     try unknownFields.traverse(visitor: &visitor)
   }
 
-  static func ==(lhs: ProtoOperationsForest, rhs: ProtoOperationsForest) -> Bool {
+  public static func ==(lhs: ProtoOperationsForest, rhs: ProtoOperationsForest) -> Bool {
     if lhs.version != rhs.version {return false}
     if lhs.peerID != rhs.peerID {return false}
     if lhs.trees != rhs.trees {return false}

@@ -156,11 +156,11 @@ import Combine
      it creates new array but all CREntities should be reused
      */
     func getStorageContainedObjects() -> [CREntity] {
-        print("CREntity.getStorageContainedObjects: \(operationID?.lamport ?? -1) \(is_virtual)")
+        print("CREntity.getStorageContainedObjects: l:\(operationID?.lamport ?? -1) virtual:\(is_virtual)")
         var crResults:[CREntity] = []
 //        print("context.name: \(context.name)")
 
-        context.performAndWait { // do we still need context.performAndWait if we are @MainActor?
+        context.performAndWait {
             let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
             request.returnsObjectsAsFaults = false
             if let operation = operation {
