@@ -20,7 +20,6 @@ import SwiftProtobuf
 
 let stringOptimiseQueueLengthMax = 1234
 
-
 public class CRAttributeMutableString: CRAttribute {
     public lazy var textStorage:CRTextStorage = {
         _textStorage!
@@ -40,10 +39,56 @@ public class CRAttributeMutableString: CRAttribute {
         super.init(from: from)
     }
 
+    func renderOperations(_ operations: [NSManagedObjectID]) {
+        context.performAndWait {
+            for objectID in operations {
+                let op = context.object(with: objectID) as! CDOperation
+                if op.state == .inDownstreamQueueMergedUnrendered {
+                    renderOperationList(op)
+                }
+            }
+        }
+    }
+
     override func renderOperations(_ operations: [CDOperation]) {
-        // normally we woudl send objectWillChange.send() but it has no value here
-//        fatalNotImplemented()
-//        _value = getStorageValue()
+        for op in operations {
+            if op.state == .inDownstreamQueueMergedUnrendered {
+                renderOperationList(op)
+            }
+        }
+    }
+    
+    func renderOperationList(_ headOperation: CDOperation) {
+        // lets build the addressed string
+        var op:CDOperation? = headOperation
+        var str = ""
+        var addrArray:[CROperationID] = []
+        var opArray:[CDOperation] = []
+        // going right
+        while op?.state == .inDownstreamQueueMergedUnrendered {
+            str.append(Character((op!.unicodeScalar)))
+            addrArray.append(op!.operationID())
+            opArray.append(op!)
+            op = op!.next
+        }
+ 
+        // going left as it's a good moment to render the whole string
+        var realHead = headOperation.prev
+        while realHead?.state == .inDownstreamQueueMergedUnrendered {
+            str.insert(Character(realHead!.unicodeScalar), at: str.startIndex)
+            addrArray.insert(realHead!.operationID(), at: 0)
+            opArray.append(realHead!)
+            realHead = realHead!.prev
+        }
+        let insertionOp = realHead
+        // let's insert the string into the rendered form
+        var performedInsert = true
+        textStorage.insertCharacters(at: insertionOp?.operationID(), strContent: str, addrArray: addrArray, updated: &performedInsert) // saves
+        if performedInsert {
+            for op in opArray {
+                op.state = .inDownstreamQueueMergedRendered
+            }
+        }
     }
 }
  
@@ -172,13 +217,43 @@ public class CRTextStorage: NSTextStorage {
         // maybe we could listen to: didProcessEditingNotification
     }
     
+    // It's replacingCharacters with a known operations (for downstream rendering usage)
+    public func insertCharacters(at insertionAddress: CROperationID?, strContent: String, addrArray: [CROperationID], updated: inout Bool) {
+
+        var insertionPosition: Int? = nil
+        if let insertionAddress = insertionAddress {
+            insertionPosition = addressesArray.firstIndex(of: insertionAddress) // TODO: optimise (we could record cursors or we could have an address search tree, for now we use native search
+            if insertionPosition == nil {
+                updated = false
+                return
+            }
+        } else {
+            insertionPosition = 0
+        }
+        let range = NSRange(location: insertionPosition!+1, length: 0)
+
+        beginEditing()
+        // insert
+        attributedString.replaceCharacters(in: range, with: strContent)
+        addressesArray.replaceElements(in: range, with: addrArray)
+        
+        _ = CDRenderedStringOp(context: context!, containerOp: attributeOp, in: range, operationString: strContent, operationAddresses: addrArray)
+        try! context!.save()
+        considerSnapshotingStringBundle()
+
+        edited(.editedCharacters,
+               range: range,
+               changeInLength: (strContent as NSString).length - range.length)
+        endEditing()
+        updated = true
+    }
   
     //TODO: each setAttributes shall be a CRDT operation with range mapped to CRDT address space
     //TODO: allow for markdown driven formatting (subclass or something)
     public override func setAttributes(_ attrs: [NSAttributedString.Key : Any]?, range: NSRange) {
         //TODO: each attribute set/delete will be an operation (TBD about the parent ID, I think it's string insert one except for deleted operations
         beginEditing()
-        print("setting attributes: \(attrs)")
+//        print("setting attributes: \(attrs)")
         attributedString.setAttributes(attrs, range: range)
         edited(.editedAttributes, range: range, changeInLength: 0)
         endEditing()

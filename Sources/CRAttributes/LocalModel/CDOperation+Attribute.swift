@@ -52,6 +52,7 @@ extension CDOperation {
 extension CDOperation {
     
     public func stringFromRGAList() -> (NSMutableAttributedString, [CROperationID]) {
+        assert(self.type == .attribute && self.attributeType == .mutableString)
         let context = managedObjectContext!
 
         let attributedString = NSMutableAttributedString(string:"")
@@ -84,6 +85,7 @@ extension CDOperation {
     }
     
     public func stringFromRGATree() -> (NSMutableAttributedString, [CROperationID]) {
+        assert(self.type == .attribute && self.attributeType == .mutableString)
         let context = managedObjectContext!
 
         var result:(NSMutableAttributedString, [CROperationID])?

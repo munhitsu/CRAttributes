@@ -34,8 +34,8 @@ import Combine
  */
 @MainActor public class CREntity: ObservableObject { //AnyObject
     var context: NSManagedObjectContext
-    var operation: CDOperation?
-    var type: CDOperationType
+    public var operation: CDOperation?
+    public var type: CDOperationType
     var _containedEntities: [CREntity] = []
 //    {
 //        willSet {
@@ -146,6 +146,42 @@ import Combine
     }
 
     /**
+     ghost will return nil
+     object will return CRObject
+     attribute will return CREntity
+     lww operation or string operation or delete will return nil
+     */
+    public static func getOrCreateCREntity(context: NSManagedObjectContext, objectID: NSManagedObjectID) -> CREntity? {
+        context.performAndWait {
+            let op = context.object(with: objectID) as! CDOperation
+            assert(op.hasTombstone == false)
+            if let weakCREntity = op.weakCREntity {
+                return weakCREntity
+            } else {
+                var newEntity:CREntity? = nil
+                switch op.type {
+                case .ghost:
+                    break
+                case .attribute:
+                    newEntity = CRAttribute.factory(context: context, from: op)
+                case .object:
+                    newEntity = CRObject(from: op)
+                default:
+                    newEntity = nil
+//                    if let containerID = op.container?.objectID {
+//                        assert(objectID != containerID)
+//                        newEntity = getOrCreateCREntity(context: context, objectID: containerID)
+//                    } else {
+//                        newEntity = nil
+//                    }
+                }
+                op.weakCREntity = newEntity
+                return newEntity
+            }
+        }
+    }
+    
+    /**
      this will be executed on both merge and local changes
      */
     func renderOperations(_ operations: [CDOperation]) {
@@ -172,13 +208,14 @@ import Combine
             let cdResults:[CDOperation] = try! context.fetch(request)
             
             for cd in cdResults {
-                if let cr = cd.getOrCreateCREntity() {
+                if let cr = CREntity.getOrCreateCREntity(context: context, objectID: cd.objectID) {
                     crResults.append(cr)
                 }
             }
         }
         return crResults
     }
+    
     public func markAsDeleted() {
         context.performAndWait { // do we still need context.performAndWait if we are @MainActor?
             self.objectWillChange.send() //TODO: this is a patch - why didSaveObjectsNotification triggering objectWillChange is not enough?

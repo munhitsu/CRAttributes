@@ -93,8 +93,8 @@ public class CRStorageController {
         
         self.replicationController = CRReplicationController(localContext: localContainerBackgroundContext,
                                                            replicationContext: replicationContainerBackgroundContext,
-                                                           skipTimer: cr_test_mode,
-                                                           skipRemoteChanges: cr_test_mode)
+                                                           processLocalChanges: !cr_test_mode,
+                                                           processRemoteChanges: !cr_test_mode)
         
         self.entityController = nil
         Task {

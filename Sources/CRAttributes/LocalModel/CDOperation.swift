@@ -25,10 +25,11 @@ enum CDOperationState: Int32 {
     case inUpstreamQueueRenderedMerged = 2 // merged, rendered, but waiting for synchronisation
     case inDownstreamQueue = 16 // merged, but not yet rendered
     case inDownstreamQueueMergedUnrendered = 17 // merged, but not yet rendered
+    case inDownstreamQueueMergedRendered = 18 // merged, but not yet rendered
     case processed = 128 // rendered, merged, synced
 }
 
-enum CDOperationType: Int32 {
+public enum CDOperationType: Int32 {
     case ghost = 0
     case delete = 1
     case object = 2
@@ -381,33 +382,33 @@ extension CDOperation {
      object and attribute will always return CREntity
      lww operation or string operation or delete will return container CREntity but only if container is not a ghost
      */
-    //TODO: messy design - CDOperation should not know about CREntities
-    @MainActor func getOrCreateCREntity() -> CREntity? {
-        assert(hasTombstone == false)
-        if let weakCREntity = weakCREntity {
-            return weakCREntity
-        } else {
-            var newEntity:CREntity? = nil
-            switch type {
-            case .ghost:
-                break
-            case .attribute:
-                newEntity = CRAttribute.factory(context: self.managedObjectContext!, from: self)
-            case .object:
-                newEntity = CRObject(from: self)
-            default:
-                newEntity = nil
-            }
-            weakCREntity = newEntity
-            return newEntity
-        }
-    }
+//    //TODO: messy design - CDOperation should not know about CREntities, migrate away to CREntity
+//    @MainActor func getOrCreateCREntity() -> CREntity? {
+//        assert(hasTombstone == false)
+//        if let weakCREntity = weakCREntity {
+//            return weakCREntity
+//        } else {
+//            var newEntity:CREntity? = nil
+//            switch type {
+//            case .ghost:
+//                break
+//            case .attribute:
+//                newEntity = CRAttribute.factory(context: self.managedObjectContext!, from: self)
+//            case .object:
+//                newEntity = CRObject(from: self)
+//            default:
+//                newEntity = nil
+//            }
+//            weakCREntity = newEntity
+//            return newEntity
+//        }
+//    }
 }
 
 
 
 extension CDOperation {
-    func mergeUpstream(context: NSManagedObjectContext) {
+    func mergeFromUpstream(context: NSManagedObjectContext) {
         print("merging Upstream Op \(self.operationID())")
         switch state {
         case .inUpstreamQueueRendered:
@@ -437,7 +438,7 @@ extension CDOperation {
 
     }
     
-    func mergeDownstream(context: NSManagedObjectContext) {
+    func mergeFromDownstream(context: NSManagedObjectContext) {
         print("merging Downstream Op \(self.operationID())")
         switch state {
         case .inDownstreamQueue:
@@ -453,9 +454,18 @@ extension CDOperation {
         
         switch type {
         case .stringInsert:
-            stringInsertLinking()
+            stringInsertLinking() // this updates linked list after tree is connected
+            //TODO: IMPLEMENT
+//            handle rendering update
+//            shoudld we spawn the cRAttribute and perform acitons on it?
+//            an attributecould have a queue of operations (and as long as there is something in the queue attribute will be in memory)
+//            but UIattribute needs to be on man thread, while all others should be on the background thread - or we don't care for now - an all are on the main thread?
+//
+
         case .delete:
             deleteLinking()
+            //TODO: IMPLEMENT
+//            handle rendering update
         default:
             break
         }

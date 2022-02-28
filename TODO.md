@@ -1,25 +1,27 @@
 # TODO
 
 
-- [] notify UI about conversions from ghost to the materialised object
+
+- [] remote string insert on empty note is badly formatted
+- [] render remote delete on mutable string
+- [] rendering of closed entities should be held in background (we could wait with opening the object untill the current bg renderings are done)
+- [] notify UI about conversions from ghost to the materialised object (is it still a case?)
 - [] delete container is the container of deleted operation, delete parent is the deleted operation for all types (optimised prefetching)
-- [] update rendered string for the opened container(attribute/object) (CRAttribute should subscribe to changes where it is a container)
 - [] update rendered string optimisations
 - [] background fast update of all not yet opened MutableStrings - O(n) as it's a linked list to string
 - [] instant MutableStrings open and async update with the new unrendered changes (animated?)
-- [] update UI on the remote changes
 - [] background slow update of all MutableStrings (if still needed)
 
-- [] optimise insert creation on paste - use core data batch API 
 - [] implement delete object/attribute
-- [] remove recursion (where?)
 - [] fix performance of testLoadingPerformanceSinglePaste (5 x lorem used to work)
 - [] migrate deprecated "withUnsafeBytes { (pointer: UnsafePointer"
-- [] performance test and solution for big paste
+- [] performance test and solution for big paste - use core data batch API 
 - [] make Virtual Roots weak, so we only update them when they are a part of UI
 
-- [] foreign key
+- [] foreign key for more advanced data types
 
+- [x] render remote insert on mutable string
+- [x] render remote update on LWW
 - [x] track replication container history so we can detect and process remote changes (NSPersistentHistoryTrackingKey)
 - [x] ensure we can receive duplicates of downstream operations
 - [x] restoreLinkedList vs linkedlist.restore - 2 implementations

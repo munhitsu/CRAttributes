@@ -49,7 +49,7 @@ public class RGAController {
                 if let op = context.object(with: objectID) as? CDOperation {
                     guard op.type == .stringInsert || op.type == .delete else { continue }
                     guard op.state == .inUpstreamQueueRendered else { continue }
-                    op.mergeUpstream(context: context)
+                    op.mergeFromUpstream(context: context)
                 }
             }
             try! context.save()
@@ -64,7 +64,7 @@ public class RGAController {
             let response = try! localContainerBackgroundContext.fetch(request)
             for op in response {
                 guard op.state == .inUpstreamQueueRendered else { continue } // it's all very much multithreaded
-                op.mergeUpstream(context: localContainerBackgroundContext)
+                op.mergeFromUpstream(context: localContainerBackgroundContext)
             }
             try! localContainerBackgroundContext.save() // TODO: ensure we save only up to 60 operations at once
         }

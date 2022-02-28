@@ -78,7 +78,7 @@ import CoreData
                 }
                 assert(op.type == .attribute)
                 assert(op.attributeType == attributeType)
-                attribute = op.getOrCreateCREntity() as? CRAttribute
+                attribute = CREntity.getOrCreateCREntity(context: context, objectID: op.objectID) as? CRAttribute
                 break //TODO: make it deterministic in case we have multiple attributes of the same name
             }
             if attribute == nil {
@@ -122,7 +122,7 @@ import CoreData
         if cdResults.count > 0 {
             for attributeOp in cdResults {
                 guard attributeOp.type == .attribute else { continue }
-                attributesDict[attributeOp.attributeName!] = attributeOp.getOrCreateCREntity() as? CRAttribute
+                attributesDict[attributeOp.attributeName!] = CREntity.getOrCreateCREntity(context: context, objectID: attributeOp.objectID) as? CRAttribute
             }
         }
 //        }
@@ -149,7 +149,7 @@ import CoreData
             let cdResults:[CDOperation] = try! context.fetch(request)
             
             for cd in cdResults {
-                if let cr = cd.getOrCreateCREntity() {
+                if let cr = CREntity.getOrCreateCREntity(context: context, objectID: cd.objectID) {
                     crResults.append(cr)
                 }
             }

@@ -58,22 +58,37 @@ extension ProtoOperationsTree: RestorableProtobuf {
 
 extension ProtoStringInsertOperationLinkedList: RestorableProtobuf {
     func restore(context: NSManagedObjectContext, container: CDOperation?) {
-//        var prevOp:CDOperation? = nil
-        //TODO: this is naivly slow
-        let headOp:CDOperation? = nil
-        for protoOp in stringInsertOperations {
-            let op = CDOperation.findOrCreateOperation(context: context, from: protoOp, container: container, type: .stringInsert)
-//            if op.prev != nil { // it was already linked, it's a re-restore
-//                continue
-//            }
-//            if headOp == nil {
-//                headOp = op
-//            }
-//            prevOp?.next = op
-//            prevOp = op
-            op.mergeDownstream(context: context)
+        Task {
+    //        var prevOp:CDOperation? = nil
+            //TODO: this is naivly slow - e.g. we should leverage that string comes as a linked list
+            var headOp:CDOperation? = nil
+            var containerObjectID: NSManagedObjectID? = nil
+            context.performAndWait {
+                for protoOp in stringInsertOperations {
+                    let op = CDOperation.findOrCreateOperation(context: context, from: protoOp, container: container, type: .stringInsert)
+        //            if op.prev != nil { // it was already linked, it's a re-restore
+        //                continue
+        //            }
+                    if headOp == nil {
+                        headOp = op
+                    }
+        //            prevOp?.next = op
+        //            prevOp = op
+                    op.mergeFromDownstream(context: context)
+                    // it will be ether all rendered or none
+                }
+    //            headOp?.mergeDownstream(context: context)
+                //TODO: when do we check for orphans?
+                try! context.save()
+                containerObjectID = headOp?.container?.objectID
+            }
+            var crAttribute:CRAttributeMutableString? = nil
+            if containerObjectID != nil {
+                // in case string is disconnected from it's parrent, it will be skipped
+                await crAttribute = CREntity.getOrCreateCREntity(context: CRStorageController.shared.localContainer.viewContext, objectID: containerObjectID!) as? CRAttributeMutableString
+                await crAttribute?.renderOperations([headOp!.objectID])
+            }
         }
-        headOp?.mergeDownstream(context: context)
     }
 }
 

@@ -15,19 +15,19 @@ public class CRReplicationController {
     
     private var observers: [AnyCancellable] = []
     
-    var lastHistoryToken: NSPersistentHistoryToken? = nil {
+    var lastReplicationHistoryToken: NSPersistentHistoryToken? = nil {
         didSet {
 //            print("ReplicationController.\(#function): start")
-            guard let token = lastHistoryToken, let data = try? NSKeyedArchiver.archivedData(withRootObject: token, requiringSecureCoding: true) else { return }
+            guard let token = lastReplicationHistoryToken, let data = try? NSKeyedArchiver.archivedData(withRootObject: token, requiringSecureCoding: true) else { return }
             do {
-                try data.write(to: historyTokenFile)
+                try data.write(to: replicationHistoryTokenFile)
             } catch {
                 print("###\(#function): Could not write token data: \(error)")
             }
         }
     }
     
-    lazy var historyTokenFile: URL = {
+    lazy var replicationHistoryTokenFile: URL = {
 //        print("ReplicationController.\(#function): tokenFile start")
         let url = NSPersistentContainer.defaultDirectoryURL().appendingPathComponent("CRAttributes", isDirectory: true)
         if !FileManager.default.fileExists(atPath: url.path) {
@@ -44,13 +44,13 @@ public class CRReplicationController {
     
     public init(localContext: NSManagedObjectContext,
          replicationContext: NSManagedObjectContext,
-         skipTimer: Bool = false,
-         skipRemoteChanges: Bool = false) {
+         processLocalChanges: Bool = true,
+         processRemoteChanges: Bool = true) {
         self.localContext = localContext
         self.replicationContext = replicationContext
         loadHistoryToken()
         
-        if !skipTimer {
+        if processLocalChanges {
             observers.append(Publishers.timer(interval: .seconds(1), times: .unlimited).sink { [weak self] time in //TODO: ensure only one operation at the time, stop at the end of the test
                 guard let self = self else { return }
                 Task {
@@ -59,7 +59,7 @@ public class CRReplicationController {
             })
         }
 
-        if !skipRemoteChanges {
+        if processRemoteChanges {
             observers.append(NotificationCenter.default.publisher(for: .NSPersistentStoreRemoteChange, object: replicationContext.persistentStoreCoordinator).sink { [weak self] notification in
                 guard let self = self else { return }
                 Task {
@@ -77,8 +77,8 @@ public class CRReplicationController {
 extension CRReplicationController {
     private func loadHistoryToken() {
       do {
-        let tokenData = try Data(contentsOf: historyTokenFile)
-        lastHistoryToken = try NSKeyedUnarchiver
+        let tokenData = try Data(contentsOf: replicationHistoryTokenFile)
+        lastReplicationHistoryToken = try NSKeyedUnarchiver
           .unarchivedObject(ofClass: NSPersistentHistoryToken.self, from: tokenData)
       } catch {
         // log any errors
@@ -196,23 +196,7 @@ extension CRReplicationController {
 //MARK: - Downstream
 extension CRReplicationController {
     // TODO: (later) maybe introduce RGA Split and consolidate operations here, this will solve the recursion risk
-    
-    public func processDownstreamForest(forest cdForestObjectID: NSManagedObjectID) async {
-        assert(cdForestObjectID.isTemporaryID == false)
-        let remoteContext = CRStorageController.shared.replicationContainerBackgroundContext
-        let localContext = CRStorageController.shared.localContainerBackgroundContext
-        
-        let protoForest:ProtoOperationsForest = await remoteContext.perform {
-            let cdForest = remoteContext.object(with: cdForestObjectID) as! CDOperationsForest
-            return cdForest.protoStructure()
-        }
-        await localContext.perform {
-            protoForest.restore(context: localContext)
-            try! localContext.save()
-        }
-            
-    }
-        
+
     /**
      start me when the application starts
      */
@@ -221,8 +205,8 @@ extension CRReplicationController {
 //        let remoteContext = CRStorageController.shared.replicationContainerBackgroundContext
         let remoteContext = replicationContext
         await remoteContext.perform {
-            print("Fetching history after: \(self.lastHistoryToken)")
-            let fetchHistoryRequest = NSPersistentHistoryChangeRequest.fetchHistory(after: self.lastHistoryToken)
+            print("Fetching history after: \(self.lastReplicationHistoryToken)")
+            let fetchHistoryRequest = NSPersistentHistoryChangeRequest.fetchHistory(after: self.lastReplicationHistoryToken)
             
             guard let historyResult = try? remoteContext.execute(fetchHistoryRequest) as? NSPersistentHistoryResult,
                   let history = historyResult.result as? [NSPersistentHistoryTransaction]
@@ -259,8 +243,25 @@ extension CRReplicationController {
                 }
             }
             if let newToken = history.last?.token {
-                self.lastHistoryToken = newToken
+                self.lastReplicationHistoryToken = newToken
             }
         }
     }
+
+    public func processDownstreamForest(forest cdForestObjectID: NSManagedObjectID) async {
+        assert(cdForestObjectID.isTemporaryID == false)
+        let remoteContext = CRStorageController.shared.replicationContainerBackgroundContext
+        let localContext = CRStorageController.shared.localContainerBackgroundContext
+        
+        let protoForest:ProtoOperationsForest = await remoteContext.perform {
+            let cdForest = remoteContext.object(with: cdForestObjectID) as! CDOperationsForest
+            return cdForest.protoStructure()
+        }
+        await localContext.perform {
+            protoForest.restore(context: localContext)
+            try! localContext.save()
+        }
+    
+    }
+
 }

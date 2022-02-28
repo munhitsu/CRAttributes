@@ -176,24 +176,24 @@ extension CDOperation { // StringInsert
         return lastChild!.lastNode()
     }
     
-    func debugListString() -> String {
-        var node:CDOperation = self
-        var s = ""
-        while node.next != nil {
-            s.append(contentsOf: String(node.unicodeScalar))
-            node = node.next!
-        }
-        return s
-    }
-    
-    func debugTreeString() -> String {
-        var s = "\(unicodeScalar)"
-        let children:[CDOperation] = (childOperations?.allObjects as? [CDOperation] ?? []).filter{$0.type == .stringInsert}.sorted(by: >)
-        for child in children {
-            s.append(contentsOf: child.debugTreeString())
-        }
-        return s
-    }
+//    public func debugListString() -> String {
+//        var node:CDOperation = self
+//        var s = ""
+//        while node.next != nil {
+//            s.append(contentsOf: String(node.unicodeScalar))
+//            node = node.next!
+//        }
+//        return s
+//    }
+//    
+//    public func debugTreeString() -> String {
+//        var s = "\(unicodeScalar)"
+//        let children:[CDOperation] = (childOperations?.allObjects as? [CDOperation] ?? []).filter{$0.type == .stringInsert}.sorted(by: >)
+//        for child in children {
+//            s.append(contentsOf: child.debugTreeString())
+//        }
+//        return s
+//    }
     
     func assertIfWithChildrenThenNextWithin() -> Bool {
         let children:[CDOperation] = (childOperations?.allObjects as? [CDOperation] ?? []).filter{$0.type == .stringInsert}
