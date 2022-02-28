@@ -14,6 +14,9 @@ Work in progress (WIP) / Request for comments (RFC)
 - [x] serialisation and deserialisation of basic attributes using LWW and Mutable String using RGA
 - [x] replication primitives
 - [.] live merging of remote changes
+  - [x] LWW
+  - [x] MutableString Insert
+  - [] MutableString Delete
 - [x] demo app (CRAttributesDemo)
 - [] sharing (native)
 - [] Foreign key
