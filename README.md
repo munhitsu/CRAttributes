@@ -18,12 +18,12 @@ Work in progress (WIP) / Request for comments (RFC)
 - [.] live merging of remote changes
   - [x] LWW
   - [x] MutableString Insert
-  - [] MutableString Delete
+  - [ ] MutableString Delete
 - [x] demo app (CRAttributesDemo)
-- [] sharing (native)
-- [] Foreign key
-- [] ORM
-- [] optimisations - never ending
+- [ ] sharing (native)
+- [ ] Foreign key
+- [ ] ORM?
+- [ ] optimisations - never ending
 
 
 ## research
