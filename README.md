@@ -1,4 +1,4 @@
-# CoOpAttributes
+# CRAttributes
 
 Enables colaboration on text field across multiple iOS devices.
 
@@ -13,8 +13,8 @@ Work in progress (WIP) / Request for comments (RFC)
 ## milestones/roadmap
 - [x] serialisation and deserialisation of basic attributes using LWW and Mutable String using RGA
 - [x] replication primitives
-- [] live merging of remote changes
-- [] demo app
+- [.] live merging of remote changes
+- [x] demo app (CRAttributesDemo)
 - [] sharing (native)
 - [] Foreign key
 - [] ORM
