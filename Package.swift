@@ -29,13 +29,13 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "CRAttributes",
-            dependencies: ["CoreDataModelDescription", "SwiftProtobuf"]),
+            dependencies: ["CoreDataModelDescription", "SwiftProtobuf"],
+            exclude: ["ReplicationModel/ProtoModel.proto"]),
         .testTarget(
             name: "CRAttributesTests",
             dependencies: ["CRAttributes"]),
     ]
 )
-
 
 //
 // 'CoreDataModelDescription' in target 'CRAttributes' requires explicit declaration; provide the name of the package dependency with '.package(name: "CoreDataModelDescription", url: "https://github.com/dmytro-anokhin/core-data-model-description", from: "0.0.9")'

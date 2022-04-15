@@ -1,4 +1,4 @@
-#  ADL
+#  ADRs
 
 ## ORM abstraction
 few inspirations

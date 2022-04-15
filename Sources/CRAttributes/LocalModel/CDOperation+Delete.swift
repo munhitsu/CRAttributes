@@ -36,7 +36,7 @@ extension CDOperation { // Delete
         self.parent = CDOperation.findOperationOrCreateGhost(from: parentID, in: managedObjectContext!)
         self.parent?.hasTombstone = true
         self.type = .delete
-        self.state = .inDownstreamQueueMergedUnrendered // parent has tombstone - we've merged
+        self.state = .inDownstreamQueueMergedUnrendered // parent has tombstone - we've merged, and it doesn't matter if parent is a ghost
         
 //        if lamport == 22 {
 //            print(parent)

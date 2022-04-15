@@ -66,18 +66,22 @@ public class CRAttributeMutableString: CRAttribute {
         var opArray:[CDOperation] = []
         // going right
         while op?.state == .inDownstreamQueueMergedUnrendered {
-            str.append(Character((op!.unicodeScalar)))
-            addrArray.append(op!.operationID())
-            opArray.append(op!)
+            if !(op?.hasTombstone ?? true) {
+                str.append(Character((op!.unicodeScalar)))
+                addrArray.append(op!.operationID())
+                opArray.append(op!)
+            }
             op = op!.next
         }
  
         // going left as it's a good moment to render the whole string
         var realHead = headOperation.prev
         while realHead?.state == .inDownstreamQueueMergedUnrendered {
-            str.insert(Character(realHead!.unicodeScalar), at: str.startIndex)
-            addrArray.insert(realHead!.operationID(), at: 0)
-            opArray.append(realHead!)
+            if !(op?.hasTombstone ?? true) {
+                str.insert(Character(realHead!.unicodeScalar), at: str.startIndex)
+                addrArray.insert(realHead!.operationID(), at: 0)
+                opArray.append(realHead!)
+            }
             realHead = realHead!.prev
         }
         let insertionOp = realHead
