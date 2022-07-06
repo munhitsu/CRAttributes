@@ -38,6 +38,21 @@ extension CDOperation {
         return op
     }
     
+    static func createLWW(context: NSManagedObjectContext, container: CDOperation?, value: Data) -> CDOperation {
+        let op = CDOperation(context:context, container: container)
+        op.lwwBinaryData = value
+        op.type = .lwwBinaryData
+        return op
+    }
+
+    static func createLWW(context: NSManagedObjectContext, container: CDOperation?, value: CROperationID) -> CDOperation {
+        let op = CDOperation(context:context, container: container)
+        op.lwwLamport = value.lamport
+        op.lwwPeerID = value.peerID
+        op.type = .lwwOperationID
+        return op
+    }
+
     static func createLWW(context: NSManagedObjectContext, container: CDOperation?, value: String) -> CDOperation {
         let op = CDOperation(context:context, container: container)
         op.lwwString = value
@@ -69,6 +84,13 @@ extension CDOperation {
         case .some(.boolean):
             self.type = .lwwBool
             self.lwwBool = protoForm.boolean
+        case .some(.binaryData):
+            self.type = .lwwBinaryData
+            self.lwwBinaryData = protoForm.binaryData
+        case .some(.refID):
+            self.type = .lwwOperationID
+            self.lwwLamport = protoForm.refID.lamport
+            self.lwwPeerID = protoForm.refID.peerID.object()
         case .some(.string):
             self.type = .lwwString
             self.lwwString = protoForm.string
@@ -99,6 +121,14 @@ extension CDOperation {
         return lwwBool
     }
 
+    func lwwValue() -> Data? {
+        return lwwBinaryData
+    }
+
+    func lwwValue() -> CROperationID? {
+        return CROperationID(lamport: lwwLamport, peerID: lwwPeerID)
+    }
+
     func lwwValue() -> String {
         return lwwString!
     }
@@ -120,8 +150,13 @@ extension CDOperation {
                 fatalNotImplemented() //TODO: implement Date
             case .lwwBool:
                 $0.boolean = self.lwwBool
+            case .lwwBinaryData:
+                $0.binaryData = self.lwwBinaryData ?? Data()
             case .lwwString:
                 $0.string = self.lwwString!
+            case .lwwOperationID:
+                $0.refID.lamport = self.lwwLamport
+                $0.refID.peerID = self.lwwPeerID.data
             default:
                 fatalNotImplemented()
             }

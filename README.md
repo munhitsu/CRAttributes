@@ -15,11 +15,12 @@ Work in progress (WIP) / Request for comments (RFC)
 ## milestones/roadmap
 - [x] serialisation and deserialisation of basic attributes using LWW and Mutable String using RGA
 - [x] replication primitives
-- [.] live merging of remote changes
+- [x] live merging of remote changes
   - [x] LWW
   - [x] MutableString Insert
   - [x] MutableString Delete
 - [x] demo app (CRAttributesDemo)
+- [ ] enable user to reference character?
 - [ ] sharing (native)
 - [ ] Foreign key
 - [ ] ORM?

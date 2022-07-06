@@ -46,6 +46,9 @@ let localModelDescription = CoreDataModelDescription(
                     .attribute(name: "lwwDate", type: .dateAttributeType, isOptional: true),
                     .attribute(name: "lwwBool", type: .booleanAttributeType, defaultValue: false),
                     .attribute(name: "lwwString", type: .stringAttributeType, isOptional: true),
+                    .attribute(name: "lwwBinaryData", type: .dateAttributeType, isOptional: true),
+                    .attribute(name: "lwwLamport", type: .integer64AttributeType, defaultValue: 0),
+                    .attribute(name: "lwwPeerID", type: .UUIDAttributeType, defaultValue: UUID.zero),
 
                     .attribute(name: "parentLamport", type: .integer64AttributeType, defaultValue: 0), // string, delete
                     .attribute(name: "parentPeerID", type: .UUIDAttributeType, defaultValue: UUID.zero), // string, delete

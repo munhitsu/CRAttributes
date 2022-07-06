@@ -49,6 +49,8 @@ message LWWOperation {
         double date = 6;
         bool boolean = 7;
         string string = 8;
+        bytes binaryData = 10;
+        OperationID refId = 11;
     }
     repeated DeleteOperation deleteOperations = 9;
 }

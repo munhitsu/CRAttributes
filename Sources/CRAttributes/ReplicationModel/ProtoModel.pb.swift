@@ -199,6 +199,22 @@ public struct ProtoLWWOperation {
     set {value = .string(newValue)}
   }
 
+  public var binaryData: Data {
+    get {
+      if case .binaryData(let v)? = value {return v}
+      return Data()
+    }
+    set {value = .binaryData(newValue)}
+  }
+
+  public var refID: ProtoOperationID {
+    get {
+      if case .refID(let v)? = value {return v}
+      return ProtoOperationID()
+    }
+    set {value = .refID(newValue)}
+  }
+
   public var deleteOperations: [ProtoDeleteOperation] = []
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
@@ -209,6 +225,8 @@ public struct ProtoLWWOperation {
     case date(Double)
     case boolean(Bool)
     case string(String)
+    case binaryData(Data)
+    case refID(ProtoOperationID)
 
   #if !swift(>=4.1)
     public static func ==(lhs: ProtoLWWOperation.OneOf_Value, rhs: ProtoLWWOperation.OneOf_Value) -> Bool {
@@ -234,6 +252,14 @@ public struct ProtoLWWOperation {
       }()
       case (.string, .string): return {
         guard case .string(let l) = lhs, case .string(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.binaryData, .binaryData): return {
+        guard case .binaryData(let l) = lhs, case .binaryData(let r) = rhs else { preconditionFailure() }
+        return l == r
+      }()
+      case (.refID, .refID): return {
+        guard case .refID(let l) = lhs, case .refID(let r) = rhs else { preconditionFailure() }
         return l == r
       }()
       default: return false
@@ -418,6 +444,20 @@ public struct ProtoOperationsForest {
 
   public init() {}
 }
+
+#if swift(>=5.5) && canImport(_Concurrency)
+extension ProtoOperationID: @unchecked Sendable {}
+extension ProtoObjectOperation: @unchecked Sendable {}
+extension ProtoAttributeOperation: @unchecked Sendable {}
+extension ProtoDeleteOperation: @unchecked Sendable {}
+extension ProtoLWWOperation: @unchecked Sendable {}
+extension ProtoLWWOperation.OneOf_Value: @unchecked Sendable {}
+extension ProtoStringInsertOperation: @unchecked Sendable {}
+extension ProtoStringInsertOperationLinkedList: @unchecked Sendable {}
+extension ProtoOperationsTree: @unchecked Sendable {}
+extension ProtoOperationsTree.OneOf_Value: @unchecked Sendable {}
+extension ProtoOperationsForest: @unchecked Sendable {}
+#endif  // swift(>=5.5) && canImport(_Concurrency)
 
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
@@ -655,6 +695,8 @@ extension ProtoLWWOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
     6: .same(proto: "date"),
     7: .same(proto: "boolean"),
     8: .same(proto: "string"),
+    10: .same(proto: "binaryData"),
+    11: .same(proto: "refId"),
     9: .same(proto: "deleteOperations"),
   ]
 
@@ -707,6 +749,27 @@ extension ProtoLWWOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
         }
       }()
       case 9: try { try decoder.decodeRepeatedMessageField(value: &self.deleteOperations) }()
+      case 10: try {
+        var v: Data?
+        try decoder.decodeSingularBytesField(value: &v)
+        if let v = v {
+          if self.value != nil {try decoder.handleConflictingOneOf()}
+          self.value = .binaryData(v)
+        }
+      }()
+      case 11: try {
+        var v: ProtoOperationID?
+        var hadOneofValue = false
+        if let current = self.value {
+          hadOneofValue = true
+          if case .refID(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.value = .refID(v)
+        }
+      }()
       default: break
       }
     }
@@ -744,10 +807,21 @@ extension ProtoLWWOperation: SwiftProtobuf.Message, SwiftProtobuf._MessageImplem
       guard case .string(let v)? = self.value else { preconditionFailure() }
       try visitor.visitSingularStringField(value: v, fieldNumber: 8)
     }()
-    case nil: break
+    default: break
     }
     if !self.deleteOperations.isEmpty {
       try visitor.visitRepeatedMessageField(value: self.deleteOperations, fieldNumber: 9)
+    }
+    switch self.value {
+    case .binaryData?: try {
+      guard case .binaryData(let v)? = self.value else { preconditionFailure() }
+      try visitor.visitSingularBytesField(value: v, fieldNumber: 10)
+    }()
+    case .refID?: try {
+      guard case .refID(let v)? = self.value else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 11)
+    }()
+    default: break
     }
     try unknownFields.traverse(visitor: &visitor)
   }

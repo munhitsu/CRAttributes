@@ -80,6 +80,10 @@ public class CRAttribute: CREntity {
             return CRAttributeBool(from: attributeOperation)
         case .string:
             return CRAttributeString(from: attributeOperation)
+        case .binaryData:
+            return CRAttributeBinaryData(from: attributeOperation)
+        case .operationID:
+            return CRAttributeOperationID(from: attributeOperation)
         }
     }
     
@@ -100,6 +104,10 @@ public class CRAttribute: CREntity {
             return CRAttributeBool(container: container, name: name)
         case .string:
             return CRAttributeString(container: container, name: name)
+        case .binaryData:
+            return CRAttributeBinaryData(container: container, name: name)
+        case .operationID:
+            return CRAttributeOperationID(container: container, name: name)
         }
     }
     
@@ -333,6 +341,100 @@ public class CRAttributeString: CRAttribute {
         context.performAndWait {
             guard let op = getLastOperation() else { return }
             value = op.lwwString
+        }
+        return value
+    }
+
+    override func renderOperations(_ operations: [CDOperation]) {
+        _value = getStorageValue()
+        prefetchContainedEntities()
+    }
+}
+
+
+public class CRAttributeBinaryData: CRAttribute {
+    init(container:CRObject, name:String) {
+        super.init(container: container, name: name, type: .binaryData)
+        _value = getStorageValue()
+    }
+
+    override init(from: CDOperation) {
+        super.init(from: from)
+        _value = getStorageValue()
+    }
+
+    var _value: Data? = nil // this is the default
+    
+    public var value:Data? {
+        get {
+            return _value
+        }
+        set {
+            _value = newValue
+            setStorageValue(newValue)
+        }
+    }
+    
+    func setStorageValue(_ newValue: Data?) {
+        context.performAndWait {
+            let op = CDOperation.createLWW(context: context, container: operation, value: newValue!)
+            op.state = .inUpstreamQueueRenderedMerged
+            try! context.save()
+        }
+    }
+
+    func getStorageValue() -> Data? {
+        var value:Data?
+        context.performAndWait {
+            guard let op = getLastOperation() else { return }
+            value = op.lwwBinaryData
+        }
+        return value
+    }
+
+    override func renderOperations(_ operations: [CDOperation]) {
+        _value = getStorageValue()
+        prefetchContainedEntities()
+    }
+}
+
+
+public class CRAttributeOperationID: CRAttribute {
+    init(container:CRObject, name:String) {
+        super.init(container: container, name: name, type: .operationID)
+        _value = getStorageValue()
+    }
+
+    override init(from: CDOperation) {
+        super.init(from: from)
+        _value = getStorageValue()
+    }
+
+    var _value: CROperationID? = nil // this is the default
+    
+    public var value:CROperationID? {
+        get {
+            return _value
+        }
+        set {
+            _value = newValue
+            setStorageValue(newValue)
+        }
+    }
+    
+    func setStorageValue(_ newValue: CROperationID?) {
+        context.performAndWait {
+            let op = CDOperation.createLWW(context: context, container: operation, value: newValue!)
+            op.state = .inUpstreamQueueRenderedMerged
+            try! context.save()
+        }
+    }
+
+    func getStorageValue() -> CROperationID? {
+        var value:CROperationID?
+        context.performAndWait {
+            guard let op = getLastOperation() else { return }
+            value = CROperationID(lamport:op.lwwLamport, peerID:op.lwwPeerID)
         }
         return value
     }

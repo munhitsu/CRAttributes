@@ -17,6 +17,8 @@ public enum CRAttributeType: Int32 {
     case boolean = 3
     case string = 4
     case mutableString = 5
+    case binaryData = 6
+    case operationID = 7
 }
 
 enum CDOperationState: Int32 {
@@ -39,6 +41,8 @@ public enum CDOperationType: Int32 {
     case lwwBool = 18
     case lwwString = 19
     case lwwDate = 20
+    case lwwBinaryData = 21
+    case lwwOperationID = 22
     case stringInsert = 32
 }
 
@@ -101,6 +105,10 @@ extension CDOperation {
     @NSManaged public var lwwDate: Date?
     @NSManaged public var lwwBool: Bool
     @NSManaged public var lwwString: String?
+    @NSManaged public var lwwBinaryData: Data?
+    @NSManaged public var lwwLamport: Int64
+    @NSManaged public var lwwPeerID: UUID
+
 
     //StringInsert/Delete
     @NSManaged public var parentLamport: Int64
@@ -278,6 +286,10 @@ extension CDOperation {
                 op = findOperationOrCreateGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
             case .lwwInt:
                 op = findOperationOrCreateGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
+            case .lwwBinaryData:
+                op = findOperationOrCreateGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
+            case .lwwOperationID:
+                op = findOperationOrCreateGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
             case .lwwString:
                 op = findOperationOrCreateGhost(from: (protoForm as! ProtoLWWOperation).id, in: context)
             case .object:
@@ -306,6 +318,10 @@ extension CDOperation {
         case .lwwFloat:
             op!.updateObject(from: protoForm as! ProtoLWWOperation, container: container)
         case .lwwInt:
+            op!.updateObject(from: protoForm as! ProtoLWWOperation, container: container)
+        case .lwwBinaryData:
+            op!.updateObject(from: protoForm as! ProtoLWWOperation, container: container)
+        case .lwwOperationID:
             op!.updateObject(from: protoForm as! ProtoLWWOperation, container: container)
         case .lwwString:
             op!.updateObject(from: protoForm as! ProtoLWWOperation, container: container)
