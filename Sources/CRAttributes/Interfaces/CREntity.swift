@@ -70,7 +70,7 @@ import Combine
     /**
      I have a linked CDOperation and I know that CREntity hasn't been created
      */
-    init(operation: CDOperation) {
+    public init(operation: CDOperation) {
         assert(operation.weakCREntity == nil)
         self.context = operation.managedObjectContext!
         self.operation = operation

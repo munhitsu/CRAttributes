@@ -198,6 +198,10 @@ extension CDOperation {
                     proto.lwwOperations.append(operation.protoLWWOperationRecurse())
                 case .lwwString:
                     proto.lwwOperations.append(operation.protoLWWOperationRecurse())
+                case .lwwOperationID:
+                    proto.lwwOperations.append(operation.protoLWWOperationRecurse())
+                case .lwwBinaryData:
+                    proto.lwwOperations.append(operation.protoLWWOperationRecurse())
                 case .stringInsert:
                     if operation.prev == nil { // it will be only a new string in a new attribute in this scenario
                         headStringOperation = operation

@@ -33,7 +33,7 @@ import CoreData
         super.init(operation: newOperation!, type: .object, prefetchContainedEntities: false) //it's new so nothing to contain (for nor as we may want to accept that even new parent could be a duplicate)
     }
     
-    init(from: CDOperation) {
+    public init(from: CDOperation) {
 //        operation = from
         assert(from.weakCREntity == nil)
         objectType = from.objectType
@@ -158,3 +158,4 @@ import CoreData
     }
     
 }
+

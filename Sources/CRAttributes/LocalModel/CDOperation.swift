@@ -143,7 +143,7 @@ extension CDOperation {
         }
     }
     
-    var unicodeScalar: UnicodeScalar {
+    public var unicodeScalar: UnicodeScalar {
         get {
             UnicodeScalar(UInt32(stringInsertContribution))!
         }
@@ -233,7 +233,7 @@ extension CDOperation {
         self.state = state
     }
 
-    func operationID() -> CROperationID {
+    public func operationID() -> CROperationID {
         return CROperationID(lamport: lamport, peerID: peerID)
     }
     
@@ -333,8 +333,27 @@ extension CDOperation {
         
         return op!
     }
-
     
+    public static func findOperation(from operationID:CROperationID, in context: NSManagedObjectContext) -> CDOperation? {
+        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+        request.returnsObjectsAsFaults = false
+        request.predicate = NSPredicate(format: "lamport = %@ and peerID = %@", argumentArray: [operationID.lamport, operationID.peerID])
+        let ops = try? context.fetch(request)
+        return ops?.first
+    }
+    
+    /**
+     this returns operations referencing operationID
+     please note that such operations may have overwriting operations over them
+     */
+    public static func findOperations(referencing operationID:CROperationID, in context: NSManagedObjectContext) -> [CDOperation] {
+        let request:NSFetchRequest<CDOperation> = CDOperation.fetchRequest()
+        request.returnsObjectsAsFaults = false
+        request.predicate = NSPredicate(format: "lwwLamport = %@ and lwwPeerID = %@", argumentArray: [operationID.lamport, operationID.peerID])
+        let ops = try? context.fetch(request)
+        return ops ?? []
+    }
+        
     static func printTreeOfContainers(context: NSManagedObjectContext) {
         context.performAndWait {
             print("treeOfContainers:")
@@ -493,5 +512,24 @@ extension CDOperation {
             print("skipping already merged: \(self.operationID())")
 //            fatalNotImplemented()
         }
+    }
+}
+
+
+//TODO: what is prev of the 1st element? and next of the last?
+extension CDOperation {
+    public func prevLiveOperation() -> CDOperation? {
+        var node: CDOperation? = prev
+        while node?.hasTombstone ?? false {
+            node = node?.prev
+        }
+        return node
+    }
+    public func nextLiveOperation() -> CDOperation? {
+        var node: CDOperation? = next
+        while node?.hasTombstone ?? false {
+            node = node?.next
+        }
+        return node
     }
 }
