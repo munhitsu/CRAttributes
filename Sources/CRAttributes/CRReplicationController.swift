@@ -172,6 +172,10 @@ extension CRReplicationController {
                         tree.lwwOperation = branchRoot.protoLWWOperationRecurse()
                     case .lwwString:
                         tree.lwwOperation = branchRoot.protoLWWOperationRecurse()
+                    case .lwwOperationID:
+                        tree.lwwOperation = branchRoot.protoLWWOperationRecurse()
+                    case .lwwBinaryData:
+                        tree.lwwOperation = branchRoot.protoLWWOperationRecurse()
                     case .stringInsert:
                         tree.stringInsertOperationsList.stringInsertOperations = branchRoot.protoStringInsertOperationsLinkedList()
                     default:
