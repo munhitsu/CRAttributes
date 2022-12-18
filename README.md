@@ -1,6 +1,6 @@
 # CRAttributes
 
-Enables colaboration on text field across multiple iOS devices.
+Enables colaboration on text field (and other fields) across multiple iOS devices.
 
 It's based on operation based CRDT with replication leveraging native CoreData CloudKit sync.
 A nearly vanilla implementation of CRDT RGA (operation per character).
