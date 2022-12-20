@@ -82,12 +82,12 @@ extension Array {
 
 extension String {
     mutating func replaceCharacters(in range: NSRange, with characters: String) {
-        let locationIndex = self.index(self.startIndex, offsetBy: String.IndexDistance(range.location))
+        let locationIndex = self.index(self.startIndex, offsetBy: range.location)
 
         if range.length == 0 {
             self.insert(contentsOf: characters, at: locationIndex)
         } else {
-            let endIndex = self.index(locationIndex, offsetBy: String.IndexDistance(range.length-1))
+            let endIndex = self.index(locationIndex, offsetBy: range.length-1)
             self.replaceSubrange(locationIndex...endIndex, with: characters)
         }
     }
